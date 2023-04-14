@@ -70,9 +70,14 @@ dependencies {
     //room
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:2.5.1"
     kapt "androidx.room:room-compiler:$room_version"
     //icons
     implementation "androidx.compose.material:material-icons-extended:1.4.1"
+    def lifecycle_version = "2.6.1"
+    // lifecycle utils for  for Compose
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
 
     testImplementation 'junit:junit:4.13.2'
 
