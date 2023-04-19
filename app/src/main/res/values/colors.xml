@@ -8,6 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 <!--    Note Colors-->
+    <color name="transparent">#00ffffff</color>
+    <color name="stone_300">#d6d3d1</color>
     <color name="red_300">#fca5a5</color>
     <color name="orange_300">#fdba74</color>
     <color name="amber_300">#fcd34d</color>

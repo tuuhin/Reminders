@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.eva.reminders.presentation.feature_create.utils.ReminderDateOptions
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,8 +24,8 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderDatePicker(
-    date: LocalDate,
-    onDatePicked: (LocalDate) -> Unit,
+    option: ReminderDateOptions,
+    onDatePicked: (ReminderDateOptions) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isDialogOpen by remember { mutableStateOf(false) }
@@ -33,41 +34,34 @@ fun ReminderDatePicker(
 
     var dropdownOffset by remember { mutableStateOf(DpOffset.Zero) }
 
-    val rememberedDate by remember {
-        derivedStateOf {
-            LocalDate.now().dayOfWeek.name.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(
-                    Locale.ROOT
-                ) else it.toString()
-            }
-        }
+    val dateText by remember(option.schedule) {
+        derivedStateOf { option.schedule.format(DateTimeFormatter.ofPattern("dd MMMM")) }
     }
-
-    val dateText by remember(date) {
-        derivedStateOf {
-            date.format(DateTimeFormatter.ofPattern("dd MMMM"))
-        }
-    }
+    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
 
     if (isDialogOpen) {
-        val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
-
-        LaunchedEffect(datePickerState.selectedDateMillis) {
-            val mills = datePickerState.selectedDateMillis
-            if (mills != null) {
-                val pickedDate = Instant.ofEpochMilli(mills).atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                onDatePicked(pickedDate)
-            }
-        }
-
         DatePickerDialog(
             onDismissRequest = { isDialogOpen = !isDialogOpen },
             dismissButton = {
-                TextButton(onClick = { isDialogOpen = !isDialogOpen }) { Text(text = "Cancel") }
+                TextButton(
+                    onClick = { isDialogOpen = !isDialogOpen }
+                ) {
+                    Text(text = "Cancel")
+                }
             },
             confirmButton = {
-                TextButton(onClick = { isDialogOpen = !isDialogOpen }) { Text(text = "Done") }
+                Button(
+                    onClick = {
+                        isDialogOpen = !isDialogOpen
+                        val mills = datePickerState.selectedDateMillis
+                        if (mills != null) {
+                            val pickedDate =
+                                Instant.ofEpochMilli(mills).atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
+                            onDatePicked(ReminderDateOptions.Custom(date = pickedDate))
+                        }
+                    }
+                ) { Text(text = "Done") }
             },
             modifier = Modifier.padding(40.dp),
             properties = DialogProperties(
@@ -85,7 +79,9 @@ fun ReminderDatePicker(
         }
     }
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -106,43 +102,33 @@ fun ReminderDatePicker(
                     role = Role.Button
                 ),
         ) {
-            Text(text = dateText)
+            Text(text = dateText, style = MaterialTheme.typography.bodyMedium)
             Icon(
                 imageVector = Icons.Outlined.ExpandMore,
                 contentDescription = "Options for dates"
             )
         }
+        Divider()
         DropdownMenu(
             expanded = isExpanded,
             onDismissRequest = { isExpanded = !isExpanded },
             offset = dropdownOffset,
-            modifier = Modifier.width(300.dp)
+            modifier = Modifier.fillMaxWidth(.5f)
         ) {
+            ReminderDateOptions.dateOptions.forEach { date ->
+                DropdownMenuItem(
+                    text = { Text(text = date.text) },
+                    onClick = {
+                        onDatePicked(date)
+                        isExpanded = !isExpanded
+                    }
+                )
+            }
             DropdownMenuItem(
-                text = { Text(text = "Today") },
+                text = { Text(text = "Select a date..") },
                 onClick = {
-                    onDatePicked(LocalDate.now())
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(text = "Tomorrow") },
-                onClick = {
-                    onDatePicked(LocalDate.now().plusDays(1))
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Next $rememberedDate")
-                },
-                onClick = {
-                    onDatePicked(LocalDate.now().plusWeeks(1))
-                }
-            )
-            DropdownMenuItem(
-                text = { Text(text = "Select a Date") },
-                onClick = {
-                    isDialogOpen = !isDialogOpen
                     isExpanded = !isExpanded
+                    isDialogOpen = !isDialogOpen
                 }
             )
         }

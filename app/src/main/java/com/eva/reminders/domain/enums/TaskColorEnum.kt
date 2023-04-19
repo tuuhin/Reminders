@@ -3,6 +3,7 @@ package com.eva.reminders.domain.enums
 import com.eva.reminders.R
 
 enum class TaskColorEnum(val color: Int) {
+    TRANSPARENT(R.color.transparent),
     RED(R.color.red_300),
     ORANGE(R.color.orange_300),
     AMBER(R.color.amber_300),

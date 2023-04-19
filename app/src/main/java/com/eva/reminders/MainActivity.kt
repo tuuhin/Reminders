@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,18 +36,21 @@ class MainActivity : ComponentActivity() {
                     val navHost = rememberNavController()
                     NavHost(
                         navController = navHost,
-                        startDestination = NavRoutes.EditLabels.route
+                        startDestination = NavRoutes.AddTask.route
                     ) {
                         composable(NavRoutes.Home.route) {
                             HomeRoute(navController = navHost)
                         }
                         composable(NavRoutes.AddTask.route) {
                             val viewModel = viewModel<CreateTaskViewModel>()
-                            val state = viewModel.task.collectAsStateWithLifecycle()
+                            val state by viewModel.task.collectAsStateWithLifecycle()
+                            val reminderState by viewModel.reminder.collectAsStateWithLifecycle()
                             CreateReminderRoute(
                                 navController = navHost,
-                                state = state.value,
-                                onCreateTaskEvents = viewModel::onCreateTaskEvent
+                                state = state,
+                                reminderState = reminderState,
+                                onCreateTaskEvents = viewModel::onCreateTaskEvent,
+                                onRemindersEvents = viewModel::onReminderEvents
                             )
                         }
                         composable(NavRoutes.EditLabels.route) {

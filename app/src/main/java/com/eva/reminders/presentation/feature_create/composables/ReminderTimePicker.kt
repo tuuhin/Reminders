@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -14,15 +15,19 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.eva.reminders.presentation.feature_create.utils.ReminderDateOptions
+import com.eva.reminders.presentation.feature_create.utils.ReminderTimeOptions
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderTimePicker(
-    time: LocalTime,
-    onTimePicked: (LocalTime) -> Unit,
+    reminderDate: ReminderDateOptions,
+    reminderTimeOption: ReminderTimeOptions,
+    onTimePicked: (ReminderTimeOptions) -> Unit,
     modifier: Modifier = Modifier,
+    errorText: String? = null,
 ) {
 
     var isDialogOpen by remember { mutableStateOf(false) }
@@ -31,25 +36,28 @@ fun ReminderTimePicker(
 
     var dropdownOffset by remember { mutableStateOf(DpOffset.Zero) }
 
-    val selectedTimeText by remember(time) {
-        derivedStateOf {
-            time.format(DateTimeFormatter.ofPattern("hh:mm a"))
-        }
+    val timeFormat = remember { DateTimeFormatter.ofPattern("h:mm a") }
+
+    val selectedTimeText by remember(reminderTimeOption) {
+        derivedStateOf { reminderTimeOption.schedule.format(timeFormat) }
     }
 
-    if (isDialogOpen) {
-        val timePickerState = rememberTimePickerState()
+    val timePickerState = rememberTimePickerState()
 
-        LaunchedEffect(key1 = timePickerState) {
-            val localtime = LocalTime.of(timePickerState.hour, timePickerState.minute)
-            onTimePicked(localtime)
-        }
+
+    if (isDialogOpen) {
 
         DatePickerDialog(
             modifier = Modifier.padding(horizontal = 10.dp),
             onDismissRequest = { isDialogOpen = !isDialogOpen },
             confirmButton = {
-                Button(onClick = { isDialogOpen = !isDialogOpen }) {
+                Button(
+                    onClick = {
+                        isDialogOpen = !isDialogOpen
+                        val localtime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                        onTimePicked(ReminderTimeOptions.Custom(localtime))
+                    }
+                ) {
                     Text(text = "Done")
                 }
             },
@@ -70,7 +78,9 @@ fun ReminderTimePicker(
         }
     }
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -80,21 +90,31 @@ fun ReminderTimePicker(
                 .pointerInput(true) {
                     detectTapGestures(
                         onTap = { tapOffset ->
+
                             dropdownOffset =
                                 DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
-                        }
+                        },
                     )
                 }
-                .padding(vertical = 8.dp)
                 .clickable(
                     onClick = { isExpanded = !isExpanded },
                     role = Role.Button
-                ),
+                )
         ) {
-            Text(text = selectedTimeText)
+            Text(text = selectedTimeText, style = MaterialTheme.typography.bodyMedium)
             Icon(
                 imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = "Options for dates"
+                contentDescription = "Options for dates",
+
+                )
+        }
+        Divider()
+        errorText?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(vertical = 2.dp)
             )
         }
         DropdownMenu(
@@ -103,18 +123,29 @@ fun ReminderTimePicker(
             offset = dropdownOffset,
             modifier = Modifier.width(300.dp)
         ) {
+            ReminderTimeOptions.allOptions(reminderDate.schedule).forEach { opt ->
+                SideEffect {
+                    Log.d("TAG", opt.toString())
+                }
+                DropdownMenuItem(
+                    enabled = opt.enable,
+                    text = { Text(text = opt.text) },
+                    trailingIcon = { Text(text = opt.schedule.format(timeFormat)) },
+                    onClick = {
+                        onTimePicked(opt)
+                        isExpanded = !isExpanded
+                    },
+                )
+                Divider()
+            }
             DropdownMenuItem(
-                enabled = LocalTime.now() < LocalTime.of(8, 0),
-                text = { Text(text = "Morning") },
-                trailingIcon = {
-                    Text(
-                        text = LocalTime.of(8, 0).format(DateTimeFormatter.ofPattern("hh:mm"))
-                    )
-                },
+                text = { Text(text = "Select a time...") },
                 onClick = {
-                    onTimePicked(LocalTime.of(8, 0))
+                    isExpanded = !isExpanded
+                    isDialogOpen = !isDialogOpen
                 },
             )
+            Divider()
         }
     }
 
