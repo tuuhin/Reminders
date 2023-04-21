@@ -1,8 +1,7 @@
 package com.eva.reminders.utils
 
 object NotificationConstants {
-    const val NOTIFICATION_CHANNEL_ID = "RemindersNotification"
-    const val NOTIFICATION_CHANNEL_NAME = "RemindersNotification"
-    const val NOTIFICATION_CHANNEL_DESC =
-        "A notification channel to show notification during a reminder"
+    const val NOTIFICATION_CHANNEL = "ReminderChannelId"
+    const val NOTIFICATION_CHANNEL_ID = "ReminderChannel"
+    const val NOTIFICATION_CHANNEL_DESC = "A notification channel to show reminder notifications"
 }
