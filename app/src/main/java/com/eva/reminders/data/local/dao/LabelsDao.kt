@@ -12,7 +12,7 @@ interface LabelsDao {
     fun getAllLabels(): Flow<List<LabelEntity>>
 
     @Upsert
-    suspend fun insertUpdateLabel(labelEntity: LabelEntity): Long
+    suspend fun insertUpdateLabel(labelEntity: LabelEntity)
 
     @Delete
     suspend fun deleteLabel(labelEntity: LabelEntity)

@@ -16,13 +16,16 @@ interface TaskDao {
     @Update(onConflict = OnConflictStrategy.IGNORE)
     suspend fun updateTask(task: TaskEntity)
 
+    @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
+    fun getTasks(): List<TaskEntity>
+
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
     fun getAllTasksWithLabels(): Flow<List<TaskWithLabelRelation>>
 
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_LABEL_TABLE}")
-    fun getAllLabelsWithTasks():Flow<List<LabelWithTaskRelation>>
+    fun getAllLabelsWithTasks(): Flow<List<LabelWithTaskRelation>>
 
     @Delete
     suspend fun deleteTask(task: TaskEntity)

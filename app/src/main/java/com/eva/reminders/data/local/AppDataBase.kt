@@ -8,20 +8,29 @@ import androidx.room.TypeConverters
 import com.eva.reminders.data.local.adapters.ColorEnumAdapter
 import com.eva.reminders.data.local.adapters.DateTimeAdapter
 import com.eva.reminders.data.local.dao.LabelsDao
+import com.eva.reminders.data.local.dao.LabelsFtsDao
 import com.eva.reminders.data.local.dao.TaskDao
 import com.eva.reminders.data.local.entity.LabelEntity
+import com.eva.reminders.data.local.entity.LabelFtsEntity
 import com.eva.reminders.data.local.entity.TaskEntity
 import com.eva.reminders.data.local.entity.TaskLabelRel
 
 @Database(
-    entities = [TaskEntity::class, LabelEntity::class, TaskLabelRel::class],
-    version = 1, exportSchema = false
+    entities = [
+        TaskEntity::class,
+        LabelEntity::class,
+        TaskLabelRel::class,
+        LabelFtsEntity::class
+    ],
+    version = 1,
+    exportSchema = false
 )
 @TypeConverters(ColorEnumAdapter::class, DateTimeAdapter::class)
 abstract class AppDataBase : RoomDatabase() {
 
     abstract val taskLabelDao: LabelsDao
     abstract val taskDao: TaskDao
+    abstract val labelsFts: LabelsFtsDao
 
     companion object {
         private const val DATABASE_NAME = "REMINDERS_DATABASE"

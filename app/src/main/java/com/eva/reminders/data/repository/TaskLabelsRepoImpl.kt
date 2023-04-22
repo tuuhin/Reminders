@@ -1,8 +1,8 @@
 package com.eva.reminders.data.repository
 
 import android.database.sqlite.SQLiteConstraintException
-import android.database.sqlite.SQLiteException
 import com.eva.reminders.data.local.dao.LabelsDao
+import com.eva.reminders.data.local.dao.LabelsFtsDao
 import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.mappers.toEntity
 import com.eva.reminders.data.mappers.toModel
@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class TaskLabelsRepoImpl @Inject constructor(
-    private val labelDao: LabelsDao
+    private val labelDao: LabelsDao,
+    private val labelFts: LabelsFtsDao
 ) : TaskLabelsRepository {
     override suspend fun createLabel(label: String): Resource<Boolean> {
         return try {
@@ -51,7 +52,18 @@ class TaskLabelsRepoImpl @Inject constructor(
 
     override suspend fun getLabels(): Flow<List<TaskLabelModel>> {
         return labelDao.getAllLabels().map { entities ->
-                entities.map { label -> label.toModel() }
-            }
+            entities.map { label -> label.toModel() }
+        }
+    }
+
+    override suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>> {
+        return flow {
+            val allFlow = labelFts.all().takeIf { query.isEmpty() } ?: labelFts.search(query)
+            emitAll(
+                allFlow.map { entries ->
+                    entries.map { it.toModel() }
+                }
+            )
+        }
     }
 }
