@@ -13,14 +13,17 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.*
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
+import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.noColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CreateReminderRoute(
     state: CreateTaskState,
@@ -28,7 +31,8 @@ fun CreateReminderRoute(
     modifier: Modifier = Modifier,
     onCreateTaskEvents: (CreateTaskEvents) -> Unit,
     reminderState: TaskReminderState,
-    onRemindersEvents: (TaskRemindersEvents) -> Unit
+    onRemindersEvents: (TaskRemindersEvents) -> Unit,
+    selectedLabels: List<TaskLabelModel>? = null
 ) {
     val colorSheetState = rememberModalBottomSheetState()
     val optionsSheetState = rememberModalBottomSheetState()
@@ -37,7 +41,6 @@ fun CreateReminderRoute(
 
     val titleFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
-
 
     LaunchedEffect(Unit) { titleFocus.requestFocus() }
 
@@ -79,7 +82,9 @@ fun CreateReminderRoute(
             state = reminderState,
             showDialog = state.isReminder,
             onDismissRequest = { onCreateTaskEvents(CreateTaskEvents.ToggleReminder) },
-            onRemindersEvents = onRemindersEvents
+            onRemindersEvents = onRemindersEvents,
+            onDelete = {},
+            onSave = {}
         )
 
         TaskColorPicker(
@@ -100,7 +105,7 @@ fun CreateReminderRoute(
             modifier = modifier
                 .padding(padding)
                 .fillMaxSize()
-
+                .padding(horizontal = 8.dp)
         ) {
             TextField(
                 value = state.title,
@@ -144,8 +149,37 @@ fun CreateReminderRoute(
                     .fillMaxWidth()
                     .focusRequester(contentFocus)
             )
+            Text(
+                text = "Suggestions",
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.titleMedium
+            )
+            if (selectedLabels.isNullOrEmpty())
+                SuggestionChip(
+                    onClick = { navController.navigate(NavRoutes.AddLabels.route) },
+                    label = { Text(text = "Add Labels") },
+                )
+            else
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    selectedLabels.forEach { item ->
+                        AssistChip(
+                            onClick = { },
+                            label = { Text(text = item.label) },
+                            border = AssistChipDefaults
+                                .assistChipBorder(
+                                    borderColor = MaterialTheme.colorScheme.primary
+                                ),
+                            colors = AssistChipDefaults
+                                .assistChipColors(
+                                    labelColor = MaterialTheme.colorScheme.primary
+                                ),
+                            modifier = Modifier.padding(horizontal = 2.dp)
+                        )
+                    }
+                }
             Spacer(modifier = Modifier.weight(1f))
-
         }
     }
 }

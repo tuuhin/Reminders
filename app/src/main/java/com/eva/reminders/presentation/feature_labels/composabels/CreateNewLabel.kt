@@ -19,6 +19,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.utils.noColor
@@ -93,5 +96,29 @@ fun CreateNewLabel(
                 )
             }
         }
+    }
+}
+
+private class CreateNewLabelPreviewParams
+    : PreviewParameterProvider<CreateLabelState> {
+    override val values: Sequence<CreateLabelState> = sequenceOf(
+        CreateLabelState(isEnabled = false),
+        CreateLabelState(isEnabled = true)
+    )
+}
+
+@Composable
+@Preview
+private fun CreateNewLabelPreview(
+    @PreviewParameter(CreateNewLabelPreviewParams::class) state: CreateLabelState
+) {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        CreateNewLabel(
+            state = state,
+            onAdd = { },
+            onCancel = { },
+            onDone = { },
+            onValueChange = {}
+        )
     }
 }
