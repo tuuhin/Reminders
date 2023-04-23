@@ -1,10 +1,10 @@
 package com.eva.reminders.presentation.feature_labels.composabels
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -13,8 +13,12 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -22,7 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.utils.noColor
 
@@ -35,10 +38,11 @@ fun CreateNewLabel(
     onDone: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
+    val focusRequest = remember { FocusRequester() }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clickable(onClick = onAdd, role = Role.Button),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -59,6 +63,11 @@ fun CreateNewLabel(
                 modifier = Modifier.weight(.8f)
             )
         } else {
+
+            LaunchedEffect(Unit) {
+                focusRequest.requestFocus()
+            }
+
             IconButton(
                 onClick = onCancel,
                 modifier = Modifier.weight(.1f)
@@ -68,24 +77,36 @@ fun CreateNewLabel(
                     contentDescription = "Cancel Label Creation"
                 )
             }
-            TextField(
-                value = state.label,
-                onValueChange = onValueChange,
-                colors = TextFieldDefaults.noColor(),
-                keyboardActions = KeyboardActions(onDone = { onDone() }),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                placeholder = {
+            Column(
+                modifier = Modifier.weight(.7f)
+            ) {
+                TextField(
+                    value = state.label,
+                    onValueChange = onValueChange,
+                    colors = TextFieldDefaults.noColor(),
+                    keyboardActions = KeyboardActions(onDone = { onDone() }),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    placeholder = {
+                        Text(
+                            text = "New Label",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    modifier = Modifier.focusRequester(focusRequest),
+                )
+                state.isError?.let {
                     Text(
-                        text = "New Label",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = it,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
-            )
+            }
             IconButton(
                 onClick = onDone,
                 modifier = Modifier.weight(.1f)

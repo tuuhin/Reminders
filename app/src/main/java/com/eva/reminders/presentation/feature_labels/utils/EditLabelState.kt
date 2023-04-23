@@ -3,10 +3,10 @@ package com.eva.reminders.presentation.feature_labels.utils
 import com.eva.reminders.domain.models.TaskLabelModel
 
 data class EditLabelState(
-    val model: TaskLabelModel?= null,
+    val model: TaskLabelModel? = null,
     val isEdit: Boolean = false,
     val text: String = "",
-    val prevText: String = ""
+    val prevText: String = "",
 ) {
     companion object {
         fun fromLabel(label: TaskLabelModel): EditLabelState {
@@ -14,9 +14,8 @@ data class EditLabelState(
         }
     }
 
-    fun toModel(): TaskLabelModel? {
-        return model?.copy(label = text)
-    }
+    fun toUpdateModel(): TaskLabelModel? = model?.copy(label = text)
+
 }
 
 sealed class EditLabelEvents {

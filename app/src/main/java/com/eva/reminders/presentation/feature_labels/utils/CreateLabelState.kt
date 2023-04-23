@@ -2,7 +2,8 @@ package com.eva.reminders.presentation.feature_labels.utils
 
 data class CreateLabelState(
     val isEnabled: Boolean = false,
-    val label: String = ""
+    val label: String = "",
+    val isError: String? = null
 )
 
 sealed class CreateLabelEvents {

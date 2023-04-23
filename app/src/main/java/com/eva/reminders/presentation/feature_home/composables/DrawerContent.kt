@@ -1,33 +1,45 @@
 package com.eva.reminders.presentation.feature_home.composables
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.eva.reminders.R
+import com.eva.reminders.domain.models.TaskLabelModel
+import com.eva.reminders.presentation.utils.NavRoutes
 
 @Composable
 fun DrawerContent(
+    navController: NavController,
+    labels: List<TaskLabelModel>,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .height(50.dp)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.sticky_notes),
+                contentDescription = "Maybe logo"
+            )
+            Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.titleLarge
@@ -53,11 +65,8 @@ fun DrawerContent(
             },
             label = { Text(text = "Reminders") },
             selected = false,
-            onClick = { /*TODO*/ }
+            onClick = { }
         )
-        Divider()
-        DrawerLabelItems(modifier = Modifier.weight(1f))
-        Divider()
         NavigationDrawerItem(
             icon = {
                 Icon(
@@ -69,22 +78,10 @@ fun DrawerContent(
             selected = false,
             onClick = { /*TODO*/ }
         )
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.DeleteOutline,
-                    contentDescription = "Deleted"
-                )
-            },
-            label = { Text(text = "Deleted") },
-            selected = false,
-            onClick = { /*TODO*/ }
+        DrawerLabelItems(
+            onEdit = { navController.navigate(NavRoutes.EditLabels.route) },
+            labels = labels,
+            modifier = Modifier.weight(1f)
         )
     }
-}
-
-@Composable
-@Preview
-private fun DrawerItemsPreview() {
-    DrawerContent()
 }

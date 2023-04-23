@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_home.composables.DrawerContent
 import com.eva.reminders.presentation.utils.NavRoutes
 import kotlinx.coroutines.launch
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeRoute(
     navController: NavController,
+    labels:List<TaskLabelModel>,
     modifier: Modifier = Modifier,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -30,7 +32,11 @@ fun HomeRoute(
                 modifier = Modifier.fillMaxWidth(0.75f),
                 windowInsets = WindowInsets.statusBars
             ) {
-                DrawerContent(modifier = Modifier.padding(4.dp))
+                DrawerContent(
+                    navController = navController,
+                    labels = labels,
+                    modifier = Modifier.padding(4.dp),
+                )
             }
         },
         gesturesEnabled = true
@@ -40,9 +46,7 @@ fun HomeRoute(
                 TopAppBar(title = { Text("App Name") }, navigationIcon = {
                     IconButton(
                         onClick = {
-                            scope.launch {
-                                drawerState.open()
-                            }
+                            scope.launch { drawerState.open() }
                         }) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
                     }
@@ -50,7 +54,7 @@ fun HomeRoute(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = { navController.navigate(NavRoutes.AddReminder.route) }) {
+                    onClick = { navController.navigate(NavRoutes.AddTask.route) }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add reminder")
                 }
             }

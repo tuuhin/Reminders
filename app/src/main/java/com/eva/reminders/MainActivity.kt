@@ -38,10 +38,13 @@ class MainActivity : ComponentActivity() {
                     val navHost = rememberNavController()
                     NavHost(
                         navController = navHost,
-                        startDestination = NavRoutes.AddTask.route
+                        startDestination = NavRoutes.Home.route
                     ) {
                         composable(NavRoutes.Home.route) {
-                            HomeRoute(navController = navHost)
+                            val labelsViewModel = hiltViewModel<LabelsViewModel>()
+                            val labels by labelsViewModel.allLabels.collectAsStateWithLifecycle()
+
+                            HomeRoute(navController = navHost, labels = labels)
                         }
                         composable(NavRoutes.AddTask.route) {
                             val viewModel = hiltViewModel<CreateTaskViewModel>()

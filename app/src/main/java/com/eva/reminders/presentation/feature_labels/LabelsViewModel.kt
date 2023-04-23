@@ -49,12 +49,16 @@ class LabelsViewModel @Inject constructor(
 
     fun onCreateLabelEvent(event: CreateLabelEvents) {
         when (event) {
-            is CreateLabelEvents.OnValueChange -> _createLabelState.update {
-                it.copy(label = event.text)
-            }
-            CreateLabelEvents.ToggleEnabled -> _createLabelState.update {
-                it.copy(isEnabled = !it.isEnabled)
-            }
+            is CreateLabelEvents.OnValueChange -> _createLabelState
+                .update {
+                    it.copy(label = event.text)
+                }
+
+            CreateLabelEvents.ToggleEnabled -> _createLabelState
+                .update {
+                    it.copy(isEnabled = !it.isEnabled, isError = null, label = "")
+                }
+
             CreateLabelEvents.OnSubmit -> createLabel()
         }
     }
@@ -62,7 +66,7 @@ class LabelsViewModel @Inject constructor(
     fun onUpdateLabelEvent(event: EditLabelEvents) {
         when (event) {
             is EditLabelEvents.OnDelete -> event.item.model?.let { onDelete(it) }
-            is EditLabelEvents.OnUpdate -> event.item.toModel()?.let { onUpdate(it) }
+            is EditLabelEvents.OnUpdate -> event.item.toUpdateModel()?.let { onUpdate(it) }
             is EditLabelEvents.OnValueChange -> {
                 _updateLabels.update { states ->
                     states.map { state ->
@@ -72,6 +76,7 @@ class LabelsViewModel @Inject constructor(
                     }
                 }
             }
+
             is EditLabelEvents.ToggleEnabled -> {
                 _updateLabels.update { states ->
                     states.map { state ->
@@ -104,6 +109,12 @@ class LabelsViewModel @Inject constructor(
     }
 
     private fun createLabel() {
+        val isSameLabelExits = _labels.value.any { it.label == _createLabelState.value.label }
+        if (isSameLabelExits) {
+            _createLabelState.update { it.copy(isError = "Same name already exists") }
+            return
+        }
+
         viewModelScope.launch {
             when (val res = labelRepo.createLabel(_createLabelState.value.label)) {
                 is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
