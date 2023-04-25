@@ -13,7 +13,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.eva.reminders.data.parcelable.LabelParceler
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
 import com.eva.reminders.presentation.feature_create.CreateTaskViewModel
 import com.eva.reminders.presentation.feature_home.HomeRoute
@@ -36,6 +35,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navHost = rememberNavController()
+                    // Keeping this viewModel in the global scope as its accessed by two routes
+                    // This maybe a bit problematic as the selected state doesn't changes for any
+                    // Not thinking much for now
+                    val addLabelViewModel = hiltViewModel<AddLabelViewModel>()
+                    val selectedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
                     NavHost(
                         navController = navHost,
                         startDestination = NavRoutes.Home.route
@@ -43,26 +47,33 @@ class MainActivity : ComponentActivity() {
                         composable(NavRoutes.Home.route) {
                             val labelsViewModel = hiltViewModel<LabelsViewModel>()
                             val labels by labelsViewModel.allLabels.collectAsStateWithLifecycle()
-
                             HomeRoute(navController = navHost, labels = labels)
                         }
                         composable(NavRoutes.AddTask.route) {
                             val viewModel = hiltViewModel<CreateTaskViewModel>()
                             val state by viewModel.task.collectAsStateWithLifecycle()
                             val reminderState by viewModel.reminder.collectAsStateWithLifecycle()
-
-                            val labels =
-                                navHost.currentBackStackEntry?.savedStateHandle?.get<List<LabelParceler>>(
-                                    "SELECTED_LABELS",
-                                )?.map { it.toModel() }
-
                             CreateReminderRoute(
                                 navController = navHost,
                                 state = state,
                                 reminderState = reminderState,
                                 onCreateTaskEvents = viewModel::onCreateTaskEvent,
                                 onRemindersEvents = viewModel::onReminderEvents,
-                                selectedLabels = labels
+                                selectedLabels = addLabelViewModel.pickedLabels.filter { it.isSelected }
+                                    .map { it.toModel() }
+                            )
+                        }
+                        composable(NavRoutes.AddLabels.route) {
+
+                            val query by addLabelViewModel.query.collectAsStateWithLifecycle()
+                            AddLabelsRoute(
+                                navController = navHost,
+                                labels = selectedLabels,
+                                query = query,
+                                onSearch = addLabelViewModel::searchLabels,
+                                onSelect = addLabelViewModel::onSelect,
+                                onCreateNew = addLabelViewModel::createLabel,
+                                uiEvents = addLabelViewModel.uiEvents,
                             )
                         }
                         composable(NavRoutes.EditLabels.route) {
@@ -78,21 +89,6 @@ class MainActivity : ComponentActivity() {
                                 onCreateLabelEvent = viewModel::onCreateLabelEvent,
                                 onEditLabelEvent = viewModel::onUpdateLabelEvent,
                                 uiEvents = viewModel.uiEvents
-                            )
-                        }
-                        composable(NavRoutes.AddLabels.route) {
-                            val viewModel = hiltViewModel<AddLabelViewModel>()
-                            val labels by viewModel.labelSelector.collectAsStateWithLifecycle()
-                            val query by viewModel.query.collectAsStateWithLifecycle()
-
-                            AddLabelsRoute(
-                                navController = navHost,
-                                labels = labels,
-                                query = query,
-                                onSearch = viewModel::searchLabels,
-                                onSelect = viewModel::onSelect,
-                                onCreateNew = viewModel::createLabel,
-                                uiEvents = viewModel.uiEvents,
                             )
                         }
                     }

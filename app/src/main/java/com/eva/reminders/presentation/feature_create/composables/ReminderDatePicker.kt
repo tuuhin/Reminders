@@ -37,7 +37,16 @@ fun ReminderDatePicker(
     val dateText by remember(option.schedule) {
         derivedStateOf { option.schedule.format(DateTimeFormatter.ofPattern("dd MMMM")) }
     }
-    val datePickerState = rememberDatePickerState(initialDisplayMode = DisplayMode.Picker)
+
+    val dateOptions = remember {
+        listOf(
+            ReminderDateOptions.Today,
+            ReminderDateOptions.Tomorrow,
+            ReminderDateOptions.NextWeek
+        )
+    }
+
+    val datePickerState = rememberDatePickerState()
 
     if (isDialogOpen) {
         DatePickerDialog(
@@ -115,7 +124,7 @@ fun ReminderDatePicker(
             offset = dropdownOffset,
             modifier = Modifier.fillMaxWidth(.5f)
         ) {
-            ReminderDateOptions.dateOptions.forEach { date ->
+            dateOptions.forEach { date ->
                 DropdownMenuItem(
                     text = { Text(text = date.text) },
                     onClick = {

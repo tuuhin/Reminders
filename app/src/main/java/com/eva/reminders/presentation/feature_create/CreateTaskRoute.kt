@@ -1,6 +1,8 @@
 package com.eva.reminders.presentation.feature_create
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.*
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
@@ -23,7 +26,7 @@ import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.noColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateReminderRoute(
     state: CreateTaskState,
@@ -42,6 +45,8 @@ fun CreateReminderRoute(
     val titleFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
 
+    var showReminderDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) { titleFocus.requestFocus() }
 
     Scaffold(
@@ -49,42 +54,46 @@ fun CreateReminderRoute(
             CreateTaskTopBar(
                 navController = navController,
                 isPinned = state.isPinned,
-                isReminder = state.isReminder,
+                isReminder = state.isReminderSelected,
                 isArchived = state.isArchived,
                 onPinClick = { onCreateTaskEvents(CreateTaskEvents.TogglePinned) },
-                onReminderClick = { onCreateTaskEvents(CreateTaskEvents.ToggleReminder) },
+                onReminderClick = { showReminderDialog = !showReminderDialog },
                 onArchiveClick = { onCreateTaskEvents(CreateTaskEvents.ToggleArchive) }
             )
         },
         bottomBar = {
             CreateTaskBottomBar(
-                onColor = {
-                    scope.launch {
-                        colorSheetState.show()
-                    }
-                }, onMoreOptions = {
-                    scope.launch {
-                        optionsSheetState.show()
-                    }
-                }
+                onColor = { scope.launch { colorSheetState.show() } },
+                onMoreOptions = { scope.launch { optionsSheetState.show() } },
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surface)
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onCreateTaskEvents(CreateTaskEvents.OnSubmit) }
             ) {
-                Icon(imageVector = Icons.Outlined.Check, contentDescription = "Add this task")
+                Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = "Add this task"
+                )
             }
         }
     ) { padding ->
 
         TaskReminderPicker(
             state = reminderState,
-            showDialog = state.isReminder,
-            onDismissRequest = { onCreateTaskEvents(CreateTaskEvents.ToggleReminder) },
+            showDialog = showReminderDialog,
+            onDismissRequest = { showReminderDialog = !showReminderDialog },
             onRemindersEvents = onRemindersEvents,
-            onDelete = {},
-            onSave = {}
+            onDelete = {
+                onCreateTaskEvents(CreateTaskEvents.ReminderCanceled)
+                showReminderDialog = false
+            },
+            onSave = {
+                onCreateTaskEvents(CreateTaskEvents.ReminderPicked)
+                showReminderDialog = false
+            }
         )
 
         TaskColorPicker(
@@ -94,92 +103,96 @@ fun CreateReminderRoute(
             onColorChange = { onCreateTaskEvents(CreateTaskEvents.OnColorChanged(it)) }
         )
 
-        MoreOptionsPicker(isVisible = optionsSheetState.isVisible,
+        MoreOptionsPicker(
+            isVisible = optionsSheetState.isVisible,
             sheetState = optionsSheetState,
-            onDelete = {},
-            onCopy = {},
-            onLabels = {}
-        )
-
-        Column(
-            modifier = modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 8.dp)
-        ) {
-            TextField(
-                value = state.title,
-                onValueChange = {
-                    onCreateTaskEvents(CreateTaskEvents.OnTitleChange(it))
-                },
-                textStyle = MaterialTheme.typography.headlineSmall,
-                placeholder = {
-                    Text(
-                        text = "Title", style = MaterialTheme.typography.headlineSmall
-                    )
-                },
-                colors = TextFieldDefaults.noColor(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(onNext = { contentFocus.requestFocus() }),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(titleFocus)
-            )
-            TextField(
-                value = state.content,
-                onValueChange = { onCreateTaskEvents(CreateTaskEvents.OnContentChange(it)) },
-                textStyle = MaterialTheme.typography.titleMedium,
-                placeholder = {
-                    Text(
-                        text = "Note",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                },
-                singleLine = false,
-                colors = TextFieldDefaults.noColor(),
-                keyboardActions = KeyboardActions(onDone = {}),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(contentFocus)
-            )
-            Text(
-                text = "Suggestions",
-                color = MaterialTheme.colorScheme.outline,
-                style = MaterialTheme.typography.titleMedium
-            )
-            if (selectedLabels.isNullOrEmpty())
-                SuggestionChip(
-                    onClick = { navController.navigate(NavRoutes.AddLabels.route) },
-                    label = { Text(text = "Add Labels") },
-                )
-            else
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    selectedLabels.forEach { item ->
-                        AssistChip(
-                            onClick = { },
-                            label = { Text(text = item.label) },
-                            border = AssistChipDefaults
-                                .assistChipBorder(
-                                    borderColor = MaterialTheme.colorScheme.primary
-                                ),
-                            colors = AssistChipDefaults
-                                .assistChipColors(
-                                    labelColor = MaterialTheme.colorScheme.primary
-                                ),
-                            modifier = Modifier.padding(horizontal = 2.dp)
-                        )
-                    }
+            onLabels = {
+                scope.launch {
+                    if (optionsSheetState.isVisible)
+                        optionsSheetState.hide()
                 }
-            Spacer(modifier = Modifier.weight(1f))
+                navController.navigate(NavRoutes.AddLabels.route)
+            }
+        )
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize(),
+            contentPadding = padding
+        ) {
+            item {
+                TextField(
+                    value = state.title,
+                    onValueChange = {
+                        onCreateTaskEvents(CreateTaskEvents.OnTitleChange(it))
+                    },
+                    textStyle = MaterialTheme.typography.headlineSmall,
+                    placeholder = {
+                        Text(
+                            text = "Title", style = MaterialTheme.typography.headlineSmall
+                        )
+                    },
+                    colors = TextFieldDefaults.noColor(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(onNext = { contentFocus.requestFocus() }),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(titleFocus)
+                )
+            }
+            item {
+                TextField(
+                    value = state.content,
+                    onValueChange = { onCreateTaskEvents(CreateTaskEvents.OnContentChange(it)) },
+                    textStyle = MaterialTheme.typography.titleMedium,
+                    placeholder = {
+                        Text(
+                            text = "Note",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    },
+                    singleLine = false,
+                    colors = TextFieldDefaults.noColor(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        keyboardType = KeyboardType.Text,
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(contentFocus)
+                )
+            }
+            item {
+                PickedLabels(
+                    selectedLabels = selectedLabels,
+                    onLabelClick = { navController.navigate(NavRoutes.AddLabels.route) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+            item {
+                PickedReminder(
+                    show = state.isReminderSelected,
+                    state = reminderState,
+                    onClick = {
+                        showReminderDialog = true
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+            item {
+                PickedColor(
+                    color = if (state.color != TaskColorEnum.TRANSPARENT) state.color else null,
+                    onClick = {
+                        scope.launch {
+                            if (!colorSheetState.isVisible)
+                                colorSheetState.show()
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+
         }
     }
 }

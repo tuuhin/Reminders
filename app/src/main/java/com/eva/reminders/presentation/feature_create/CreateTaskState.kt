@@ -6,7 +6,7 @@ data class CreateTaskState(
     val title: String = "",
     val content: String = "",
     val isPinned: Boolean = false,
-    val isReminder: Boolean = true,
+    val isReminderSelected: Boolean = false,
     val isArchived: Boolean = false,
     val color: TaskColorEnum? = null,
     val showReminderPicker: Boolean = false
@@ -19,6 +19,7 @@ sealed class CreateTaskEvents {
     data class OnColorChanged(val taskColor: TaskColorEnum) : CreateTaskEvents()
     object TogglePinned : CreateTaskEvents()
     object ToggleArchive : CreateTaskEvents()
-    object ToggleReminder : CreateTaskEvents()
+    object ReminderPicked : CreateTaskEvents()
+    object ReminderCanceled : CreateTaskEvents()
     object OnSubmit : CreateTaskEvents()
 }

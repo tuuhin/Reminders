@@ -1,6 +1,5 @@
 package com.eva.reminders.presentation.feature_create.composables
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -62,11 +61,16 @@ fun ReminderTimePicker(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { isDialogOpen = !isDialogOpen }) {
+                TextButton(
+                    onClick = { isDialogOpen = !isDialogOpen }
+                ) {
                     Text(text = "Cancel")
                 }
             },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnClickOutside = false
+            )
         ) {
             TimePicker(
                 modifier = modifier
@@ -80,7 +84,7 @@ fun ReminderTimePicker(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 4.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -90,7 +94,6 @@ fun ReminderTimePicker(
                 .pointerInput(true) {
                     detectTapGestures(
                         onTap = { tapOffset ->
-
                             dropdownOffset =
                                 DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
                         },
@@ -100,6 +103,7 @@ fun ReminderTimePicker(
                     onClick = { isExpanded = !isExpanded },
                     role = Role.Button
                 )
+                .padding(vertical = 8.dp)
         ) {
             Text(text = selectedTimeText, style = MaterialTheme.typography.bodyMedium)
             Icon(
@@ -124,9 +128,6 @@ fun ReminderTimePicker(
             modifier = Modifier.width(300.dp)
         ) {
             ReminderTimeOptions.allOptions(reminderDate.schedule).forEach { opt ->
-                SideEffect {
-                    Log.d("TAG", opt.toString())
-                }
                 DropdownMenuItem(
                     enabled = opt.enable,
                     text = { Text(text = opt.text) },

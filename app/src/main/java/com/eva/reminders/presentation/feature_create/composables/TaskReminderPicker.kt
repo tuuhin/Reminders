@@ -1,6 +1,5 @@
 package com.eva.reminders.presentation.feature_create.composables
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,21 +10,29 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
+import com.eva.reminders.presentation.feature_create.utils.checkNotificationPermissions
 
 @Composable
 fun TaskReminderPicker(
     state: TaskReminderState,
     showDialog: Boolean,
     onDismissRequest: () -> Unit,
+    onSave: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     onRemindersEvents: (TaskRemindersEvents) -> Unit
 ) {
+    val permission = checkNotificationPermissions()
 
-    if (showDialog)
+    if (showDialog && permission)
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(dismissOnClickOutside = false)
+            properties = DialogProperties(
+                dismissOnClickOutside = false,
+                dismissOnBackPress = false
+            )
         ) {
+
             Card(
                 modifier = modifier,
                 shape = MaterialTheme.shapes.extraLarge
@@ -44,8 +51,7 @@ fun TaskReminderPicker(
                     )
                     Divider(
                         modifier = Modifier
-                            .padding(vertical = 2.dp)
-                            .height(2.dp),
+                            .padding(vertical = 2.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -72,19 +78,13 @@ fun TaskReminderPicker(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp),
+                            .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = { }) {
-                            Text(text = "Cancel")
-                        }
-                        TextButton(onClick = {}) {
-                            Text(text = "Delete")
-                        }
-                        Button(onClick = {}) {
-                            Text(text = "Save")
-                        }
+                        TextButton(onClick = onDismissRequest) { Text(text = "Cancel") }
+                        TextButton(onClick = onDelete) { Text(text = "Delete") }
+                        Button(onClick = onSave) { Text(text = "Save") }
                     }
                 }
             }

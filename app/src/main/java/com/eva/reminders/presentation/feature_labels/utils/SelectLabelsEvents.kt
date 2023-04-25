@@ -1,16 +1,11 @@
 package com.eva.reminders.presentation.feature_labels.utils
 
-import com.eva.reminders.data.parcelable.LabelParceler
+import com.eva.reminders.domain.models.TaskLabelModel
 
 data class SelectLabelState(
     val idx: Int,
     val label: String,
     val isSelected: Boolean = false
 ) {
-    fun parcelize(): LabelParceler = LabelParceler(id = idx, label = label)
-}
-
-
-sealed class SelectLabelsEvents {
-    data class OnSelect(val state: SelectLabelState) : SelectLabelsEvents()
+    fun toModel(): TaskLabelModel = TaskLabelModel(idx, label)
 }

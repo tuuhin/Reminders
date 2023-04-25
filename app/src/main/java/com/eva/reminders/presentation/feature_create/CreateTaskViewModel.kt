@@ -1,21 +1,27 @@
 package com.eva.reminders.presentation.feature_create
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
+import javax.inject.Inject
 
-class CreateTaskViewModel : ViewModel() {
+
+@HiltViewModel
+class CreateTaskViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
 
     private val newTaskState = MutableStateFlow(CreateTaskState())
     val task = newTaskState.asStateFlow()
 
     private val _reminderState = MutableStateFlow(TaskReminderState())
     val reminder = _reminderState.asStateFlow()
-
 
     fun onReminderEvents(event: TaskRemindersEvents) {
         when (event) {
@@ -68,9 +74,14 @@ class CreateTaskViewModel : ViewModel() {
                     it.copy(isPinned = !it.isPinned)
                 }
 
-            CreateTaskEvents.ToggleReminder -> newTaskState
+            CreateTaskEvents.ReminderPicked -> newTaskState
                 .update {
-                    it.copy(isReminder = !it.isReminder)
+                    it.copy(isReminderSelected = true)
+                }
+
+            CreateTaskEvents.ReminderCanceled -> newTaskState
+                .update {
+                    it.copy(isReminderSelected = false)
                 }
 
             is CreateTaskEvents.OnColorChanged -> newTaskState

@@ -57,7 +57,6 @@ fun CreateTaskBottomBar(
                 imageVector = Icons.Outlined.MoreVert,
                 contentDescription = "Vertical option"
             )
-
         }
     }
 }

@@ -30,7 +30,6 @@ import androidx.navigation.NavController
 import com.eva.reminders.presentation.feature_labels.composabels.CheckLabelItem
 import com.eva.reminders.presentation.feature_labels.composabels.SearchLabelsTopBar
 import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
-import com.eva.reminders.presentation.feature_labels.utils.SelectLabelsEvents
 import com.eva.reminders.presentation.utils.UIEvents
 import kotlinx.coroutines.flow.Flow
 
@@ -40,7 +39,7 @@ fun AddLabelsRoute(
     labels: List<SelectLabelState>,
     query: String,
     onSearch: (String) -> Unit,
-    onSelect: (SelectLabelsEvents) -> Unit,
+    onSelect: (SelectLabelState) -> Unit,
     onCreateNew: () -> Unit,
     uiEvents: Flow<UIEvents>,
     modifier: Modifier = Modifier,
@@ -66,10 +65,6 @@ fun AddLabelsRoute(
                     if (navController.currentBackStackEntry != null)
                         IconButton(
                             onClick = {
-                                navController.previousBackStackEntry?.savedStateHandle?.set(
-                                    "SELECTED_LABELS",
-                                    labels.map { it.parcelize() }
-                                )
                                 navController.navigateUp()
                             }
                         ) {
@@ -93,9 +88,7 @@ fun AddLabelsRoute(
                 itemsIndexed(labels) { _, item ->
                     CheckLabelItem(
                         item = item,
-                        onSelect = {
-                            onSelect(SelectLabelsEvents.OnSelect(state = item))
-                        }
+                        onSelect = { onSelect(item) }
                     )
                 }
             }

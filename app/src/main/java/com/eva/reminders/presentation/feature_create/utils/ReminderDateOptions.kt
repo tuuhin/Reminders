@@ -23,7 +23,4 @@ sealed class ReminderDateOptions(val text: String, val schedule: LocalDate) {
         text = "Custom", schedule = date
     )
 
-    companion object {
-        val dateOptions = listOf(Today, Tomorrow, NextWeek)
-    }
 }
