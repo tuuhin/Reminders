@@ -10,6 +10,7 @@ import com.eva.reminders.data.local.adapters.DateTimeAdapter
 import com.eva.reminders.data.local.dao.LabelsDao
 import com.eva.reminders.data.local.dao.LabelsFtsDao
 import com.eva.reminders.data.local.dao.TaskDao
+import com.eva.reminders.data.local.dao.TaskLabelRelDao
 import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.local.entity.LabelFtsEntity
 import com.eva.reminders.data.local.entity.TaskEntity
@@ -23,7 +24,7 @@ import com.eva.reminders.data.local.entity.TaskLabelRel
         LabelFtsEntity::class
     ],
     version = 1,
-    exportSchema = false
+    exportSchema = true,
 )
 @TypeConverters(ColorEnumAdapter::class, DateTimeAdapter::class)
 abstract class AppDataBase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class AppDataBase : RoomDatabase() {
     abstract val taskLabelDao: LabelsDao
     abstract val taskDao: TaskDao
     abstract val labelsFts: LabelsFtsDao
+    abstract val taskLabelRelDao: TaskLabelRelDao
 
     companion object {
         private const val DATABASE_NAME = "REMINDERS_DATABASE"

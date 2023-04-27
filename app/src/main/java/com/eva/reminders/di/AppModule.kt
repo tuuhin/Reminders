@@ -3,7 +3,9 @@ package com.eva.reminders.di
 import android.content.Context
 import com.eva.reminders.data.local.AppDataBase
 import com.eva.reminders.data.repository.TaskLabelsRepoImpl
+import com.eva.reminders.data.repository.TaskRepoImpl
 import com.eva.reminders.domain.repository.TaskLabelsRepository
+import com.eva.reminders.domain.repository.TaskRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,13 +19,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun getDataBase(@ApplicationContext context: Context):AppDataBase{
-        return AppDataBase.buildDataBase(context)
-    }
+    fun getDataBase(@ApplicationContext context: Context): AppDataBase =
+        AppDataBase.buildDataBase(context)
+
 
     @Provides
     @Singleton
-    fun getTaskDao(database: AppDataBase):TaskLabelsRepository{
-        return TaskLabelsRepoImpl(database.taskLabelDao)
-    }
+    fun getTaskLabelDao(database: AppDataBase): TaskLabelsRepository =
+        TaskLabelsRepoImpl(database.taskLabelDao, labelFts = database.labelsFts)
+
+    @Provides
+    @Singleton
+    fun getTaskDao(database: AppDataBase): TaskRepository =
+        TaskRepoImpl(taskDao = database.taskDao, taskLabelRel = database.taskLabelRelDao)
+
 }

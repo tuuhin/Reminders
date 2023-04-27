@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 @Entity(tableName = TableNames.TASK_TABLE)
 data class TaskEntity(
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "TASK_ID")
     val id: Int? = null,
 
@@ -20,24 +20,22 @@ data class TaskEntity(
     @ColumnInfo(name = "CONTENT")
     val content: String,
 
-    @ColumnInfo(name = "IS_PINNED", index = true)
+    @ColumnInfo(name = "IS_PINNED")
     val pinned: Boolean = false,
 
     @ColumnInfo(name = "COLOR")
-    val color: TaskColorEnum? ,
+    val color: TaskColorEnum = TaskColorEnum.TRANSPARENT,
 
     @ColumnInfo(name = "TIME")
-    val time: LocalDateTime? ,
+    val time: LocalDateTime? = null,
 
-    @ColumnInfo(name = "IS_ARCHIVED", index = true)
-    val isArchived: Boolean,
+    @ColumnInfo(name = "IS_REPEATING")
+    val isRepeating: Boolean = false,
 
-    @ColumnInfo(name = "CREATED_AT")
-    val createTime: LocalDateTime,
+    @ColumnInfo(name = "IS_ARCHIVED")
+    val isArchived: Boolean = false,
 
     @ColumnInfo(name = "UPDATED AT")
-    val updateTime: LocalDateTime,
+    val updateTime: LocalDateTime = LocalDateTime.now(),
 
-    @ColumnInfo(name = "IS_TRASHED")
-    val trashed: Boolean = false
 )

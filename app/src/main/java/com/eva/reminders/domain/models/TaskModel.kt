@@ -9,6 +9,8 @@ data class TaskModel(
     val content: String,
     val pinned: Boolean,
     val color: TaskColorEnum,
-    val time: LocalDateTime?,
-    val isArchived: Boolean
+    val reminderAt: TaskReminderModel,
+    val isArchived: Boolean,
+    val updatedAt: LocalDateTime,
+    val labels: List<TaskLabelModel> = emptyList()
 )

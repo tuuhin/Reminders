@@ -11,10 +11,11 @@ class DateTimeAdapter {
     private val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm:ss a")
 
     @TypeConverter
-    fun toLocalDateTime(time: String): LocalDateTime = LocalDateTime.parse(time, formatter)
+    fun toLocalDateTime(time: String?): LocalDateTime? =
+        time?.let { LocalDateTime.parse(time, formatter) }
 
     @TypeConverter
-    fun fromLocalDateTime(time: LocalDateTime): String = formatter.format(time)
+    fun fromLocalDateTime(time: LocalDateTime?): String? = time?.let { formatter.format(time) }
 
     companion object {
         val instance: DateTimeAdapter = DateTimeAdapter()

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: TaskEntity)
+    suspend fun insertTask(task: TaskEntity): Long
 
     @Update(onConflict = OnConflictStrategy.IGNORE)
     suspend fun updateTask(task: TaskEntity)
@@ -22,6 +22,10 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
     fun getAllTasksWithLabels(): Flow<List<TaskWithLabelRelation>>
+
+    @Transaction
+    @Query("SELECT * FROM ${TableNames.TASK_TABLE} WHERE TASK_ID=:taskId")
+    fun getTaskWithLabels(taskId: Int): TaskWithLabelRelation
 
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_LABEL_TABLE}")
