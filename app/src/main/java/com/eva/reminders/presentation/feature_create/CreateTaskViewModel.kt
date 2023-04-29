@@ -1,20 +1,27 @@
 package com.eva.reminders.presentation.feature_create
 
-import androidx.lifecycle.SavedStateHandle
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.eva.reminders.domain.enums.TaskColorEnum
+import com.eva.reminders.domain.models.TaskReminderModel
+import com.eva.reminders.domain.repository.TaskLabelsRepository
+import com.eva.reminders.domain.repository.TaskRepository
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
 
-
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    private val repo: TaskRepository,
+    labelRepo: TaskLabelsRepository
 ) : ViewModel() {
 
     private val newTaskState = MutableStateFlow(CreateTaskState())
@@ -22,6 +29,8 @@ class CreateTaskViewModel @Inject constructor(
 
     private val _reminderState = MutableStateFlow(TaskReminderState())
     val reminder = _reminderState.asStateFlow()
+
+    val addLabelViewModel = AddLabelToTasksViewModel(labelRepo)
 
     fun onReminderEvents(event: TaskRemindersEvents) {
         when (event) {
@@ -49,6 +58,7 @@ class CreateTaskViewModel @Inject constructor(
                         invalidTime = if (isTimeInvalid) "This time has already passed" else null
                     )
                 }
+
         }
     }
 
@@ -94,7 +104,22 @@ class CreateTaskViewModel @Inject constructor(
     }
 
     private fun onSubmit() {
-
+        viewModelScope.launch(Dispatchers.IO) {
+            val task = repo.createTask(
+                title = newTaskState.value.title,
+                content = newTaskState.value.content,
+                colorEnum = newTaskState.value.color ?: TaskColorEnum.TRANSPARENT,
+                isArchive = newTaskState.value.isArchived,
+                isPinned = newTaskState.value.isPinned,
+                time = if (newTaskState.value.isReminderSelected) TaskReminderModel(
+                    at = reminder.value.date.schedule.atTime(reminder.value.time.schedule),
+                    isRepeating = reminder.value.frequency.isRepeating
+                ) else null,
+                labels = addLabelViewModel.pickedLabels.map { it.toModel() }
+            )
+            Log.d("TASK", task.toString())
+        }
     }
+
 
 }

@@ -1,6 +1,7 @@
-package com.eva.reminders.presentation.feature_labels.composabels
+package com.eva.reminders.presentation.feature_create.composables
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Label
@@ -31,9 +32,10 @@ fun CheckLabelItem(
             contentDescription = "Label for ${item.label}",
             modifier = Modifier.weight(.1f)
         )
+        Spacer(modifier = Modifier.weight(.1f))
         Text(
             text = item.label,
-            modifier = Modifier.weight(.7f),
+            modifier = Modifier.weight(.6f),
             style = MaterialTheme.typography.bodyMedium
         )
         Checkbox(

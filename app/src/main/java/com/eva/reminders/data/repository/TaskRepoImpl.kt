@@ -88,15 +88,14 @@ class TaskRepoImpl @Inject constructor(
 
     override suspend fun updateTask(task: TaskModel): Resource<TaskModel?> {
         return try {
-            taskLabelRel.deleteTaskLabelRel(task.labels.map {
-                TaskLabelRel(
-                    taskId = task.id,
-                    labelId = it.id
-                )
-            }
+            taskLabelRel.deleteTaskLabelRel(
+                task.labels.map {
+                    TaskLabelRel(
+                        taskId = task.id,
+                        labelId = it.id
+                    )
+                }
             )
-
-
             Resource.Success(task)
 
         } catch (e: SQLiteConstraintException) {

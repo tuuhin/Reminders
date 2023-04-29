@@ -22,6 +22,7 @@ import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.*
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
+import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.noColor
 import kotlinx.coroutines.launch
@@ -31,11 +32,16 @@ import kotlinx.coroutines.launch
 fun CreateReminderRoute(
     state: CreateTaskState,
     navController: NavController,
+    labelSearchQuery: String,
+    onLabelSearchQuery: (String) -> Unit,
+    onLabelSelect: (SelectLabelState) -> Unit,
+    onNewLabelCreate: () -> Unit,
     modifier: Modifier = Modifier,
     onCreateTaskEvents: (CreateTaskEvents) -> Unit,
     reminderState: TaskReminderState,
     onRemindersEvents: (TaskRemindersEvents) -> Unit,
-    selectedLabels: List<TaskLabelModel>? = null
+    queriedLabels: List<SelectLabelState>,
+    pickedLabels:List<TaskLabelModel>
 ) {
     val colorSheetState = rememberModalBottomSheetState()
     val optionsSheetState = rememberModalBottomSheetState()
@@ -46,8 +52,9 @@ fun CreateReminderRoute(
     val contentFocus = remember { FocusRequester() }
 
     var showReminderDialog by remember { mutableStateOf(false) }
+    var showLabelPicker by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { titleFocus.requestFocus() }
+//    LaunchedEffect(Unit) { titleFocus.requestFocus() }
 
     Scaffold(
         topBar = {
@@ -103,6 +110,16 @@ fun CreateReminderRoute(
             onColorChange = { onCreateTaskEvents(CreateTaskEvents.OnColorChanged(it)) }
         )
 
+        TaskLabelPicker(
+            show = showLabelPicker,
+            onDismissRequest = { showLabelPicker = !showLabelPicker },
+            labels = queriedLabels,
+            onSelect = onLabelSelect,
+            query = labelSearchQuery,
+            onQueryChanged = onLabelSearchQuery,
+            onCreateNew = onNewLabelCreate,
+        )
+
         MoreOptionsPicker(
             isVisible = optionsSheetState.isVisible,
             sheetState = optionsSheetState,
@@ -111,7 +128,7 @@ fun CreateReminderRoute(
                     if (optionsSheetState.isVisible)
                         optionsSheetState.hide()
                 }
-                navController.navigate(NavRoutes.AddLabels.route)
+                showLabelPicker = !showLabelPicker
             }
         )
         LazyColumn(
@@ -165,7 +182,7 @@ fun CreateReminderRoute(
             }
             item {
                 PickedLabels(
-                    selectedLabels = selectedLabels,
+                    selectedLabels = pickedLabels,
                     onLabelClick = { navController.navigate(NavRoutes.AddLabels.route) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )

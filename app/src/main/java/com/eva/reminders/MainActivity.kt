@@ -16,8 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
 import com.eva.reminders.presentation.feature_create.CreateTaskViewModel
 import com.eva.reminders.presentation.feature_home.HomeRoute
-import com.eva.reminders.presentation.feature_labels.AddLabelViewModel
-import com.eva.reminders.presentation.feature_labels.AddLabelsRoute
 import com.eva.reminders.presentation.feature_labels.EditLabelRoute
 import com.eva.reminders.presentation.feature_labels.LabelsViewModel
 import com.eva.reminders.presentation.utils.NavRoutes
@@ -35,11 +33,6 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navHost = rememberNavController()
-                    // Keeping this viewModel in the global scope as its accessed by two routes
-                    // This maybe a bit problematic as the selected state doesn't changes for any
-                    // Not thinking much for now
-                    val addLabelViewModel = hiltViewModel<AddLabelViewModel>()
-                    val selectedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
                     NavHost(
                         navController = navHost,
                         startDestination = NavRoutes.Home.route
@@ -50,30 +43,27 @@ class MainActivity : ComponentActivity() {
                             HomeRoute(navController = navHost, labels = labels)
                         }
                         composable(NavRoutes.AddTask.route) {
+
                             val viewModel = hiltViewModel<CreateTaskViewModel>()
                             val state by viewModel.task.collectAsStateWithLifecycle()
                             val reminderState by viewModel.reminder.collectAsStateWithLifecycle()
+
+                            val addLabelViewModel = viewModel.addLabelViewModel
+                            val queriedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
+                            val query by addLabelViewModel.query.collectAsStateWithLifecycle()
+
                             CreateReminderRoute(
                                 navController = navHost,
                                 state = state,
                                 reminderState = reminderState,
+                                labelSearchQuery = query,
+                                onLabelSearchQuery = addLabelViewModel::searchLabels,
+                                onNewLabelCreate = addLabelViewModel::createLabel,
                                 onCreateTaskEvents = viewModel::onCreateTaskEvent,
                                 onRemindersEvents = viewModel::onReminderEvents,
-                                selectedLabels = addLabelViewModel.pickedLabels.filter { it.isSelected }
-                                    .map { it.toModel() }
-                            )
-                        }
-                        composable(NavRoutes.AddLabels.route) {
-
-                            val query by addLabelViewModel.query.collectAsStateWithLifecycle()
-                            AddLabelsRoute(
-                                navController = navHost,
-                                labels = selectedLabels,
-                                query = query,
-                                onSearch = addLabelViewModel::searchLabels,
-                                onSelect = addLabelViewModel::onSelect,
-                                onCreateNew = addLabelViewModel::createLabel,
-                                uiEvents = addLabelViewModel.uiEvents,
+                                queriedLabels = queriedLabels,
+                                pickedLabels = addLabelViewModel.pickedLabels.map { it.toModel() },
+                                onLabelSelect = addLabelViewModel::onSelect
                             )
                         }
                         composable(NavRoutes.EditLabels.route) {
@@ -91,6 +81,7 @@ class MainActivity : ComponentActivity() {
                                 uiEvents = viewModel.uiEvents
                             )
                         }
+
                     }
                 }
             }

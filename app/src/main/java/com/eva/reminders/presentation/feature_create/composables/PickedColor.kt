@@ -2,6 +2,7 @@ package com.eva.reminders.presentation.feature_create.composables
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -25,16 +26,15 @@ fun PickedColor(
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
-        visible = color != null,
+        visible = color != null && color != TaskColorEnum.TRANSPARENT,
         enter = slideInVertically() + expandVertically() + fadeIn(),
         exit = slideOutVertically() + fadeOut() + shrinkVertically(),
     ) {
 
-
         if (color != null) {
             val colorVal by animateColorAsState(
                 targetValue = colorResource(id = color.color),
-                animationSpec = tween(800)
+                animationSpec = tween(800, easing = EaseInOutCubic)
             )
             AssistChip(
                 onClick = onClick,
