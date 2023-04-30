@@ -1,6 +1,5 @@
 package com.eva.reminders.presentation.feature_home.composables
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +17,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.domain.models.TaskLabelModel
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DrawerLabelItems(
     modifier: Modifier = Modifier,
@@ -41,23 +39,22 @@ fun DrawerLabelItems(
             )
         }
     }
-    LazyColumn(
-        modifier = modifier
-            .wrapContentHeight()
-    ) {
-        stickyHeader {
-            NavigationDrawerItem(
-                label = { Text(text = "Create New Label") },
-                selected = false,
-                onClick = onEdit,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add New Label"
-                    )
-                }
+    NavigationDrawerItem(
+        label = { Text(text = "Create New Label") },
+        selected = false,
+        onClick = onEdit,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add New Label"
             )
         }
+    )
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Top
+    ) {
         itemsIndexed(labels) { _, item ->
             NavigationDrawerItem(
                 label = { Text(text = item.label) },

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
 import com.eva.reminders.presentation.feature_create.CreateTaskViewModel
 import com.eva.reminders.presentation.feature_home.HomeRoute
+import com.eva.reminders.presentation.feature_home.HomeViewModel
 import com.eva.reminders.presentation.feature_labels.EditLabelRoute
 import com.eva.reminders.presentation.feature_labels.LabelsViewModel
 import com.eva.reminders.presentation.utils.NavRoutes
@@ -40,7 +41,19 @@ class MainActivity : ComponentActivity() {
                         composable(NavRoutes.Home.route) {
                             val labelsViewModel = hiltViewModel<LabelsViewModel>()
                             val labels by labelsViewModel.allLabels.collectAsStateWithLifecycle()
-                            HomeRoute(navController = navHost, labels = labels)
+
+                            val homeViewModel = hiltViewModel<HomeViewModel>()
+                            val tasks by homeViewModel.tasks.collectAsStateWithLifecycle()
+
+                            val currentTab by homeViewModel.currentTab.collectAsStateWithLifecycle()
+
+                            HomeRoute(
+                                navController = navHost,
+                                labels = labels,
+                                tasks = tasks,
+                                tab = currentTab,
+                                onTabChange = homeViewModel::changeCurrentTab
+                            )
                         }
                         composable(NavRoutes.AddTask.route) {
 

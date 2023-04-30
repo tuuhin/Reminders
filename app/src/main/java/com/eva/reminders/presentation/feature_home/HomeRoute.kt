@@ -1,6 +1,8 @@
 package com.eva.reminders.presentation.feature_home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -11,7 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eva.reminders.domain.models.TaskLabelModel
+import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.presentation.feature_home.composables.DrawerContent
+import com.eva.reminders.presentation.feature_home.composables.ReminderCard
+import com.eva.reminders.presentation.utils.HomeTabs
 import com.eva.reminders.presentation.utils.NavRoutes
 import kotlinx.coroutines.launch
 
@@ -19,7 +24,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeRoute(
     navController: NavController,
-    labels:List<TaskLabelModel>,
+    labels: List<TaskLabelModel>,
+    tasks: List<TaskModel>,
+    tab: HomeTabs,
+    onTabChange: (HomeTabs) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -35,6 +43,8 @@ fun HomeRoute(
                 DrawerContent(
                     navController = navController,
                     labels = labels,
+                    tab = tab,
+                    onTabChange = onTabChange,
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -43,26 +53,43 @@ fun HomeRoute(
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text("App Name") }, navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            scope.launch { drawerState.open() }
-                        }) {
-                        Icon(imageVector = Icons.Default.Menu, contentDescription = "Menu")
+                TopAppBar(
+                    title = { Text("App Name") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch { drawerState.open() }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu"
+                            )
+                        }
                     }
-                })
+                )
             },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { navController.navigate(NavRoutes.AddTask.route) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add reminder")
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Task"
+                    )
                 }
             }
         ) { padding ->
             Column(
                 modifier = modifier.padding(padding)
             ) {
-
+                LazyColumn {
+                    itemsIndexed(tasks) { _, item ->
+                        ReminderCard(
+                            taskModel = item,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
     }

@@ -28,4 +28,6 @@
     <color name="pink_300">#831843</color>
     <color name="rose_30">#881337</color>
 
+    <color name="white_overlay">#44ffffff</color>
+
 </resources>

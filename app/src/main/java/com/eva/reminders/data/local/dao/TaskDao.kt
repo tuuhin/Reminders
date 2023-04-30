@@ -20,7 +20,7 @@ interface TaskDao {
     fun getTasks(): List<TaskEntity>
 
     @Transaction
-    @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
+    @Query("SELECT * FROM ${TableNames.TASK_TABLE} ORDER BY TASK_ID DESC")
     fun getAllTasksWithLabels(): Flow<List<TaskWithLabelRelation>>
 
     @Transaction
