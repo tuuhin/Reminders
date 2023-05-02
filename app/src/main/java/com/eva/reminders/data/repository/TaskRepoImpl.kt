@@ -12,6 +12,7 @@ import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.models.TaskReminderModel
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.services.AlarmManagerRepo
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 
 class TaskRepoImpl @Inject constructor(
     private val taskDao: TaskDao,
-    private val taskLabelRel: TaskLabelRelDao
+    private val taskLabelRel: TaskLabelRelDao,
+    private val alarmRepo: AlarmManagerRepo
 ) : TaskRepository {
 
     override suspend fun createTask(
@@ -45,6 +47,7 @@ class TaskRepoImpl @Inject constructor(
             val newEntityId = taskDao.insertTask(taskEntity).toInt()
             taskLabelRel.addTaskLabelsRel(labels.map { TaskLabelRel(taskId = newEntityId, it.id) })
             val fetchNewTask = taskDao.getTaskWithLabels(newEntityId)
+            alarmRepo.createAlarm(fetchNewTask.toModel())
             return Resource.Success(fetchNewTask.toModel())
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()
@@ -57,7 +60,11 @@ class TaskRepoImpl @Inject constructor(
 
     override suspend fun deleteTask(task: TaskModel): Resource<Boolean> {
         return try {
-            taskDao.deleteTask(task.toEntity())
+            val entity = task.toEntity()
+            val labels = task.labels.map { TaskLabelRel(taskId = task.id, it.id) }
+            taskDao.deleteTask(entity)
+            taskLabelRel.deleteTaskLabelRel(labels)
+            alarmRepo.stopAlarm(task)
             Resource.Success(true)
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()

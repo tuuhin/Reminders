@@ -11,6 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -27,11 +31,23 @@ fun DrawerLabelItems(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp),
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "Labels")
+        Text(
+            text = buildAnnotatedString {
+                append("Labels ")
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                ) {
+                    append("(${labels.size})")
+                }
+            }
+        )
         TextButton(onClick = onEdit) {
             Text(
                 text = "Edit",
@@ -57,7 +73,12 @@ fun DrawerLabelItems(
     ) {
         itemsIndexed(labels) { _, item ->
             NavigationDrawerItem(
-                label = { Text(text = item.label) },
+                label = {
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
                 selected = false,
                 onClick = onEdit,
                 icon = {
@@ -65,7 +86,7 @@ fun DrawerLabelItems(
                         imageVector = Icons.Outlined.Label,
                         contentDescription = "Item Label"
                     )
-                }
+                },
             )
         }
     }

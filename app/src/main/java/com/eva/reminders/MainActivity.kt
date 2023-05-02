@@ -44,14 +44,16 @@ class MainActivity : ComponentActivity() {
 
                             val homeViewModel = hiltViewModel<HomeViewModel>()
                             val tasks by homeViewModel.tasks.collectAsStateWithLifecycle()
-
                             val currentTab by homeViewModel.currentTab.collectAsStateWithLifecycle()
+                            val arrangementStyle by homeViewModel.arrangement.collectAsStateWithLifecycle()
 
                             HomeRoute(
                                 navController = navHost,
                                 labels = labels,
                                 tasks = tasks,
                                 tab = currentTab,
+                                arrangement = arrangementStyle,
+                                onArrangementChange = homeViewModel::onArrangementChange,
                                 onTabChange = homeViewModel::changeCurrentTab
                             )
                         }
