@@ -20,10 +20,10 @@ import kotlinx.coroutines.launch
 fun MoreOptionsPicker(
     isVisible: Boolean,
     sheetState: SheetState,
-    onDelete: () -> Unit,
-    onCopy: () -> Unit,
     onLabels: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCopy: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
     if (isVisible)
@@ -48,7 +48,10 @@ fun MoreOptionsPicker(
                             contentDescription = "Delete the item"
                         )
                     },
-                    modifier = Modifier.clickable(onClick = onDelete, role = Role.Button)
+                    modifier = if (onDelete != null) Modifier.clickable(
+                        onClick = onDelete,
+                        role = Role.Button
+                    ) else Modifier,
                 )
                 ListItem(
                     headlineContent = { Text(text = "Make A Copy") },
@@ -59,7 +62,10 @@ fun MoreOptionsPicker(
                             contentDescription = "Delete the item"
                         )
                     },
-                    modifier = Modifier.clickable(onClick = onCopy, role = Role.Button)
+                    modifier = if (onCopy != null) Modifier.clickable(
+                        onClick = onCopy,
+                        role = Role.Button
+                    ) else Modifier
                 )
                 ListItem(
                     headlineContent = { Text(text = "Labels") },

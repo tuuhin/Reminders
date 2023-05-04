@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 @Composable
 fun TasksLinearLayout(
     tasks: List<TaskModel>,
+    onTaskSelect: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -40,6 +41,7 @@ fun TasksLinearLayout(
             itemsIndexed(tasks.filter { it.pinned }) { _, item ->
                 ReminderCard(
                     taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -53,6 +55,7 @@ fun TasksLinearLayout(
             itemsIndexed(tasks.filter { !it.pinned }) { _, item ->
                 ReminderCard(
                     taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -60,6 +63,7 @@ fun TasksLinearLayout(
             itemsIndexed(tasks) { _, item ->
                 ReminderCard(
                     taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -122,7 +126,7 @@ fun TasksLinearLayoutPreview() {
                     )
 
                 )
-            )
+            ), onTaskSelect = {}
         )
     }
 }

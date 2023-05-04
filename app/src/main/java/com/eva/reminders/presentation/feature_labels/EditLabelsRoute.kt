@@ -44,6 +44,8 @@ fun EditLabelRoute(
             when (event) {
                 is UIEvents.ShowSnackBar -> snackBar
                     .showSnackbar(event.message)
+
+                else -> {}
             }
         }
     }

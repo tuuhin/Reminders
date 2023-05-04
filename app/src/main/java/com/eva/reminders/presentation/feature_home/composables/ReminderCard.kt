@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Timer
@@ -39,6 +40,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ReminderCard(
     taskModel: TaskModel,
+    onTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showLabels by remember { mutableStateOf(false) }
@@ -46,6 +48,7 @@ fun ReminderCard(
     Card(
         modifier = modifier
             .padding(vertical = 4.dp)
+            .clickable(onClick = onTap)
             .animateContentSize(),
         colors = CardDefaults.cardColors(
             containerColor = colorResource(id = taskModel.color.color)
@@ -241,5 +244,5 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
 private fun ReminderCardPreview(
     @PreviewParameter(ReminderCardPreviewParams::class) task: TaskModel
 ) {
-    ReminderCard(task)
+    ReminderCard(task, onTap = {})
 }

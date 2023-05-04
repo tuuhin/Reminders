@@ -35,7 +35,7 @@ fun PickedLabels(
     modifier: Modifier = Modifier,
     selectedLabels: List<TaskLabelModel>? = null,
 ) {
-    var isVisible by remember { mutableStateOf(true) }
+    var isVisible by remember { mutableStateOf(false) }
 
     if (!selectedLabels.isNullOrEmpty()) {
         SuggestionChip(

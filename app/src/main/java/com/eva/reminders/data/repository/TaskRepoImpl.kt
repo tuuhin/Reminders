@@ -3,14 +3,11 @@ package com.eva.reminders.data.repository
 import android.database.sqlite.SQLiteConstraintException
 import com.eva.reminders.data.local.dao.TaskDao
 import com.eva.reminders.data.local.dao.TaskLabelRelDao
-import com.eva.reminders.data.local.entity.TaskEntity
 import com.eva.reminders.data.local.entity.TaskLabelRel
 import com.eva.reminders.data.mappers.toEntity
 import com.eva.reminders.data.mappers.toModel
-import com.eva.reminders.domain.enums.TaskColorEnum
-import com.eva.reminders.domain.models.TaskLabelModel
+import com.eva.reminders.domain.models.CreateTaskModel
 import com.eva.reminders.domain.models.TaskModel
-import com.eva.reminders.domain.models.TaskReminderModel
 import com.eva.reminders.domain.repository.TaskRepository
 import com.eva.reminders.services.AlarmManagerRepo
 import com.eva.reminders.utils.Resource
@@ -23,38 +20,23 @@ class TaskRepoImpl @Inject constructor(
     private val taskLabelRel: TaskLabelRelDao,
     private val alarmRepo: AlarmManagerRepo
 ) : TaskRepository {
-
-    override suspend fun createTask(
-        title: String,
-        content: String,
-        isPinned: Boolean,
-        isArchive: Boolean,
-        time: TaskReminderModel?,
-        labels: List<TaskLabelModel>,
-        colorEnum: TaskColorEnum
-    ): Resource<TaskModel?> {
-        try {
-            val taskEntity =
-                TaskEntity(
-                    title = title,
-                    content = content,
-                    pinned = isPinned,
-                    isArchived = isArchive,
-                    time = time?.at,
-                    isRepeating = time?.isRepeating ?: false,
-                    color = colorEnum,
-                )
+    override suspend fun createTask(model: CreateTaskModel): Resource<TaskModel?> {
+        return try {
+            val taskEntity = model.toEntity()
             val newEntityId = taskDao.insertTask(taskEntity).toInt()
-            taskLabelRel.addTaskLabelsRel(labels.map { TaskLabelRel(taskId = newEntityId, it.id) })
+            val relations = model.labels.map {
+                TaskLabelRel(taskId = newEntityId, it.id)
+            }
+            taskLabelRel.addTaskLabelsRel(relations)
             val fetchNewTask = taskDao.getTaskWithLabels(newEntityId)
             alarmRepo.createAlarm(fetchNewTask.toModel())
-            return Resource.Success(fetchNewTask.toModel())
+            Resource.Success(fetchNewTask.toModel())
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()
-            return Resource.Error(message = e.message ?: "Constraint Exception")
+            Resource.Error(message = e.message ?: "Constraint Exception")
         } catch (e: Exception) {
             e.printStackTrace()
-            return Resource.Error(message = e.message ?: "Exception Occurred")
+            Resource.Error(message = e.message ?: "Exception Occurred")
         }
     }
 
@@ -62,9 +44,10 @@ class TaskRepoImpl @Inject constructor(
         return try {
             val entity = task.toEntity()
             val labels = task.labels.map { TaskLabelRel(taskId = task.id, it.id) }
-            taskDao.deleteTask(entity)
             taskLabelRel.deleteTaskLabelRel(labels)
+            taskDao.deleteTask(entity)
             alarmRepo.stopAlarm(task)
+            alarmRepo.createAlarm(task)
             Resource.Success(true)
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()
@@ -93,18 +76,27 @@ class TaskRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun getTaskById(task: Int): Resource<TaskModel> {
+        return try {
+            val taskEntity = taskDao.getTaskWithLabels(task)
+            Resource.Success(taskEntity.toModel())
+        } catch (e: SQLiteConstraintException) {
+            e.printStackTrace()
+            Resource.Error(message = e.message ?: "SQLITE EXCEPTION")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(message = e.message ?: "Exception Occurred")
+        }
+    }
+
     override suspend fun updateTask(task: TaskModel): Resource<TaskModel?> {
         return try {
-            taskLabelRel.deleteTaskLabelRel(
-                task.labels.map {
-                    TaskLabelRel(
-                        taskId = task.id,
-                        labelId = it.id
-                    )
-                }
-            )
+            val labels = task.labels.map { TaskLabelRel(taskId = task.id, it.id) }
+            taskDao.updateTask(task.toEntity())
+            taskLabelRel.deleteLabelsByTaskId(task.id)
+            taskLabelRel.addTaskLabelsRel(labels)
+            alarmRepo.updateAlarm(task)
             Resource.Success(task)
-
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()
             Resource.Error(message = e.message ?: "SQLITE EXCEPTION")

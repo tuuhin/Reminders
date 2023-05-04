@@ -32,13 +32,13 @@ fun PickedReminder(
         exit = slideOutVertically() + fadeOut()
     ) {
         val data by remember(state) {
-            val formattedTime = state.time.schedule
-                .format(DateTimeFormatter.ofPattern("h:mm a"))
-            val repeat = when(state.frequency){
-                ReminderFrequency.DO_NOT_REPEAT -> "Once"
-                ReminderFrequency.DAILY -> "Daily"
-            }
             derivedStateOf {
+                val formattedTime = state.time.schedule
+                    .format(DateTimeFormatter.ofPattern("h:mm a"))
+                val repeat = when (state.frequency) {
+                    ReminderFrequency.DO_NOT_REPEAT -> "Once"
+                    ReminderFrequency.DAILY -> "Daily"
+                }
                 "${state.date.text}, $formattedTime ( $repeat )"
             }
         }

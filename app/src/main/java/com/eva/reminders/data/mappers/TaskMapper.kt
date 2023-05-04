@@ -1,6 +1,7 @@
 package com.eva.reminders.data.mappers
 
 import com.eva.reminders.data.local.entity.TaskEntity
+import com.eva.reminders.domain.models.CreateTaskModel
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.models.TaskReminderModel
 
@@ -27,3 +28,12 @@ fun TaskModel.toEntity(): TaskEntity = TaskEntity(
     isRepeating = reminderAt.isRepeating
 )
 
+fun CreateTaskModel.toEntity(): TaskEntity = TaskEntity(
+    title = title,
+    content = content,
+    pinned = isPinned,
+    color = colorEnum,
+    time = time?.at,
+    isArchived = isArchive,
+    isRepeating = time?.isRepeating ?: false
+)

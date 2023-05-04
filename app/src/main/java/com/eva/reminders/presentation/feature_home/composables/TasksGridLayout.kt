@@ -25,7 +25,9 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TasksGridLayout(
-    tasks: List<TaskModel>, modifier: Modifier = Modifier
+    tasks: List<TaskModel>,
+    onTaskSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
@@ -45,7 +47,9 @@ fun TasksGridLayout(
             }
             itemsIndexed(tasks.filter { it.pinned }) { _, item ->
                 ReminderCard(
-                    taskModel = item, modifier = Modifier.fillMaxWidth()
+                    taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             item(span = StaggeredGridItemSpan.FullLine) {
@@ -57,13 +61,17 @@ fun TasksGridLayout(
             }
             itemsIndexed(tasks.filter { !it.pinned }) { _, item ->
                 ReminderCard(
-                    taskModel = item, modifier = Modifier.fillMaxWidth()
+                    taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         } else {
             itemsIndexed(tasks) { _, item ->
                 ReminderCard(
-                    taskModel = item, modifier = Modifier.fillMaxWidth()
+                    taskModel = item,
+                    onTap = { onTaskSelect(item.id) },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -127,7 +135,7 @@ fun TaskGridLayoutPreview() {
                     )
 
                 )
-            )
+            ), onTaskSelect = {}
         )
     }
 }

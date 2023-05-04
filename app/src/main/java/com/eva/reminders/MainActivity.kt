@@ -3,22 +3,33 @@ package com.eva.reminders
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
-import com.eva.reminders.presentation.feature_create.CreateTaskViewModel
+import com.eva.reminders.presentation.feature_create.AddTaskViewModel
 import com.eva.reminders.presentation.feature_home.HomeRoute
 import com.eva.reminders.presentation.feature_home.HomeViewModel
 import com.eva.reminders.presentation.feature_labels.EditLabelRoute
 import com.eva.reminders.presentation.feature_labels.LabelsViewModel
+import com.eva.reminders.presentation.utils.NavConstants
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.ui.theme.RemindersTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,32 +65,50 @@ class MainActivity : ComponentActivity() {
                                 tab = currentTab,
                                 arrangement = arrangementStyle,
                                 onArrangementChange = homeViewModel::onArrangementChange,
-                                onTabChange = homeViewModel::changeCurrentTab
+                                onTabChange = homeViewModel::changeCurrentTab,
+                                uiEvents = homeViewModel.uiEvents
                             )
                         }
-                        composable(NavRoutes.AddTask.route) {
+                        composable(NavRoutes.AddTask.route + NavConstants.TASK_ID_PARAM,
+                            arguments = listOf(
+                                navArgument(NavConstants.TASK_ID) {
+                                    type = NavType.IntType
+                                    defaultValue = -1
+                                }
+                            )
+                        ) {
+                            val viewModel = hiltViewModel<AddTaskViewModel>()
 
-                            val viewModel = hiltViewModel<CreateTaskViewModel>()
-                            val state by viewModel.task.collectAsStateWithLifecycle()
-                            val reminderState by viewModel.reminder.collectAsStateWithLifecycle()
-
-                            val addLabelViewModel = viewModel.addLabelViewModel
+                            val addLabelViewModel = viewModel.addLabelToTasks
                             val queriedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
                             val query by addLabelViewModel.query.collectAsStateWithLifecycle()
+                            val content by viewModel.showContent.collectAsStateWithLifecycle()
 
-                            CreateReminderRoute(
-                                navController = navHost,
-                                state = state,
-                                reminderState = reminderState,
-                                labelSearchQuery = query,
-                                onLabelSearchQuery = addLabelViewModel::searchLabels,
-                                onNewLabelCreate = addLabelViewModel::createLabel,
-                                onCreateTaskEvents = viewModel::onCreateTaskEvent,
-                                onRemindersEvents = viewModel::onReminderEvents,
-                                queriedLabels = queriedLabels,
-                                pickedLabels = addLabelViewModel.pickedLabels.map { it.toModel() },
-                                onLabelSelect = addLabelViewModel::onSelect
-                            )
+                            if (content.isLoading)
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center,
+                                    content = { CircularProgressIndicator() }
+                                )
+                            AnimatedVisibility(
+                                visible = !content.isLoading,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                CreateReminderRoute(
+                                    navController = navHost,
+                                    state = content.content,
+                                    labelSearchQuery = query,
+                                    onLabelSearchQuery = addLabelViewModel::searchLabels,
+                                    onNewLabelCreate = addLabelViewModel::createLabel,
+                                    onAddTaskEvents = viewModel::onAddTaskEvents,
+                                    queriedLabels = queriedLabels,
+                                    pickedLabels = addLabelViewModel.pickedLabels.map { it.toModel() },
+                                    onLabelSelect = addLabelViewModel::onSelect,
+                                    uiEvents = viewModel.uiEvents
+                                )
+                            }
+
                         }
                         composable(NavRoutes.EditLabels.route) {
                             val viewModel = hiltViewModel<LabelsViewModel>()
@@ -96,7 +125,6 @@ class MainActivity : ComponentActivity() {
                                 uiEvents = viewModel.uiEvents
                             )
                         }
-
                     }
                 }
             }

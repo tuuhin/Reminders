@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,28 +21,29 @@ import androidx.navigation.NavController
 import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.*
-import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
-import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
+import com.eva.reminders.presentation.feature_create.utils.AddTaskEvents
+import com.eva.reminders.presentation.feature_create.utils.AddTaskState
 import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
 import com.eva.reminders.presentation.utils.NavRoutes
+import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.presentation.utils.noColor
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateReminderRoute(
-    state: CreateTaskState,
+    state: AddTaskState,
     navController: NavController,
     labelSearchQuery: String,
     onLabelSearchQuery: (String) -> Unit,
     onLabelSelect: (SelectLabelState) -> Unit,
     onNewLabelCreate: () -> Unit,
     modifier: Modifier = Modifier,
-    onCreateTaskEvents: (CreateTaskEvents) -> Unit,
-    reminderState: TaskReminderState,
-    onRemindersEvents: (TaskRemindersEvents) -> Unit,
+    onAddTaskEvents: (AddTaskEvents) -> Unit,
     queriedLabels: List<SelectLabelState>,
-    pickedLabels:List<TaskLabelModel>
+    pickedLabels: List<TaskLabelModel>,
+    uiEvents: Flow<UIEvents>
 ) {
     val colorSheetState = rememberModalBottomSheetState()
     val optionsSheetState = rememberModalBottomSheetState()
@@ -51,21 +53,36 @@ fun CreateReminderRoute(
     val titleFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
 
+    val snackBarHostState = remember { SnackbarHostState() }
+
     var showReminderDialog by remember { mutableStateOf(false) }
     var showLabelPicker by remember { mutableStateOf(false) }
 
-//    LaunchedEffect(Unit) { titleFocus.requestFocus() }
+    LaunchedEffect(Unit) {
+        if (state.isCreate)
+            titleFocus.requestFocus()
+    }
+
+
+    LaunchedEffect(key1 = Unit) {
+        uiEvents.collect { event ->
+            when (event) {
+                is UIEvents.ShowSnackBar -> snackBarHostState.showSnackbar(event.message)
+                UIEvents.NavigateBack -> navController.navigateUp()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             CreateTaskTopBar(
                 navController = navController,
                 isPinned = state.isPinned,
-                isReminder = state.isReminderSelected,
+                isReminder = state.isReminderPresent,
                 isArchived = state.isArchived,
-                onPinClick = { onCreateTaskEvents(CreateTaskEvents.TogglePinned) },
+                onPinClick = { onAddTaskEvents(AddTaskEvents.TogglePinned) },
                 onReminderClick = { showReminderDialog = !showReminderDialog },
-                onArchiveClick = { onCreateTaskEvents(CreateTaskEvents.ToggleArchive) }
+                onArchiveClick = { onAddTaskEvents(AddTaskEvents.ToggleArchive) }
             )
         },
         bottomBar = {
@@ -78,27 +95,35 @@ fun CreateReminderRoute(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onCreateTaskEvents(CreateTaskEvents.OnSubmit) }
+                onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) }
             ) {
+                if (state.isCreate)
+                    Icon(
+                        imageVector = Icons.Outlined.Check,
+                        contentDescription = "Add this task"
+                    )
                 Icon(
-                    imageVector = Icons.Outlined.Check,
-                    contentDescription = "Add this task"
+                    imageVector = Icons.Outlined.Update,
+                    contentDescription = "Update this task"
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
     ) { padding ->
 
         TaskReminderPicker(
-            state = reminderState,
+            state = state.reminderState,
             showDialog = showReminderDialog,
             onDismissRequest = { showReminderDialog = !showReminderDialog },
-            onRemindersEvents = onRemindersEvents,
+            onRemindersEvents = {
+                onAddTaskEvents(AddTaskEvents.OnReminderEvent(it))
+            },
             onDelete = {
-                onCreateTaskEvents(CreateTaskEvents.ReminderCanceled)
+                onAddTaskEvents(AddTaskEvents.ReminderStateUnpicked)
                 showReminderDialog = false
             },
             onSave = {
-                onCreateTaskEvents(CreateTaskEvents.ReminderPicked)
+                onAddTaskEvents(AddTaskEvents.ReminderStatePicked)
                 showReminderDialog = false
             }
         )
@@ -107,7 +132,7 @@ fun CreateReminderRoute(
             isVisible = colorSheetState.isVisible,
             state = colorSheetState,
             selectedColor = state.color,
-            onColorChange = { onCreateTaskEvents(CreateTaskEvents.OnColorChanged(it)) }
+            onColorChange = { onAddTaskEvents(AddTaskEvents.OnColorChanged(it)) }
         )
 
         TaskLabelPicker(
@@ -140,7 +165,7 @@ fun CreateReminderRoute(
                 TextField(
                     value = state.title,
                     onValueChange = {
-                        onCreateTaskEvents(CreateTaskEvents.OnTitleChange(it))
+                        onAddTaskEvents(AddTaskEvents.OnTitleChange(it))
                     },
                     textStyle = MaterialTheme.typography.headlineSmall,
                     placeholder = {
@@ -161,7 +186,7 @@ fun CreateReminderRoute(
             item {
                 TextField(
                     value = state.content,
-                    onValueChange = { onCreateTaskEvents(CreateTaskEvents.OnContentChange(it)) },
+                    onValueChange = { onAddTaskEvents(AddTaskEvents.OnContentChange(it)) },
                     textStyle = MaterialTheme.typography.titleMedium,
                     placeholder = {
                         Text(
@@ -189,8 +214,8 @@ fun CreateReminderRoute(
             }
             item {
                 PickedReminder(
-                    show = state.isReminderSelected,
-                    state = reminderState,
+                    show = state.isReminderPresent,
+                    state = state.reminderState,
                     onClick = {
                         showReminderDialog = true
                     },

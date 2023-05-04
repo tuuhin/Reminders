@@ -18,5 +18,5 @@ interface TaskLabelRelDao {
     suspend fun deleteTaskLabelRel(rel: List<TaskLabelRel>)
 
     @Query("DELETE FROM ${TableNames.TASK_LABEL_REL} WHERE TASK_ID=:taskId ")
-    suspend fun deleteAllRelatedLabels(taskId: Int)
+    suspend fun deleteLabelsByTaskId(taskId: Int)
 }

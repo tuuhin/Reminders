@@ -72,8 +72,11 @@ class HomeViewModel @Inject constructor(
 
     fun onArrangementChange(event: TaskArrangementEvent) {
         when (event) {
-            TaskArrangementEvent.BlockStyleEvent -> _arrangement.update { TaskArrangementStyle.BLOCK_STYLE }
-            TaskArrangementEvent.GridStyleEvent -> _arrangement.update { TaskArrangementStyle.GRID_STYLE }
+            TaskArrangementEvent.BlockStyleEvent -> _arrangement
+                .update { TaskArrangementStyle.BLOCK_STYLE }
+
+            TaskArrangementEvent.GridStyleEvent -> _arrangement
+                .update { TaskArrangementStyle.GRID_STYLE }
         }
     }
 
