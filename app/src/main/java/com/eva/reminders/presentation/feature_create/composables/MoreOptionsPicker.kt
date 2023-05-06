@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -22,15 +23,19 @@ fun MoreOptionsPicker(
     sheetState: SheetState,
     onLabels: () -> Unit,
     modifier: Modifier = Modifier,
+    deleteEnabled: Boolean = false,
+    makeCopyEnabled: Boolean = false,
     onCopy: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
-    if (isVisible)
+
+    AnimatedVisibility(
+        visible = isVisible
+    ) {
         ModalBottomSheet(
             onDismissRequest = {
-                if (sheetState.isVisible)
-                    scope.launch { sheetState.hide() }
+                if (sheetState.isVisible) scope.launch { sheetState.hide() }
             },
             modifier = modifier,
             sheetState = sheetState
@@ -48,10 +53,23 @@ fun MoreOptionsPicker(
                             contentDescription = "Delete the item"
                         )
                     },
-                    modifier = if (onDelete != null) Modifier.clickable(
-                        onClick = onDelete,
-                        role = Role.Button
+                    modifier = if (deleteEnabled && onDelete != null) Modifier.clickable(
+                        onClick = onDelete, role = Role.Button
                     ) else Modifier,
+                    colors = ListItemDefaults.colors(
+                        headlineColor = if (deleteEnabled)
+                            MaterialTheme.colorScheme.onSurface
+                        else
+                            MaterialTheme.colorScheme.outline,
+                        leadingIconColor = if (deleteEnabled)
+                            MaterialTheme.colorScheme.onSurface
+                        else
+                            MaterialTheme.colorScheme.outline,
+                        supportingColor = if (deleteEnabled)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
                 ListItem(
                     headlineContent = { Text(text = "Make A Copy") },
@@ -61,23 +79,37 @@ fun MoreOptionsPicker(
                             imageVector = Icons.Outlined.ContentCopy,
                             contentDescription = "Delete the item"
                         )
+
                     },
-                    modifier = if (onCopy != null) Modifier.clickable(
-                        onClick = onCopy,
-                        role = Role.Button
-                    ) else Modifier
+                    modifier = if (makeCopyEnabled && onCopy != null) Modifier.clickable(
+                        onClick = onCopy, role = Role.Button
+                    ) else Modifier,
+                    colors = ListItemDefaults.colors(
+                        headlineColor = if (makeCopyEnabled)
+                            MaterialTheme.colorScheme.onSurface
+                        else
+                            MaterialTheme.colorScheme.outline,
+                        leadingIconColor = if (makeCopyEnabled)
+                            MaterialTheme.colorScheme.onSurface
+                        else
+                            MaterialTheme.colorScheme.outline,
+                        supportingColor = if (makeCopyEnabled)
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
                 ListItem(
                     headlineContent = { Text(text = "Labels") },
                     supportingContent = { Text(text = "Add labels to the Task") },
                     leadingContent = {
                         Icon(
-                            imageVector = Icons.Outlined.Label,
-                            contentDescription = "Label"
+                            imageVector = Icons.Outlined.Label, contentDescription = "Label"
                         )
                     },
                     modifier = Modifier.clickable(onClick = onLabels, role = Role.Button)
                 )
             }
         }
+    }
 }

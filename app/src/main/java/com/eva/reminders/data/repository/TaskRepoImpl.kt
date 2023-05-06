@@ -47,7 +47,6 @@ class TaskRepoImpl @Inject constructor(
             taskLabelRel.deleteTaskLabelRel(labels)
             taskDao.deleteTask(entity)
             alarmRepo.stopAlarm(task)
-            alarmRepo.createAlarm(task)
             Resource.Success(true)
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()

@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +30,11 @@ import com.eva.reminders.presentation.feature_home.composables.TasksLinearLayout
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
+import com.eva.reminders.presentation.utils.NavConstants
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.ShowContent
+import com.eva.reminders.presentation.utils.UIEvents
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,10 +46,22 @@ fun HomeRoute(
     arrangement: TaskArrangementStyle,
     onArrangementChange: (TaskArrangementEvent) -> Unit,
     onTabChange: (HomeTabs) -> Unit,
+    uiEvents: Flow<UIEvents>,
     modifier: Modifier = Modifier,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = Unit) {
+        uiEvents.collect { event ->
+            when (event) {
+                is UIEvents.ShowSnackBar -> snackBarHostState.showSnackbar(event.message)
+                else -> {}
+            }
+        }
+    }
 
 
     ModalNavigationDrawer(
@@ -71,6 +88,7 @@ fun HomeRoute(
                     onDrawerClick = { scope.launch { drawerState.open() } },
                     arrangement = arrangement,
                     onArrangementChange = onArrangementChange,
+                    modifier = Modifier.fillMaxWidth()
                 )
             },
             floatingActionButton = {
@@ -85,12 +103,14 @@ fun HomeRoute(
                     )
                 }
             },
+            snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         ) { padding ->
             Column(
                 modifier = modifier
                     .padding(padding)
                     .fillMaxSize()
             ) {
+                Spacer(modifier = Modifier.height(4.dp))
                 if (tasks.isLoading)
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -117,12 +137,18 @@ fun HomeRoute(
                         when (arrangement) {
                             TaskArrangementStyle.GRID_STYLE -> TasksGridLayout(
                                 tasks = tasks.content,
-                                modifier = Modifier.fillMaxHeight()
+                                modifier = Modifier.fillMaxHeight(),
+                                onTaskSelect = { taskId ->
+                                    navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
+                                }
                             )
 
                             TaskArrangementStyle.BLOCK_STYLE -> TasksLinearLayout(
                                 tasks = tasks.content,
-                                modifier = Modifier.fillMaxHeight()
+                                modifier = Modifier.fillMaxHeight(),
+                                onTaskSelect = { taskId ->
+                                    navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
+                                }
                             )
                         }
                 }

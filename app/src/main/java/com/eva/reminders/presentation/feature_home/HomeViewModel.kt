@@ -11,7 +11,6 @@ import com.eva.reminders.presentation.utils.ShowContent
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -89,7 +87,6 @@ class HomeViewModel @Inject constructor(
     private fun getAllTasks() {
         viewModelScope.launch {
             taskRepository.getAllTasks().onEach { res ->
-                delay(2.seconds)
                 when (res) {
                     is Resource.Error -> {
                         _uiEvent.emit(UIEvents.ShowSnackBar(res.message))

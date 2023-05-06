@@ -36,7 +36,7 @@ fun checkExactAlarmPermissions(
     )
 
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasPermission.value)
             launcher.launch(Manifest.permission.SCHEDULE_EXACT_ALARM)
 
     }

@@ -1,12 +1,10 @@
 package com.eva.reminders.presentation.feature_create.composables
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -14,9 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -24,6 +20,7 @@ import java.time.format.DateTimeFormatter
 fun CreateTaskBottomBar(
     modifier: Modifier = Modifier,
     onMoreOptions: () -> Unit,
+    floatingActionButton: @Composable () -> Unit,
     onColor: () -> Unit
 ) {
     val currentTime = remember {
@@ -33,30 +30,28 @@ fun CreateTaskBottomBar(
             "Edited: $time"
         }
     }
-
-    Row(
+    BottomAppBar(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        IconButton(onClick = onColor) {
-            Icon(
-                imageVector = Icons.Outlined.Palette,
-                contentDescription = "Color Palette",
+            .fillMaxWidth(),
+        floatingActionButton = floatingActionButton,
+        actions = {
+            IconButton(onClick = onColor) {
+                Icon(
+                    imageVector = Icons.Outlined.Palette,
+                    contentDescription = "Color Palette",
+                )
+            }
+            IconButton(onClick = onMoreOptions) {
+                Icon(
+                    imageVector = Icons.Outlined.MoreVert,
+                    contentDescription = "Vertical option"
+                )
+            }
+            Text(
+                text = currentTime.value,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium
             )
         }
-        Text(
-            text = currentTime.value,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        IconButton(onClick = onMoreOptions) {
-            Icon(
-                imageVector = Icons.Outlined.MoreVert,
-                contentDescription = "Vertical option"
-            )
-        }
-    }
+    )
 }

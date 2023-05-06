@@ -35,7 +35,7 @@ fun TasksLinearLayout(
                 Text(
                     text = "Pinned",
                     modifier = Modifier.padding(vertical = 2.dp),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
             itemsIndexed(tasks.filter { it.pinned }) { _, item ->
@@ -49,7 +49,7 @@ fun TasksLinearLayout(
                 Text(
                     text = "Others",
                     modifier = Modifier.padding(vertical = 2.dp),
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelLarge,
                 )
             }
             itemsIndexed(tasks.filter { !it.pinned }) { _, item ->

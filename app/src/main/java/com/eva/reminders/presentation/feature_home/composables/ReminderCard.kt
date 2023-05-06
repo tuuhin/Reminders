@@ -76,7 +76,7 @@ fun ReminderCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             taskModel.reminderAt.at?.let { time ->
-                val reminderTime = remember {
+                val reminderTime = remember(time) {
                     derivedStateOf {
                         val pattern = DateTimeFormatter.ofPattern("dd MMMM,hh:mm a")
                         if (taskModel.reminderAt.isRepeating && taskModel.reminderAt.at < LocalDateTime.now()) {
@@ -87,7 +87,7 @@ fun ReminderCard(
                         time.format(pattern)
                     }
                 }
-                val isCrossed = remember {
+                val isCrossed = remember(taskModel.reminderAt) {
                     derivedStateOf {
                         !taskModel.reminderAt.isRepeating && taskModel.reminderAt.at < LocalDateTime.now()
                     }

@@ -9,7 +9,7 @@ import javax.inject.Inject
 class BootAlarmInitImpl @Inject constructor(
     private val tasksDao: TaskDao
 ) : BootAlarmInitRepo {
-    override fun initializeTasks(): List<TaskModel> {
-        return tasksDao.getTasks().map { it.toModel() }
-    }
+    override fun initializeTasks(): List<TaskModel> =
+        tasksDao.getTasks().map { it.toModel() }
+
 }

@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
 import com.eva.reminders.presentation.feature_create.AddTaskViewModel
+import com.eva.reminders.presentation.feature_create.utils.checkExactAlarmPermissions
 import com.eva.reminders.presentation.feature_home.HomeRoute
 import com.eva.reminders.presentation.feature_home.HomeViewModel
 import com.eva.reminders.presentation.feature_labels.EditLabelRoute
@@ -40,10 +41,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             RemindersTheme {
+                // Checking the SCHEDULE_EXACT_PERMISSION is provided or not
+                checkExactAlarmPermissions()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     val navHost = rememberNavController()
                     NavHost(
                         navController = navHost,
@@ -69,7 +73,7 @@ class MainActivity : ComponentActivity() {
                                 uiEvents = homeViewModel.uiEvents
                             )
                         }
-                        composable(NavRoutes.AddTask.route + NavConstants.TASK_ID_PARAM,
+                        composable(NavRoutes.AddTask.route + NavConstants.TASK_ID_QUERY_PARAMS,
                             arguments = listOf(
                                 navArgument(NavConstants.TASK_ID) {
                                     type = NavType.IntType
@@ -83,6 +87,8 @@ class MainActivity : ComponentActivity() {
                             val queriedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
                             val query by addLabelViewModel.query.collectAsStateWithLifecycle()
                             val content by viewModel.showContent.collectAsStateWithLifecycle()
+
+                            val pickedLabels by addLabelViewModel.selectedLabelsAsFlow.collectAsStateWithLifecycle()
 
                             if (content.isLoading)
                                 Box(
@@ -103,7 +109,7 @@ class MainActivity : ComponentActivity() {
                                     onNewLabelCreate = addLabelViewModel::createLabel,
                                     onAddTaskEvents = viewModel::onAddTaskEvents,
                                     queriedLabels = queriedLabels,
-                                    pickedLabels = addLabelViewModel.pickedLabels.map { it.toModel() },
+                                    pickedLabels = pickedLabels.map { it.toModel() },
                                     onLabelSelect = addLabelViewModel::onSelect,
                                     uiEvents = viewModel.uiEvents
                                 )

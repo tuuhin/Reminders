@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,7 +57,6 @@ class AddTaskViewModel @Inject constructor(
         ShowContent(isLoading = true, content = AddTaskState())
     )
 
-
     init {
         setCurrentData()
     }
@@ -75,34 +75,31 @@ class AddTaskViewModel @Inject constructor(
                         val state = resource.data.toUpdateState()
                         _taskState.update { state }
                         _taskState.update { it.copy(isCreate = false) }
-                        addLabelToTasks.setSelectedLabels(resource.data.labels)
+                        withContext(Dispatchers.Main) {
+                            addLabelToTasks.setSelectedLabels(resource.data.labels)
+                        }
                     }
                 }
             }
         } else {
             _isLoading.update { false }
             _taskState.update { it.copy(isCreate = true) }
+            addLabelToTasks.clearAllLabels()
         }
     }
 
     private fun onReminderEvents(event: TaskRemindersEvents) {
         when (event) {
             is TaskRemindersEvents.OnDateChanged -> _taskState.update {
-                it.copy(
-                    reminderState = it.reminderState.copy(date = event.date)
-                )
+                it.copy(reminderState = it.reminderState.copy(date = event.date))
             }
 
             is TaskRemindersEvents.OnReminderChanged -> _taskState.update {
-                it.copy(
-                    reminderState = it.reminderState.copy(frequency = event.frequency)
-                )
+                it.copy(reminderState = it.reminderState.copy(frequency = event.frequency))
             }
 
             is TaskRemindersEvents.OnTimeChanged -> _taskState.update {
-                it.copy(
-                    reminderState = it.reminderState.copy(time = event.time)
-                )
+                it.copy(reminderState = it.reminderState.copy(time = event.time))
             }
         }
     }
@@ -118,17 +115,19 @@ class AddTaskViewModel @Inject constructor(
             AddTaskEvents.ToggleArchive -> _taskState.update { it.copy(isArchived = !it.isArchived) }
             AddTaskEvents.TogglePinned -> _taskState.update { it.copy(isPinned = !it.isPinned) }
             is AddTaskEvents.OnReminderEvent -> onReminderEvents(event.event)
-
+            AddTaskEvents.OnDelete -> onDelete()
+            AddTaskEvents.MakeCopy -> makeCopy()
         }
     }
 
     private fun onSubmit() {
         val isUpdate = !_taskState.value.isCreate
+        val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
         if (isUpdate) {
             val updateModel =
-                _taskState.value.toUpdateModel(labels = addLabelToTasks.pickedLabels.map { it.toModel() })
+                _taskState.value.toUpdateModel(labels = labels)
             Log.d("UPDATE", updateModel.toString())
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 when (val change = repository.updateTask(updateModel)) {
                     is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
                     is Resource.Loading -> {}
@@ -137,14 +136,40 @@ class AddTaskViewModel @Inject constructor(
             }
         } else {
             val createModel =
-                _taskState.value.toCreateModel(labels = addLabelToTasks.pickedLabels.map { it.toModel() })
+                _taskState.value.toCreateModel(labels = labels)
             Log.d("CREATE", createModel.toString())
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 when (val change = repository.createTask(createModel)) {
                     is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
                     is Resource.Loading -> {}
                     is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
                 }
+            }
+        }
+    }
+
+    private fun onDelete() {
+        val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
+        val updateModel =
+            _taskState.value.toUpdateModel(labels = labels)
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val resource = repository.deleteTask(updateModel)) {
+                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
+                is Resource.Loading -> {}
+                is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+            }
+        }
+    }
+
+    private fun makeCopy() {
+        val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
+        val createModel =
+            _taskState.value.toCreateModel(labels = labels)
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val resource = repository.createTask(createModel)) {
+                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
+                is Resource.Loading -> {}
+                is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
             }
         }
     }

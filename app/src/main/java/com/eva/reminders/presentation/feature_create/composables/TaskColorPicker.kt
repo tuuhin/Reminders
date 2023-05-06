@@ -61,7 +61,6 @@ fun TaskColorPicker(
         }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ColorValues(
     colors: Array<TaskColorEnum>,
@@ -75,7 +74,6 @@ private fun ColorValues(
             val color = colors[idx]
             Box(
                 modifier = Modifier
-
                     .padding(horizontal = 4.dp)
                     .size(50.dp)
                     .background(

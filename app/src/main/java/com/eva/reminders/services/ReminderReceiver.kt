@@ -1,6 +1,7 @@
 package com.eva.reminders.services
 
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -17,22 +18,34 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val title = intent.extras?.getString("TITLE", "") ?: ""
         val content = (intent.extras?.getString("CONTENT", "") ?: "").getFirstSentence()
-        val taskId = intent.extras?.getInt("ID", 0) ?: 0
+        val taskId = intent.extras?.getInt("ID", 0) ?: -1
+        if (taskId != -1) {
+            val readIntent =
+                PendingIntent.getBroadcast(
+                    context,
+                    NotificationConstants.NOTIFICATION_READ_CODE,
+                    Intent(context, RemoveNotificationReceiver::class.java).apply {
+                        putExtra("TASK_ID", taskId)
+                    },
+                    PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                )
 
-        val notification =
-            NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_logo)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setOngoing(false)
-                .setContentTitle(title)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .apply {
-                    if (content.isNotEmpty())
-                        setContentText(content)
-                }
-                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                .build()
+            val notification =
+                NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.notification_logo)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setOngoing(true)
+                    .setContentTitle(title)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .apply {
+                        if (content.isNotEmpty())
+                            setContentText(content)
+                    }
+                    .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                    .addAction(R.drawable.notification_logo, "Read", readIntent)
+                    .build()
 
-        notificationManager?.notify(taskId, notification)
+            notificationManager?.notify(taskId, notification)
+        }
     }
 }

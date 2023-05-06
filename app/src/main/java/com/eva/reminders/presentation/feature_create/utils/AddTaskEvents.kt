@@ -12,4 +12,8 @@ sealed class AddTaskEvents {
     object ReminderStateUnpicked : AddTaskEvents()
     data class OnReminderEvent(val event: TaskRemindersEvents) : AddTaskEvents()
     object OnSubmit : AddTaskEvents()
+    object OnDelete : AddTaskEvents()
+
+
+    object MakeCopy:AddTaskEvents()
 }

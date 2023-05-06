@@ -3,33 +3,43 @@ package com.eva.reminders.presentation.feature_create.composables
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskLabelPicker(
     show: Boolean,
@@ -46,45 +56,48 @@ fun TaskLabelPicker(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
+        val systemUiController = rememberSystemUiController()
+        val surface = MaterialTheme.colorScheme.surface
+        val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+
+        DisposableEffect(systemUiController) {
+            systemUiController.setStatusBarColor(surfaceVariant)
+            onDispose {
+                systemUiController.setStatusBarColor(surface)
+            }
+        }
         Dialog(
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
         ) {
-            Card(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(.7f),
-                shape = MaterialTheme.shapes.extraLarge
+            SearchBar(
+                query = query,
+                onQueryChange = onQueryChanged,
+                active = true,
+                onActiveChange = {},
+                onSearch = {},
+                colors = SearchBarDefaults
+                    .colors(
+                        dividerColor = MaterialTheme.colorScheme.primary,
+                    ),
+                placeholder = { Text(text = "Search..") },
+                leadingIcon = {
+                    IconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "Close the search box"
+                        )
+                    }
+                }
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(20.dp)
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(vertical = 4.dp)
                 ) {
-                    Text(
-                        text = "Select Your labels",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Pick the Labels that you wanna associate with this task",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Divider(modifier = Modifier.padding(vertical = 2.dp))
-                    TextField(
-                        value = query,
-                        onValueChange = onQueryChanged,
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        placeholder = {
-                            Text(
-                                text = "Enter label name",
-                                color = MaterialTheme.colorScheme.outline,
-                            )
-                        },
-                        maxLines = 1,
-                    )
-                    Divider()
                     LazyColumn {
                         itemsIndexed(labels) { _, item ->
                             CheckLabelItem(
@@ -107,12 +120,37 @@ fun TaskLabelPicker(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Add,
-                                contentDescription = null,
+                                contentDescription = "Add a new Label",
                                 modifier = Modifier.weight(.1f),
                                 tint = MaterialTheme.colorScheme.surfaceTint
                             )
                             Spacer(modifier = Modifier.weight(.1f))
-                            Text(text = "Create New Label", modifier = Modifier.weight(.9f))
+                            Text(
+                                text = "Create New Label",
+                                modifier = Modifier.weight(.9f)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    AnimatedVisibility(
+                        visible = labels.isNotEmpty(),
+                        enter = slideInVertically() + fadeIn(),
+                        exit = slideOutVertically() + fadeOut()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TextButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Clear,
+                                    contentDescription = "Clear all labels"
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = "Clear all the labels")
+                            }
                         }
                     }
                 }
