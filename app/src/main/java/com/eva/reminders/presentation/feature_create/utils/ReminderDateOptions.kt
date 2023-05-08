@@ -4,17 +4,17 @@ import java.time.LocalDate
 
 sealed class ReminderDateOptions(val text: String, val schedule: LocalDate) {
 
-    object Today : ReminderDateOptions(
+    class Today : ReminderDateOptions(
         text = "Today",
         schedule = LocalDate.now()
     )
 
-    object Tomorrow : ReminderDateOptions(
+    class Tomorrow : ReminderDateOptions(
         text = "Tomorrow",
         schedule = LocalDate.now().plusDays(1)
     )
 
-    object NextWeek : ReminderDateOptions(
+    class NextWeek : ReminderDateOptions(
         text = "Next ${LocalDate.now().dayOfWeek.name.replaceFirstChar { it.uppercaseChar() }}",
         schedule = LocalDate.now().plusWeeks(1)
     )

@@ -1,6 +1,5 @@
 package com.eva.reminders.presentation.feature_create
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -24,7 +23,6 @@ import com.eva.reminders.presentation.feature_create.composables.*
 import com.eva.reminders.presentation.feature_create.utils.AddTaskEvents
 import com.eva.reminders.presentation.feature_create.utils.AddTaskState
 import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
-import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.presentation.utils.noColor
 import kotlinx.coroutines.flow.Flow
@@ -43,8 +41,9 @@ fun CreateReminderRoute(
     onAddTaskEvents: (AddTaskEvents) -> Unit,
     queriedLabels: List<SelectLabelState>,
     pickedLabels: List<TaskLabelModel>,
-    uiEvents: Flow<UIEvents>
+    uiEvents: Flow<UIEvents>,
 ) {
+
     val colorSheetState = rememberModalBottomSheetState()
     val optionsSheetState = rememberModalBottomSheetState()
 
@@ -58,11 +57,11 @@ fun CreateReminderRoute(
     var showReminderDialog by remember { mutableStateOf(false) }
     var showLabelPicker by remember { mutableStateOf(false) }
 
+
     LaunchedEffect(Unit) {
         if (state.isCreate)
             titleFocus.requestFocus()
     }
-
 
     LaunchedEffect(key1 = Unit) {
         uiEvents.collect { event ->
@@ -73,6 +72,16 @@ fun CreateReminderRoute(
         }
     }
 
+
+    TaskLabelPicker(
+        show = showLabelPicker,
+        onDismissRequest = { showLabelPicker = !showLabelPicker },
+        labels = queriedLabels,
+        onSelect = onLabelSelect,
+        query = labelSearchQuery,
+        onQueryChanged = onLabelSearchQuery,
+        onCreateNew = onNewLabelCreate,
+    )
     Scaffold(
         topBar = {
             CreateTaskTopBar(
@@ -89,26 +98,25 @@ fun CreateReminderRoute(
             CreateTaskBottomBar(
                 onColor = { scope.launch { colorSheetState.show() } },
                 onMoreOptions = { scope.launch { optionsSheetState.show() } },
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) }
+                    ) {
+                        if (state.isCreate)
+                            Icon(
+                                imageVector = Icons.Outlined.Check,
+                                contentDescription = "Add this task"
+                            )
+                        else
+                            Icon(
+                                imageVector = Icons.Outlined.Update,
+                                contentDescription = "Update this task"
+                            )
+                    }
+                }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) }
-            ) {
-                if (state.isCreate)
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = "Add this task"
-                    )
-                Icon(
-                    imageVector = Icons.Outlined.Update,
-                    contentDescription = "Update this task"
-                )
-            }
-        },
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
     ) { padding ->
 
         TaskReminderPicker(
@@ -134,17 +142,6 @@ fun CreateReminderRoute(
             selectedColor = state.color,
             onColorChange = { onAddTaskEvents(AddTaskEvents.OnColorChanged(it)) }
         )
-
-        TaskLabelPicker(
-            show = showLabelPicker,
-            onDismissRequest = { showLabelPicker = !showLabelPicker },
-            labels = queriedLabels,
-            onSelect = onLabelSelect,
-            query = labelSearchQuery,
-            onQueryChanged = onLabelSearchQuery,
-            onCreateNew = onNewLabelCreate,
-        )
-
         MoreOptionsPicker(
             isVisible = optionsSheetState.isVisible,
             sheetState = optionsSheetState,
@@ -154,7 +151,11 @@ fun CreateReminderRoute(
                         optionsSheetState.hide()
                 }
                 showLabelPicker = !showLabelPicker
-            }
+            },
+            onDelete = { onAddTaskEvents(AddTaskEvents.OnDelete) },
+            deleteEnabled = !state.isCreate,
+            makeCopyEnabled = !state.isCreate,
+            onCopy = { onAddTaskEvents(AddTaskEvents.MakeCopy) }
         )
         LazyColumn(
             modifier = modifier
@@ -208,7 +209,7 @@ fun CreateReminderRoute(
             item {
                 PickedLabels(
                     selectedLabels = pickedLabels,
-                    onLabelClick = { navController.navigate(NavRoutes.AddLabels.route) },
+                    onLabelClick = { showLabelPicker = !showLabelPicker },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }

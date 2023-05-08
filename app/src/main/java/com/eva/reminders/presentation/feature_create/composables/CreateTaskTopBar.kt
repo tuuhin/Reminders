@@ -36,38 +36,52 @@ fun CreateTaskTopBar(
                 }
         },
         actions = {
-            IconButton(
-                onClick = onPinClick
+            PlainTooltipBox(
+                tooltip = { Text(text = "Pinned") },
             ) {
-                Icon(
-                    imageVector = if (isPinned)
-                        Icons.Filled.PushPin
-                    else
-                        Icons.Outlined.PushPin,
-                    contentDescription = "Pinned"
-                )
+                IconButton(
+                    onClick = onPinClick, modifier = Modifier.tooltipAnchor()
+                ) {
+                    Icon(
+                        imageVector = if (isPinned)
+                            Icons.Filled.PushPin
+                        else
+                            Icons.Outlined.PushPin,
+                        contentDescription = "Pinned"
+                    )
+                }
             }
-            IconButton(
-                onClick = onReminderClick
+            PlainTooltipBox(
+                tooltip = { Text(text = "Reminder") }
             ) {
-                Icon(
-                    imageVector = if (isReminder)
-                        Icons.Filled.Notifications
-                    else
-                        Icons.Outlined.NotificationAdd,
-                    contentDescription = "Add a Reminder"
-                )
+                IconButton(
+                    onClick = onReminderClick,
+                    modifier = Modifier.tooltipAnchor()
+                ) {
+                    Icon(
+                        imageVector = if (isReminder)
+                            Icons.Filled.Notifications
+                        else
+                            Icons.Outlined.NotificationAdd,
+                        contentDescription = "Add a Reminder"
+                    )
+                }
             }
-            IconButton(
-                onClick = onArchiveClick
+            PlainTooltipBox(
+                tooltip = { Text(text = "Archive") }
             ) {
-                Icon(
-                    imageVector = if (isArchived)
-                        Icons.Filled.Archive
-                    else
-                        Icons.Outlined.Archive,
-                    contentDescription = "Archived"
-                )
+                IconButton(
+                    onClick = onArchiveClick,
+                    modifier = Modifier.tooltipAnchor()
+                ) {
+                    Icon(
+                        imageVector = if (isArchived)
+                            Icons.Filled.Archive
+                        else
+                            Icons.Outlined.Archive,
+                        contentDescription = "Archived"
+                    )
+                }
             }
         },
         modifier = modifier,

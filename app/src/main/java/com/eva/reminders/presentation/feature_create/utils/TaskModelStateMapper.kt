@@ -31,9 +31,9 @@ fun TaskModel.toUpdateState(): AddTaskState = AddTaskState(
                 else -> ReminderTimeOptions.Custom(dateTime.toLocalTime())
             },
             date = when (dateTime.toLocalDate()) {
-                LocalDate.now() -> ReminderDateOptions.Today
-                LocalDate.now().plusDays(1) -> ReminderDateOptions.Tomorrow
-                LocalDate.now().plusWeeks(1) -> ReminderDateOptions.NextWeek
+                LocalDate.now() -> ReminderDateOptions.Today()
+                LocalDate.now().plusDays(1) -> ReminderDateOptions.Tomorrow()
+                LocalDate.now().plusWeeks(1) -> ReminderDateOptions.NextWeek()
                 else -> ReminderDateOptions.Custom(dateTime.toLocalDate())
             }
         )

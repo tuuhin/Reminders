@@ -6,7 +6,7 @@ data class TaskReminderState(
     val time: ReminderTimeOptions = ReminderTimeOptions.allOptions().firstOrNull { it.enable }
         ?: ReminderTimeOptions.Custom(time = LocalTime.of(23, 59)),
     val invalidTime: String? = null,
-    val date: ReminderDateOptions = ReminderDateOptions.Today,
+    val date: ReminderDateOptions = ReminderDateOptions.Today(),
     val frequency: ReminderFrequency = ReminderFrequency.DO_NOT_REPEAT
 )
 

@@ -21,12 +21,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eva.reminders.R
+import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.presentation.feature_home.composables.DrawerContent
 import com.eva.reminders.presentation.feature_home.composables.HomeSearchBar
 import com.eva.reminders.presentation.feature_home.composables.TasksGridLayout
 import com.eva.reminders.presentation.feature_home.composables.TasksLinearLayout
+import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
+import com.eva.reminders.presentation.feature_home.utils.SearchType
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
@@ -43,7 +46,10 @@ fun HomeRoute(
     labels: List<TaskLabelModel>,
     tasks: ShowContent<List<TaskModel>>,
     tab: HomeTabs,
+    colorOptions: List<TaskColorEnum>,
     arrangement: TaskArrangementStyle,
+    searchResultsType: SearchResultsType,
+    onSearchType: (SearchType) -> Unit,
     onArrangementChange: (TaskArrangementEvent) -> Unit,
     onTabChange: (HomeTabs) -> Unit,
     uiEvents: Flow<UIEvents>,
@@ -88,7 +94,14 @@ fun HomeRoute(
                     onDrawerClick = { scope.launch { drawerState.open() } },
                     arrangement = arrangement,
                     onArrangementChange = onArrangementChange,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    labels = labels,
+                    colors = colorOptions,
+                    searchResultsType = searchResultsType,
+                    onSearchType = onSearchType,
+                    onTaskSelect = { taskId ->
+                        navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
+                    }
                 )
             },
             floatingActionButton = {
@@ -123,14 +136,21 @@ fun HomeRoute(
                     exit = fadeOut() + shrinkVertically()
                 ) {
                     if (!tasks.isLoading && tasks.content.isEmpty()) {
-                        Box(
+                        Column(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.label),
+                                painter = painterResource(id = R.drawable.bell),
                                 contentDescription = "No associated notes are found",
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceTint)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "No reminders are added yet ..",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.secondary
                             )
                         }
                     } else

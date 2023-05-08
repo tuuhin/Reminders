@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     val navHost = rememberNavController()
                     NavHost(
                         navController = navHost,
@@ -59,18 +58,23 @@ class MainActivity : ComponentActivity() {
 
                             val homeViewModel = hiltViewModel<HomeViewModel>()
                             val tasks by homeViewModel.tasks.collectAsStateWithLifecycle()
+                            val colorOptions by homeViewModel.colorOptions.collectAsStateWithLifecycle()
                             val currentTab by homeViewModel.currentTab.collectAsStateWithLifecycle()
                             val arrangementStyle by homeViewModel.arrangement.collectAsStateWithLifecycle()
+                            val searchResults by homeViewModel.searchedTasks.collectAsStateWithLifecycle()
 
                             HomeRoute(
                                 navController = navHost,
                                 labels = labels,
                                 tasks = tasks,
                                 tab = currentTab,
+                                searchResultsType = searchResults,
+                                colorOptions = colorOptions,
                                 arrangement = arrangementStyle,
                                 onArrangementChange = homeViewModel::onArrangementChange,
                                 onTabChange = homeViewModel::changeCurrentTab,
-                                uiEvents = homeViewModel.uiEvents
+                                uiEvents = homeViewModel.uiEvents,
+                                onSearchType = homeViewModel::onSearchType
                             )
                         }
                         composable(NavRoutes.AddTask.route + NavConstants.TASK_ID_QUERY_PARAMS,

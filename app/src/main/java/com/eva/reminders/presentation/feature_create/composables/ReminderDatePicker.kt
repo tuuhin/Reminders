@@ -28,6 +28,9 @@ fun ReminderDatePicker(
     onDatePicked: (ReminderDateOptions) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
+
+
     var isDialogOpen by remember { mutableStateOf(false) }
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -40,9 +43,9 @@ fun ReminderDatePicker(
 
     val dateOptions = remember {
         listOf(
-            ReminderDateOptions.Today,
-            ReminderDateOptions.Tomorrow,
-            ReminderDateOptions.NextWeek
+            ReminderDateOptions.Today(),
+            ReminderDateOptions.Tomorrow(),
+            ReminderDateOptions.NextWeek()
         )
     }
 
