@@ -19,7 +19,8 @@ object ServiceModule {
 
     @Provides
     @Singleton
-    fun bootRepo(database: AppDataBase): BootAlarmInitRepo = BootAlarmInitImpl(database.taskDao)
+    fun bootRepo(database: AppDataBase): BootAlarmInitRepo =
+        BootAlarmInitImpl(database.taskDao)
 
     @Provides
     @Singleton

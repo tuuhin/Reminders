@@ -6,6 +6,7 @@ import com.eva.reminders.data.repository.TaskLabelsRepoImpl
 import com.eva.reminders.data.repository.TaskRepoImpl
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.services.AlarmManagerRepo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,11 +27,18 @@ object AppModule {
     @Provides
     @Singleton
     fun getTaskLabelDao(database: AppDataBase): TaskLabelsRepository =
-        TaskLabelsRepoImpl(database.taskLabelDao, labelFts = database.labelsFts)
+        TaskLabelsRepoImpl(
+            labelDao = database.taskLabelDao,
+            labelFts = database.labelsFts
+        )
 
     @Provides
     @Singleton
-    fun getTaskDao(database: AppDataBase): TaskRepository =
-        TaskRepoImpl(taskDao = database.taskDao, taskLabelRel = database.taskLabelRelDao)
+    fun getTaskDao(database: AppDataBase, alarmRepo: AlarmManagerRepo): TaskRepository =
+        TaskRepoImpl(
+            taskDao = database.taskDao,
+            taskLabelRel = database.taskLabelRelDao,
+            alarmRepo = alarmRepo
+        )
 
 }

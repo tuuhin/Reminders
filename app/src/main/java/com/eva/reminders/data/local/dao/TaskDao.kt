@@ -17,7 +17,7 @@ interface TaskDao {
     suspend fun updateTask(task: TaskEntity)
 
     @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
-    fun getTasks(): List<TaskEntity>
+    suspend fun getTasks(): List<TaskEntity>
 
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_TABLE} ORDER BY TASK_ID DESC")
