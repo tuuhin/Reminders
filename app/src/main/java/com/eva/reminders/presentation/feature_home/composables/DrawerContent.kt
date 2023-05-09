@@ -45,7 +45,7 @@ fun DrawerContent(
             horizontalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.sticky_notes),
+                painter = painterResource(id = R.drawable.notification_small_logo),
                 contentDescription = "Maybe logo"
             )
             Spacer(modifier = Modifier.width(10.dp))

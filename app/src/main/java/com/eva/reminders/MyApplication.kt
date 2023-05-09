@@ -18,6 +18,7 @@ class MyApplication : Application() {
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
             description = NotificationConstants.NOTIFICATION_CHANNEL_DESC
+            setShowBadge(true)
         }
         val notificationManager = getSystemService<NotificationManager>()
         notificationManager?.createNotificationChannel(channel)

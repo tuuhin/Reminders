@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.domain.usecase.TaskValidator
 import com.eva.reminders.presentation.feature_create.utils.AddTaskEvents
 import com.eva.reminders.presentation.feature_create.utils.AddTaskState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
@@ -37,6 +38,8 @@ class AddTaskViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val taskId = savedStateHandle.get<Int>(NavConstants.TASK_ID)
+
+    private val validator = TaskValidator()
 
     val addLabelToTasks = AddLabelToTasksViewModel(labelsRepository)
 
@@ -124,25 +127,40 @@ class AddTaskViewModel @Inject constructor(
         val isUpdate = !_taskState.value.isCreate
         val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
         if (isUpdate) {
-            val updateModel =
-                _taskState.value.toUpdateModel(labels = labels)
-            Log.d("UPDATE", updateModel.toString())
+            val updateModel = _taskState.value.toUpdateModel(labels = labels)
             viewModelScope.launch(Dispatchers.IO) {
-                when (val change = repository.updateTask(updateModel)) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
-                    is Resource.Loading -> {}
-                    is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+                val validate = validator.updateValidator(updateModel)
+                if (validate.isValid) {
+                    when (val change = repository.updateTask(updateModel)) {
+                        is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
+                        is Resource.Loading -> {}
+                        is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+                    }
+                } else {
+                    _uiEvents.emit(
+                        UIEvents.ShowSnackBar(
+                            validate.error ?: "Cannot update the task"
+                        )
+                    )
                 }
             }
         } else {
             val createModel =
                 _taskState.value.toCreateModel(labels = labels)
-            Log.d("CREATE", createModel.toString())
             viewModelScope.launch(Dispatchers.IO) {
-                when (val change = repository.createTask(createModel)) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
-                    is Resource.Loading -> {}
-                    is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+                val validate = validator.createValidator(createModel)
+                if (validate.isValid) {
+                    when (val change = repository.createTask(createModel)) {
+                        is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
+                        is Resource.Loading -> {}
+                        is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+                    }
+                } else {
+                    _uiEvents.emit(
+                        UIEvents.ShowSnackBar(
+                            validate.error ?: "Cannot create the task"
+                        )
+                    )
                 }
             }
         }
@@ -166,10 +184,19 @@ class AddTaskViewModel @Inject constructor(
         val createModel =
             _taskState.value.toCreateModel(labels = labels)
         viewModelScope.launch(Dispatchers.IO) {
-            when (val resource = repository.createTask(createModel)) {
-                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
-                is Resource.Loading -> {}
-                is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+            val validate = validator.createValidator(createModel)
+            if (validate.isValid) {
+                when (val resource = repository.createTask(createModel)) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
+                    is Resource.Loading -> {}
+                    is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+                }
+            } else {
+                _uiEvents.emit(
+                    UIEvents.ShowSnackBar(
+                        validate.error ?: "Cannot create the task"
+                    )
+                )
             }
         }
     }
