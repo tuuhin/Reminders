@@ -7,10 +7,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import com.eva.reminders.MainActivity
 import com.eva.reminders.R
 import com.eva.reminders.utils.NotificationConstants
 import com.eva.reminders.utils.getFirstSentence
-import kotlin.random.Random
 
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -24,27 +24,41 @@ class ReminderReceiver : BroadcastReceiver() {
             val readIntent =
                 PendingIntent.getBroadcast(
                     context,
-                    -1 * Random(100).nextInt(),
+                    NotificationConstants.NOTIFICATION_READ,
                     Intent(context, RemoveNotificationReceiver::class.java)
                         .apply {
                             putExtra("TASK_ID", taskId)
+                            action = NotificationConstants.NOTIFICATION_INTENT_ACTION
                         },
-                    PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
+
+            val activityIntent = PendingIntent.getActivity(
+                context,
+                NotificationConstants.ACTIVITY_INTENT,
+                Intent(context, MainActivity::class.java).apply {
+                    putExtra("TASK_ID", taskId)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    action = NotificationConstants.NOTIFICATION_INTENT_ACTION
+                },
+                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
             val notification =
                 NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
                     .setSmallIcon(R.drawable.notification_logo)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setOngoing(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                    .setOngoing(false)
                     .setContentTitle(title)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .apply {
                         if (!content.isNullOrEmpty())
                             setContentText(content.getFirstSentence())
                     }
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setVibrate(longArrayOf(1L, 2L, 1L))
+                    .setVibrate(longArrayOf(0L, 400L, 200L, 400L))
+                    .setContentIntent(activityIntent)
+                    .setFullScreenIntent(activityIntent, true)
                     .addAction(R.drawable.notification_logo, "Read", readIntent)
                     .build()
 

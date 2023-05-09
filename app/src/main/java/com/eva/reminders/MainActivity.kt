@@ -1,5 +1,6 @@
 package com.eva.reminders
 
+import android.app.NotificationManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.content.getSystemService
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -25,7 +27,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.eva.reminders.presentation.feature_create.CreateReminderRoute
 import com.eva.reminders.presentation.feature_create.AddTaskViewModel
-import com.eva.reminders.presentation.feature_create.utils.checkExactAlarmPermissions
 import com.eva.reminders.presentation.feature_home.HomeRoute
 import com.eva.reminders.presentation.feature_home.HomeViewModel
 import com.eva.reminders.presentation.feature_labels.EditLabelRoute
@@ -33,16 +34,28 @@ import com.eva.reminders.presentation.feature_labels.LabelsViewModel
 import com.eva.reminders.presentation.utils.NavConstants
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.ui.theme.RemindersTheme
+import com.eva.reminders.utils.NotificationConstants
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val notificationManager by lazy {
+        applicationContext.getSystemService<NotificationManager>()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (intent.action == NotificationConstants.NOTIFICATION_INTENT_ACTION) {
+            // Canceling the requested notification if this is requested via a notification
+            val extra = intent.getIntExtra("TASK_ID", -1)
+            if (extra != -1)
+                notificationManager?.cancel(extra)
+        }
+
         setContent {
             RemindersTheme {
-                // Checking the SCHEDULE_EXACT_PERMISSION is provided or not
-                checkExactAlarmPermissions()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

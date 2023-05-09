@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Archive
@@ -9,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.eva.reminders.presentation.feature_create.utils.checkNotificationPermissions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,6 +24,9 @@ fun CreateTaskTopBar(
     onArchiveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val permission = checkNotificationPermissions()
+
     TopAppBar(
         title = {},
         navigationIcon = {
@@ -51,20 +56,24 @@ fun CreateTaskTopBar(
                     )
                 }
             }
-            PlainTooltipBox(
-                tooltip = { Text(text = "Reminder") }
+            AnimatedVisibility(
+                visible = permission
             ) {
-                IconButton(
-                    onClick = onReminderClick,
-                    modifier = Modifier.tooltipAnchor()
+                PlainTooltipBox(
+                    tooltip = { Text(text = "Reminder") }
                 ) {
-                    Icon(
-                        imageVector = if (isReminder)
-                            Icons.Filled.Notifications
-                        else
-                            Icons.Outlined.NotificationAdd,
-                        contentDescription = "Add a Reminder"
-                    )
+                    IconButton(
+                        onClick = onReminderClick,
+                        modifier = Modifier.tooltipAnchor()
+                    ) {
+                        Icon(
+                            imageVector = if (isReminder)
+                                Icons.Filled.Notifications
+                            else
+                                Icons.Outlined.NotificationAdd,
+                            contentDescription = "Add a Reminder"
+                        )
+                    }
                 }
             }
             PlainTooltipBox(

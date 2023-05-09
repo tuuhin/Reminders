@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
 
     <application
         android:name=".MyApplication"
@@ -19,7 +20,12 @@
         <receiver
             android:name=".services.RemoveNotificationReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.eva.reminders.CLOSE_NOTIFICATION"/>
+            </intent-filter>
+
+        </receiver>
         <receiver
             android:name=".services.BootReceiver"
             android:enabled="true"
@@ -40,8 +46,11 @@
             android:theme="@style/Theme.Reminders">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.eva.reminders.CLOSE_NOTIFICATION"/>
+                <category android:name="android.intent.category.ALTERNATIVE"/>
             </intent-filter>
         </activity>
     </application>

@@ -15,7 +15,7 @@ class MyApplication : Application() {
         val channel = NotificationChannel(
             NotificationConstants.NOTIFICATION_CHANNEL_ID,
             NotificationConstants.NOTIFICATION_CHANNEL,
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = NotificationConstants.NOTIFICATION_CHANNEL_DESC
             setShowBadge(true)

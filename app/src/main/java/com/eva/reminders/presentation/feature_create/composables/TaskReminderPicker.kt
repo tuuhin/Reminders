@@ -10,7 +10,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
-import com.eva.reminders.presentation.feature_create.utils.checkNotificationPermissions
 
 @Composable
 fun TaskReminderPicker(
@@ -22,9 +21,8 @@ fun TaskReminderPicker(
     modifier: Modifier = Modifier,
     onRemindersEvents: (TaskRemindersEvents) -> Unit
 ) {
-    val permission = checkNotificationPermissions()
 
-    if (showDialog && permission)
+    if (showDialog)
         Dialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(

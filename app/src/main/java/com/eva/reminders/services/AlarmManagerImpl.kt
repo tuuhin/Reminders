@@ -34,7 +34,7 @@ class AlarmManagerImpl(
                 context,
                 taskModel.id,
                 intent,
-                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
             //Checking if the time has already passed for the non repeating alarm
@@ -49,6 +49,7 @@ class AlarmManagerImpl(
                     .toEpochMilli()
 
             if (taskModel.reminderAt.isRepeating) {
+                val intervalInMillis = AlarmManager.INTERVAL_HOUR
                 // Adding the extra days to make the alarm work properly
                 val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
                     val difference =
@@ -60,8 +61,8 @@ class AlarmManagerImpl(
                 // change the time difference when the repeating alarm works
                 alarmManager?.setInexactRepeating(
                     AlarmManager.RTC_WAKEUP,
-                    alarmTime + extraMillis,
-                    AlarmManager.INTERVAL_DAY,
+                    alarmTime + extraMillis - intervalInMillis,
+                    intervalInMillis,
                     pendingIntent
                 )
                 val alarmTimeLog =
@@ -103,8 +104,9 @@ class AlarmManagerImpl(
             context,
             taskModel.id,
             intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
+
         if (pendingIntent != null) {
             Log.d(alarmTag, "Canceling the previous alarm ${taskModel.reminderAt.at}")
             alarmManager?.cancel(pendingIntent)
