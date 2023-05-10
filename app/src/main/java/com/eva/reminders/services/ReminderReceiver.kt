@@ -49,7 +49,7 @@ class ReminderReceiver : BroadcastReceiver() {
                     .setSmallIcon(R.drawable.notification_logo)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                    .setOngoing(false)
+                    .setOngoing(true)
                     .setContentTitle(title)
                     .apply {
                         if (!content.isNullOrEmpty())

@@ -25,11 +25,12 @@ class AlarmManagerImpl(
 
     override fun createAlarm(taskModel: TaskModel) {
         if (taskModel.reminderAt.at != null) {
-            val intent = Intent(context, ReminderReceiver::class.java).apply {
-                putExtra("TITLE", taskModel.title)
-                putExtra("CONTENT", taskModel.content)
-                putExtra("ID", taskModel.id)
-            }
+            val intent = Intent(context, ReminderReceiver::class.java)
+                .apply {
+                    putExtra("TITLE", taskModel.title)
+                    putExtra("CONTENT", taskModel.content)
+                    putExtra("ID", taskModel.id)
+                }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 taskModel.id,
@@ -49,7 +50,7 @@ class AlarmManagerImpl(
                     .toEpochMilli()
 
             if (taskModel.reminderAt.isRepeating) {
-                val intervalInMillis = AlarmManager.INTERVAL_HOUR
+                val intervalInMillis = AlarmManager.INTERVAL_DAY
                 // Adding the extra days to make the alarm work properly
                 val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
                     val difference =
@@ -59,6 +60,7 @@ class AlarmManagerImpl(
                 val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
 
                 // change the time difference when the repeating alarm works
+                // as the first trigger will happen after the first interval thus subtracting the interval too.
                 alarmManager?.setInexactRepeating(
                     AlarmManager.RTC_WAKEUP,
                     alarmTime + extraMillis - intervalInMillis,

@@ -49,7 +49,9 @@ fun ReminderDatePicker(
         )
     }
 
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(
+        initialDisplayMode = DisplayMode.Picker
+    )
 
     if (isDialogOpen) {
         DatePickerDialog(
