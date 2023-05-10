@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Reminders</string>
     <string name="search_help">Search can be only used to search labels and colors</string>
+    <string name="no_search_results">Nothing is added to make a search…</string>
+    <string name="no_reminders">No reminders are added yet …</string>
 </resources>

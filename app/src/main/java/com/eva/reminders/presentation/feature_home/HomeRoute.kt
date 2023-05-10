@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eva.reminders.R
@@ -148,7 +149,7 @@ fun HomeRoute(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "No reminders are added yet ..",
+                                text = stringResource(id = R.string.no_reminders),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.secondary
                             )

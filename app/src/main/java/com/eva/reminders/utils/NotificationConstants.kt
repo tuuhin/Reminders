@@ -9,4 +9,5 @@ object NotificationConstants {
     const val NOTIFICATION_READ = -100
     const val ACTIVITY_INTENT = -200
     const val NOTIFICATION_INTENT_ACTION = "com.eva.reminders.CLOSE_NOTIFICATION"
+    const val NOTIFICATION_READ_ACTION = "com.eva.reminders.RECEIVE_NOTIFICATION"
 }

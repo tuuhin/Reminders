@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.eva.reminders.domain.models.TaskModel
+import com.eva.reminders.utils.NotificationConstants
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -30,6 +31,8 @@ class AlarmManagerImpl(
                     putExtra("TITLE", taskModel.title)
                     putExtra("CONTENT", taskModel.content)
                     putExtra("ID", taskModel.id)
+
+                    action = NotificationConstants.NOTIFICATION_READ_ACTION
                 }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -53,9 +56,9 @@ class AlarmManagerImpl(
                 val intervalInMillis = AlarmManager.INTERVAL_DAY
                 // Adding the extra days to make the alarm work properly
                 val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
-                    val difference =
+                    val extra =
                         LocalDate.now().dayOfYear - taskModel.reminderAt.at.toLocalDate().dayOfYear
-                    if (difference != 0) difference else 1
+                    if (extra != 0) extra else 1
                 } else 0
                 val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
 
@@ -63,12 +66,13 @@ class AlarmManagerImpl(
                 // as the first trigger will happen after the first interval thus subtracting the interval too.
                 alarmManager?.setInexactRepeating(
                     AlarmManager.RTC_WAKEUP,
-                    alarmTime + extraMillis - intervalInMillis,
+                    alarmTime + extraMillis,
                     intervalInMillis,
                     pendingIntent
                 )
                 val alarmTimeLog =
-                    Instant.ofEpochMilli(alarmTime + extraMillis).atZone(ZoneId.systemDefault())
+                    Instant.ofEpochMilli(alarmTime + extraMillis)
+                        .atZone(ZoneId.systemDefault())
                         .toLocalDateTime()
                 Log.d(alarmTag, "setInRepeating : $alarmTimeLog")
                 return

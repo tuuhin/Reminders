@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.presentation.feature_create.utils.ReminderDateOptions
 import com.eva.reminders.presentation.feature_create.utils.ReminderTimeOptions
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -43,8 +42,8 @@ fun ReminderTimePicker(
     }
 
     val timePickerState = rememberTimePickerState(
-        initialHour = LocalDateTime.now().hour,
-        initialMinute = LocalDateTime.now().minute
+        initialHour = LocalTime.now().hour,
+        initialMinute = LocalTime.now().minute
     )
 
 
