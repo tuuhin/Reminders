@@ -11,20 +11,29 @@ import com.eva.reminders.MainActivity
 import com.eva.reminders.R
 import com.eva.reminders.utils.NotificationConstants
 import com.eva.reminders.utils.getFirstSentence
+import kotlin.random.Random
 
 class ReminderReceiver : BroadcastReceiver() {
+
     override fun onReceive(context: Context, intent: Intent) {
 
-        val notificationManager = context.getSystemService<NotificationManager>()
         if (intent.action == NotificationConstants.NOTIFICATION_READ_ACTION) {
+
             val title = intent.getStringExtra("TITLE") ?: "Blank"
             val content = intent.getStringExtra("CONTENT")
             val taskId = intent.getIntExtra("ID", -1)
+
+            val notificationReadRequestCode = - (1 * Random(taskId).nextInt())
+            val activityRequestCode = - (2 * Random(taskId).nextInt())
+
             if (taskId != -1) {
+
+                val notificationManager = context.getSystemService<NotificationManager>()
+
                 val readIntent =
                     PendingIntent.getBroadcast(
                         context,
-                        NotificationConstants.NOTIFICATION_READ,
+                        notificationReadRequestCode,
                         Intent(context, RemoveNotificationReceiver::class.java)
                             .apply {
                                 putExtra("TASK_ID", taskId)
@@ -35,7 +44,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
                 val activityIntent = PendingIntent.getActivity(
                     context,
-                    NotificationConstants.ACTIVITY_INTENT,
+                    activityRequestCode,
                     Intent(context, MainActivity::class.java).apply {
                         putExtra("TASK_ID", taskId)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

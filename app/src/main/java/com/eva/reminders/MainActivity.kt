@@ -41,7 +41,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val notificationManager by lazy {
-        applicationContext.getSystemService<NotificationManager>()
+        getSystemService<NotificationManager>()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

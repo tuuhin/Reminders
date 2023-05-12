@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -51,11 +50,11 @@ fun ReminderCard(
             .clickable(onClick = onTap)
             .animateContentSize(),
         colors = CardDefaults.cardColors(
-            containerColor = colorResource(id = taskModel.color.color)
+            containerColor = if (taskModel.color != TaskColorEnum.TRANSPARENT)
+                colorResource(id = taskModel.color.color)
+            else
+                MaterialTheme.colorScheme.surfaceVariant
         ),
-        border = if (taskModel.color == TaskColorEnum.TRANSPARENT)
-            BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant)
-        else null
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -192,7 +191,7 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
             title = "Something",
             content = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).",
             pinned = false,
-            color = TaskColorEnum.AMBER,
+            color = TaskColorEnum.TRANSPARENT,
             reminderAt = TaskReminderModel(),
             isArchived = false,
             updatedAt = LocalDateTime.now(),

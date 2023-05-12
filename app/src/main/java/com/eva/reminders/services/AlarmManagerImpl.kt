@@ -25,7 +25,9 @@ class AlarmManagerImpl(
     private val alarmManager = context.getSystemService<AlarmManager>()
 
     override fun createAlarm(taskModel: TaskModel) {
+
         if (taskModel.reminderAt.at != null) {
+
             val intent = Intent(context, ReminderReceiver::class.java)
                 .apply {
                     putExtra("TITLE", taskModel.title)
@@ -34,6 +36,7 @@ class AlarmManagerImpl(
 
                     action = NotificationConstants.NOTIFICATION_READ_ACTION
                 }
+
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 taskModel.id,
@@ -41,11 +44,6 @@ class AlarmManagerImpl(
                 PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            //Checking if the time has already passed for the non repeating alarm
-            if (taskModel.reminderAt.at < LocalDateTime.now() && !taskModel.reminderAt.isRepeating) {
-                Log.d(alarmTag, "Cannot set the non repeating alarm as the time had already passed")
-                return
-            }
             val alarmTime =
                 taskModel.reminderAt.at
                     .atZone(ZoneId.systemDefault())
@@ -53,52 +51,25 @@ class AlarmManagerImpl(
                     .toEpochMilli()
 
             if (taskModel.reminderAt.isRepeating) {
-                val intervalInMillis = AlarmManager.INTERVAL_DAY
-                // Adding the extra days to make the alarm work properly
-                val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
-                    val extra =
-                        LocalDate.now().dayOfYear - taskModel.reminderAt.at.toLocalDate().dayOfYear
-                    if (extra != 0) extra else 1
-                } else 0
-                val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
+                setRepeatingAlarms(
+                    taskModel = taskModel,
+                    alarmTime = alarmTime,
+                    pendingIntent = pendingIntent,
+                )
+                return
+            }
 
-                // change the time difference when the repeating alarm works
-                // as the first trigger will happen after the first interval thus subtracting the interval too.
-                alarmManager?.setInexactRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime + extraMillis,
-                    intervalInMillis,
-                    pendingIntent
-                )
-                val alarmTimeLog =
-                    Instant.ofEpochMilli(alarmTime + extraMillis)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime()
-                Log.d(alarmTag, "setInRepeating : $alarmTimeLog")
-                return
-            }
-            if (
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                alarmManager?.canScheduleExactAlarms() == true
-            ) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime,
-                    pendingIntent
-                )
-                Log.d(alarmTag, "setExactAndAllowWhileIdle : ${taskModel.reminderAt.at}")
-                return
-            }
-            alarmManager?.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                alarmTime,
-                pendingIntent
+            setNonRepeatingAlarm(
+                alarmTime = alarmTime,
+                taskModel = taskModel,
+                pendingIntent = pendingIntent
             )
-            Log.d(alarmTag, "setAndAllowWhileIdle : ${taskModel.reminderAt.at} ")
         }
     }
 
+
     override fun stopAlarm(taskModel: TaskModel) {
+
         val intent = Intent(context, ReminderReceiver::class.java)
             .apply {
                 putExtra("TITLE", taskModel.title)
@@ -114,7 +85,7 @@ class AlarmManagerImpl(
         )
 
         if (pendingIntent != null) {
-            Log.d(alarmTag, "Canceling the previous alarm ${taskModel.reminderAt.at}")
+            Log.i(alarmTag, "Canceling the previous alarm ${taskModel.reminderAt.at}")
             alarmManager?.cancel(pendingIntent)
         }
     }
@@ -123,4 +94,73 @@ class AlarmManagerImpl(
         stopAlarm(taskModel)
         createAlarm(taskModel)
     }
+
+    private fun setNonRepeatingAlarm(
+        alarmTime: Long,
+        taskModel: TaskModel,
+        pendingIntent: PendingIntent
+    ) {
+        if (taskModel.reminderAt.at == null) return
+        //Checking if the time has already passed for the non repeating alarm
+        if (taskModel.reminderAt.at < LocalDateTime.now() && !taskModel.reminderAt.isRepeating) {
+            Log.w(alarmTag, "Cannot set the non repeating alarm as the time had already passed")
+            return
+        }
+
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            && alarmManager?.canScheduleExactAlarms() == true
+        ) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                alarmTime,
+                pendingIntent
+            )
+            Log.i(alarmTag, "setExactAndAllowWhileIdle : ${taskModel.reminderAt.at}")
+            return
+        }
+
+        alarmManager?.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            alarmTime,
+            pendingIntent
+        )
+
+        Log.d(alarmTag, "setAndAllowWhileIdle : ${taskModel.reminderAt.at} ")
+    }
+
+    private fun setRepeatingAlarms(
+        taskModel: TaskModel,
+        alarmTime: Long,
+        pendingIntent: PendingIntent,
+        intervalInMillis: Long = AlarmManager.INTERVAL_DAY
+    ) {
+        if (taskModel.reminderAt.at == null) return
+
+        // Adding the extra days to make the alarm work properly
+        val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
+            val extra =
+                LocalDate.now().dayOfYear - taskModel.reminderAt.at.toLocalDate().dayOfYear
+            if (extra != 0) extra else 1
+        } else 0
+
+        val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
+
+        alarmManager?.setInexactRepeating(
+            AlarmManager.RTC_WAKEUP,
+            alarmTime + extraMillis,
+            intervalInMillis,
+            pendingIntent
+        )
+
+        val alarmTimeLog =
+            Instant.ofEpochMilli(alarmTime + extraMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+
+        Log.d(alarmTag, "setInexactRepeating : $alarmTimeLog")
+
+        return
+    }
+
 }
