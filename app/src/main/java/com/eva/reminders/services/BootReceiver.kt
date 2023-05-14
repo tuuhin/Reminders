@@ -27,24 +27,24 @@ class BootReceiver : BroadcastReceiver() {
     lateinit var initRepo: BootAlarmInitRepo
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            Log.i(receiverTag, "READY TO GO")
-            // Initialize The Alarms
-            try {
-                CoroutineScope(Dispatchers.IO + SupervisorJob())
-                    .launch {
-                        initRepo
-                            .initializeTasks()
-                            .map { async { alarmManagerRepo.createAlarm(it) } }
-                            .awaitAll()
-                        Log.i(receiverTag, "INITIALIZATION FINISHED")
-                    }
-            } catch (e: Exception) {
-                if (e is CancellationException){
-                    throw e
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        Log.i(receiverTag, "READY TO GO")
+        // Initialize The Alarms
+        try {
+            CoroutineScope(Dispatchers.IO + SupervisorJob())
+                .launch {
+                    initRepo
+                        .initializeTasks()
+                        .map { async { alarmManagerRepo.createAlarm(it) } }
+                        .awaitAll()
+                    Log.i(receiverTag, "INITIALIZATION FINISHED")
                 }
-                Log.i(receiverTag, e.message ?: "Failed")
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
             }
+            Log.i(receiverTag, e.message ?: "Failed")
         }
+
     }
 }

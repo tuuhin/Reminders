@@ -3,6 +3,7 @@ package com.eva.reminders
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.eva.reminders.utils.NotificationConstants
 import dagger.hilt.android.HiltAndroidApp
@@ -18,7 +19,9 @@ class MyApplication : Application() {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = NotificationConstants.NOTIFICATION_CHANNEL_DESC
+            lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
             setShowBadge(true)
+            vibrationPattern = longArrayOf(0L, 400L, 200L, 400L)
         }
         val notificationManager = getSystemService<NotificationManager>()
         notificationManager?.createNotificationChannel(channel)

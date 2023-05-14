@@ -26,45 +26,45 @@ class AlarmManagerImpl(
 
     override fun createAlarm(taskModel: TaskModel) {
 
-        if (taskModel.reminderAt.at != null) {
+        if (taskModel.reminderAt.at == null) return
 
-            val intent = Intent(context, ReminderReceiver::class.java)
-                .apply {
-                    putExtra("TITLE", taskModel.title)
-                    putExtra("CONTENT", taskModel.content)
-                    putExtra("ID", taskModel.id)
+        val intent = Intent(context, ReminderReceiver::class.java)
+            .apply {
+                putExtra("TITLE", taskModel.title)
+                putExtra("CONTENT", taskModel.content)
+                putExtra("ID", taskModel.id)
 
-                    action = NotificationConstants.NOTIFICATION_READ_ACTION
-                }
-
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                taskModel.id,
-                intent,
-                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val alarmTime =
-                taskModel.reminderAt.at
-                    .atZone(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli()
-
-            if (taskModel.reminderAt.isRepeating) {
-                setRepeatingAlarms(
-                    taskModel = taskModel,
-                    alarmTime = alarmTime,
-                    pendingIntent = pendingIntent,
-                )
-                return
+                action = NotificationConstants.NOTIFICATION_READ_ACTION
             }
 
-            setNonRepeatingAlarm(
-                alarmTime = alarmTime,
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            taskModel.id,
+            intent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmTime =
+            taskModel.reminderAt.at
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+
+        if (taskModel.reminderAt.isRepeating) {
+            setRepeatingAlarms(
                 taskModel = taskModel,
-                pendingIntent = pendingIntent
+                alarmTime = alarmTime,
+                pendingIntent = pendingIntent,
             )
+            return
         }
+
+        setNonRepeatingAlarm(
+            alarmTime = alarmTime,
+            taskModel = taskModel,
+            pendingIntent = pendingIntent
+        )
+
     }
 
 
