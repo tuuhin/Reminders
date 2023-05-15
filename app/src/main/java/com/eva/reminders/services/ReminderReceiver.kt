@@ -1,5 +1,6 @@
 package com.eva.reminders.services
 
+import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -30,6 +31,8 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val notificationManager = context.getSystemService<NotificationManager>()
 
+        val keyguardManager = context.getSystemService<KeyguardManager>()
+
         val readIntent =
             PendingIntent.getBroadcast(
                 context,
@@ -53,6 +56,22 @@ class ReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val readAction =
+            NotificationCompat.Action
+                .Builder(R.drawable.notification_logo, "Read", readIntent)
+                .setAuthenticationRequired(true)
+                .build()
+
+
+        val publicNotification =
+            NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.notification_logo)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setContentTitle(title)
+                .build()
+
+
         val notification =
             NotificationCompat.Builder(
                 context,
@@ -63,16 +82,20 @@ class ReminderReceiver : BroadcastReceiver() {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setOngoing(true)
                 .setContentTitle(title)
+                .setContentIntent(activityIntent)
                 .apply {
                     if (!content.isNullOrEmpty()) {
                         setContentText(content.getFirstSentence())
                             .setStyle(NotificationCompat.BigTextStyle().bigText(content))
+
                     }
+                    if (keyguardManager?.isDeviceLocked != true)
+                        setFullScreenIntent(activityIntent, true)
                 }
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContentIntent(activityIntent)
-                .setFullScreenIntent(activityIntent, true)
-                .addAction(R.drawable.notification_logo, "Read", readIntent)
+                .setVibrate(longArrayOf(0L, 400L, 200L, 400L))
+                .addAction(readAction)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setPublicVersion(publicNotification)
                 .build()
 
         notificationManager?.notify(taskId, notification)

@@ -19,7 +19,7 @@ class MyApplication : Application() {
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = NotificationConstants.NOTIFICATION_CHANNEL_DESC
-            lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+            lockscreenVisibility = NotificationCompat.VISIBILITY_PRIVATE
             setShowBadge(true)
             vibrationPattern = longArrayOf(0L, 400L, 200L, 400L)
         }
