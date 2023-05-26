@@ -6,6 +6,7 @@ import com.eva.reminders.data.repository.TaskLabelsRepoImpl
 import com.eva.reminders.data.repository.TaskRepoImpl
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.presentation.utils.SaveUserArrangementPreference
 import com.eva.reminders.services.AlarmManagerRepo
 import dagger.Module
 import dagger.Provides
@@ -41,4 +42,7 @@ object AppModule {
             alarmRepo = alarmRepo
         )
 
+    @Provides
+    fun provideUserArrangement(@ApplicationContext context: Context): SaveUserArrangementPreference =
+        SaveUserArrangementPreference(context)
 }

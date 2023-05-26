@@ -9,6 +9,7 @@ import com.eva.reminders.presentation.feature_home.utils.SearchType
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
+import com.eva.reminders.presentation.utils.SaveUserArrangementPreference
 import com.eva.reminders.presentation.utils.ShowContent
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.utils.Resource
@@ -30,7 +31,14 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
+    private val preference: SaveUserArrangementPreference
 ) : ViewModel() {
+
+    val arrangement = preference.readArrangementStyle.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        initialValue = TaskArrangementStyle.BLOCK_STYLE
+    )
 
     private val _uiEvent = MutableSharedFlow<UIEvents>()
     val uiEvents = _uiEvent.asSharedFlow()
@@ -69,9 +77,6 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-    private val _arrangement = MutableStateFlow(TaskArrangementStyle.BLOCK_STYLE)
-    val arrangement = _arrangement.asStateFlow()
-
 
     private val _searchType = MutableStateFlow<SearchType>(SearchType.BlankSearch)
 
@@ -90,11 +95,13 @@ class HomeViewModel @Inject constructor(
                             colorFilter || labelFilter
                         }
                 )
+
             SearchType.BlankSearch -> SearchResultsType.NoResultsType
             is SearchType.ColorSearch ->
                 SearchResultsType.SearchResults(
                     tasks.content.filter { it.color == type.search }
                 )
+
             is SearchType.LabelSearch ->
                 SearchResultsType.SearchResults(
                     tasks.content.filter { it.labels.contains(type.labelModel) }
@@ -114,12 +121,16 @@ class HomeViewModel @Inject constructor(
     fun onSearchType(type: SearchType): Unit = _searchType.update { type }
 
     fun onArrangementChange(event: TaskArrangementEvent) {
-        when (event) {
-            TaskArrangementEvent.BlockStyleEvent -> _arrangement
-                .update { TaskArrangementStyle.BLOCK_STYLE }
+        viewModelScope.launch {
 
-            TaskArrangementEvent.GridStyleEvent -> _arrangement
-                .update { TaskArrangementStyle.GRID_STYLE }
+            when (event) {
+                TaskArrangementEvent.BlockStyleEvent -> preference.updateArrangementStyle(
+                    TaskArrangementStyle.BLOCK_STYLE
+                )
+                TaskArrangementEvent.GridStyleEvent -> preference.updateArrangementStyle(
+                    TaskArrangementStyle.GRID_STYLE
+                )
+            }
         }
     }
 
