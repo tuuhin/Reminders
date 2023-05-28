@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -134,7 +135,8 @@ fun TaskLabelPicker(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
+                                .clip(MaterialTheme.shapes.medium)
+                                .padding(vertical = 8.dp, horizontal = 4.dp)
                                 .clickable(onClick = onCreateNew, role = Role.Button),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

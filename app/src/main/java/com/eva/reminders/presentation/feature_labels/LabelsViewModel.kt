@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
+import com.eva.reminders.domain.usecase.LabelValidator
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelEvents
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelEvents
@@ -12,6 +13,7 @@ import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.presentation.utils.toMutableStateFlow
 import com.eva.reminders.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +22,8 @@ import javax.inject.Inject
 class LabelsViewModel @Inject constructor(
     private val labelRepo: TaskLabelsRepository
 ) : ViewModel() {
+
+    private val _validator = LabelValidator()
 
     private val _labels = MutableStateFlow<List<TaskLabelModel>>(emptyList())
     val allLabels = _labels.asStateFlow()
@@ -38,7 +42,7 @@ class LabelsViewModel @Inject constructor(
     val uiEvents = _uiEvents.asSharedFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             labelRepo.getLabels()
                 .onEach { models ->
                     _labels.update { models }
@@ -91,7 +95,7 @@ class LabelsViewModel @Inject constructor(
     }
 
     private fun onDelete(label: TaskLabelModel) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             when (val res = labelRepo.deleteLabel(label)) {
                 is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
                 else -> {}
@@ -100,27 +104,31 @@ class LabelsViewModel @Inject constructor(
     }
 
     private fun onUpdate(label: TaskLabelModel) {
-        viewModelScope.launch {
-            when (val res = labelRepo.updateLabel(label)) {
-                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
-                else -> {}
-            }
+        val validator =
+            _validator.validate(label.label, _labels.value.map { it.label })
+
+        viewModelScope.launch(Dispatchers.IO) {
+            if (validator.isValid)
+                when (val res = labelRepo.updateLabel(label)) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
+                    else -> {}
+                }
         }
     }
 
     private fun createLabel() {
-        val isSameLabelExits = _labels.value.any { it.label == _createLabelState.value.label }
-        if (isSameLabelExits) {
-            _createLabelState.update { it.copy(isError = "Same name already exists") }
-            return
-        }
+        val validator =
+            _validator.validate(_createLabelState.value.label, _labels.value.map { it.label })
 
-        viewModelScope.launch {
-            when (val res = labelRepo.createLabel(_createLabelState.value.label)) {
-                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
-                is Resource.Loading -> {}
-                is Resource.Success -> _createLabelState.update { CreateLabelState() }
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            if (validator.isValid)
+                when (val res = labelRepo.createLabel(_createLabelState.value.label)) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
+                    is Resource.Loading -> {}
+                    is Resource.Success -> _createLabelState.update { CreateLabelState() }
+                }
+            else
+                _uiEvents.emit(UIEvents.ShowSnackBar(validator.error ?: "Failed to create label"))
         }
     }
 }

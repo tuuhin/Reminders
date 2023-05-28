@@ -1,5 +1,8 @@
 package com.eva.reminders.presentation.feature_labels
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,9 +45,7 @@ fun EditLabelRoute(
     LaunchedEffect(true) {
         uiEvents.collect { event ->
             when (event) {
-                is UIEvents.ShowSnackBar -> snackBar
-                    .showSnackbar(event.message)
-
+                is UIEvents.ShowSnackBar -> snackBar.showSnackbar(event.message)
                 else -> {}
             }
         }
@@ -83,7 +84,11 @@ fun EditLabelRoute(
                 onValueChange = { onCreateLabelEvent(CreateLabelEvents.OnValueChange(it)) }
             )
             Divider()
-            if (editLabelState.isNotEmpty()) {
+            AnimatedVisibility(
+                visible = editLabelState.isNotEmpty(),
+                enter = slideInVertically(),
+                exit = slideOutVertically()
+            ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -101,7 +106,8 @@ fun EditLabelRoute(
                         )
                     }
                 }
-            } else {
+            }
+            if (editLabelState.isEmpty())
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -120,7 +126,7 @@ fun EditLabelRoute(
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
-            }
         }
     }
 }
+

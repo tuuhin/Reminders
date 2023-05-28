@@ -29,8 +29,6 @@ fun ReminderDatePicker(
     modifier: Modifier = Modifier,
 ) {
 
-
-
     var isDialogOpen by remember { mutableStateOf(false) }
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -85,8 +83,8 @@ fun ReminderDatePicker(
         ) {
             DatePicker(
                 state = datePickerState,
-                dateValidator = {
-                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault())
+                dateValidator = { millis ->
+                    Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
                         .toLocalDate() >= LocalDate.now()
                 }
             )

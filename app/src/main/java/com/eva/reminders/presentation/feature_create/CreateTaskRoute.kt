@@ -99,19 +99,25 @@ fun CreateReminderRoute(
                 onColor = { scope.launch { colorSheetState.show() } },
                 onMoreOptions = { scope.launch { optionsSheetState.show() } },
                 floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) }
+                    ExtendedFloatingActionButton(
+                        onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) },
+                        elevation = FloatingActionButtonDefaults.elevation()
                     ) {
-                        if (state.isCreate)
+                        if (state.isCreate) {
                             Icon(
                                 imageVector = Icons.Outlined.Check,
                                 contentDescription = "Add this task"
                             )
-                        else
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Save")
+                        } else {
                             Icon(
                                 imageVector = Icons.Outlined.Update,
                                 contentDescription = "Update this task"
                             )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Update")
+                        }
                     }
                 }
             )

@@ -14,7 +14,9 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import com.eva.reminders.domain.enums.TaskColorEnum
@@ -25,6 +27,33 @@ fun PickedColor(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
+    val colorText by remember(color) {
+        derivedStateOf {
+            when (color) {
+                TaskColorEnum.TRANSPARENT -> ""
+                TaskColorEnum.RED -> "Red"
+                TaskColorEnum.ORANGE -> "Orange"
+                TaskColorEnum.AMBER -> "Amber"
+                TaskColorEnum.YELLOW -> "Yellow"
+                TaskColorEnum.LIME -> "Lime"
+                TaskColorEnum.GREEN -> "Green"
+                TaskColorEnum.EMERALD -> "Emerald"
+                TaskColorEnum.TEAL -> "Teal"
+                TaskColorEnum.CYAN -> "Cyan"
+                TaskColorEnum.SKY -> "Sky"
+                TaskColorEnum.BLUE -> "Blue"
+                TaskColorEnum.INDIGO -> "Indigo"
+                TaskColorEnum.VIOLET -> "Violet"
+                TaskColorEnum.PURPLE -> "Purple"
+                TaskColorEnum.FUCHSIA -> "Fuchsia"
+                TaskColorEnum.PINK -> "Pink"
+                TaskColorEnum.ROSE -> "Rose"
+                else -> ""
+            }
+        }
+    }
+
     AnimatedVisibility(
         visible = color != null && color != TaskColorEnum.TRANSPARENT,
         enter = slideInVertically() + expandVertically() + fadeIn(),
@@ -38,30 +67,7 @@ fun PickedColor(
             )
             AssistChip(
                 onClick = onClick,
-                label = {
-                    Text(
-                        text = when (color) {
-                            TaskColorEnum.TRANSPARENT -> ""
-                            TaskColorEnum.RED -> "Red"
-                            TaskColorEnum.ORANGE -> "Orange"
-                            TaskColorEnum.AMBER -> "Amber"
-                            TaskColorEnum.YELLOW -> "Yellow"
-                            TaskColorEnum.LIME -> "Lime"
-                            TaskColorEnum.GREEN -> "Green"
-                            TaskColorEnum.EMERALD -> "Emerald"
-                            TaskColorEnum.TEAL -> "Teal"
-                            TaskColorEnum.CYAN -> "Cyan"
-                            TaskColorEnum.SKY -> "Sky"
-                            TaskColorEnum.BLUE -> "Blue"
-                            TaskColorEnum.INDIGO -> "Indigo"
-                            TaskColorEnum.VIOLET -> "Violet"
-                            TaskColorEnum.PURPLE -> "Purple"
-                            TaskColorEnum.FUCHSIA -> "Fuchsia"
-                            TaskColorEnum.PINK -> "Pink"
-                            TaskColorEnum.ROSE -> "Rose"
-                        }
-                    )
-                },
+                label = { Text(text = colorText) },
                 colors = AssistChipDefaults.assistChipColors(containerColor = colorVal),
                 modifier = modifier
             )

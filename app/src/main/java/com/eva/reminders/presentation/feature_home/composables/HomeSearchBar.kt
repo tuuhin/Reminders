@@ -15,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltipBox
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -104,31 +105,35 @@ fun HomeSearchBar(
 
         },
         trailingIcon = {
-            AnimatedVisibility(
-                visible = !isActive,
-                enter = fadeIn(),
-                exit = fadeOut()
+            PlainTooltipBox(
+                tooltip = { Text(text = "Arrangement") }
             ) {
-                IconButton(
-                    onClick = {
-                        when (arrangement) {
-                            TaskArrangementStyle.GRID_STYLE -> onArrangementChange(
-                                TaskArrangementEvent.BlockStyleEvent
-                            )
-
-                            TaskArrangementStyle.BLOCK_STYLE -> onArrangementChange(
-                                TaskArrangementEvent.GridStyleEvent
-                            )
-                        }
-                    },
+                AnimatedVisibility(
+                    visible = !isActive,
+                    enter = fadeIn(),
+                    exit = fadeOut()
                 ) {
-                    Icon(
-                        imageVector = when (arrangement) {
-                            TaskArrangementStyle.GRID_STYLE -> Icons.Outlined.GridView
-                            TaskArrangementStyle.BLOCK_STYLE -> Icons.Outlined.ViewList
+                    IconButton(
+                        onClick = {
+                            when (arrangement) {
+                                TaskArrangementStyle.GRID_STYLE -> onArrangementChange(
+                                    TaskArrangementEvent.BlockStyleEvent
+                                )
+
+                                TaskArrangementStyle.BLOCK_STYLE -> onArrangementChange(
+                                    TaskArrangementEvent.GridStyleEvent
+                                )
+                            }
                         },
-                        contentDescription = "Change Arrangement"
-                    )
+                    ) {
+                        Icon(
+                            imageVector = when (arrangement) {
+                                TaskArrangementStyle.GRID_STYLE -> Icons.Outlined.GridView
+                                TaskArrangementStyle.BLOCK_STYLE -> Icons.Outlined.ViewList
+                            },
+                            contentDescription = "Change Arrangement"
+                        )
+                    }
                 }
             }
         },
@@ -177,9 +182,7 @@ fun HomeSearchBarPreview() {
         labels = emptyList(),
         colors = emptyList(),
         searchResultsType = SearchResultsType.NoResultsType,
-        onSearchType = {
-        }, onTaskSelect = {
-
-        }
+        onSearchType = {},
+        onTaskSelect = {}
     )
 }

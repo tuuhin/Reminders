@@ -126,8 +126,8 @@ private class EditableLabelsPreviewParams
     )
 }
 
+@Preview(showBackground = true)
 @Composable
-@Preview
 private fun EditableLabelPreview(
     @PreviewParameter(EditableLabelsPreviewParams::class) state: EditLabelState
 ) {

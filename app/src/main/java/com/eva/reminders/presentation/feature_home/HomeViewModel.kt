@@ -77,9 +77,7 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-
     private val _searchType = MutableStateFlow<SearchType>(SearchType.BlankSearch)
-
 
     val searchedTasks = combine(_tasks, _searchType) { tasks, type ->
         when (type) {
@@ -88,10 +86,11 @@ class HomeViewModel @Inject constructor(
                     tasks.content
                         .filter {
                             val colorFilter =
-                                it.color.name.lowercase() == type.query.trim().lowercase()
+                                Regex(".*${type.query}").matches(it.color.name)
                             val labelFilter =
                                 it.labels.map { label -> label.label.trim().lowercase() }
-                                    .contains(type.query.lowercase())
+                                    .map { label -> Regex(".*${type.query}").matches(label) }
+                                    .any()
                             colorFilter || labelFilter
                         }
                 )
@@ -127,6 +126,7 @@ class HomeViewModel @Inject constructor(
                 TaskArrangementEvent.BlockStyleEvent -> preference.updateArrangementStyle(
                     TaskArrangementStyle.BLOCK_STYLE
                 )
+
                 TaskArrangementEvent.GridStyleEvent -> preference.updateArrangementStyle(
                     TaskArrangementStyle.GRID_STYLE
                 )

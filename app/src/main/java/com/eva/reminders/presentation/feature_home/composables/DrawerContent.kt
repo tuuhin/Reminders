@@ -68,6 +68,7 @@ fun DrawerContent(
             )
 
         }
+        Divider()
         DrawerLabelItems(
             onEdit = { navController.navigate(NavRoutes.EditLabels.route) },
             labels = labels,

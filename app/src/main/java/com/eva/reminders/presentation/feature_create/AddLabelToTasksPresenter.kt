@@ -1,13 +1,12 @@
 package com.eva.reminders.presentation.feature_create
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.utils.Resource
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,9 +20,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AddLabelToTasksViewModel(
-    private val labelRepo: TaskLabelsRepository
-) : ViewModel() {
+class AddLabelToTasksPresenter(
+    private val labelRepo: TaskLabelsRepository,
+    private val dispatcher: CoroutineDispatcher,
+    private val coroutineScope: CoroutineScope
+) {
 
     private val _uiEvents = MutableSharedFlow<UIEvents>()
 
@@ -37,14 +38,12 @@ class AddLabelToTasksViewModel(
             val isSelected = selected.any { state -> state.idx == model.id }
             SelectLabelState(idx = model.id, label = model.label, isSelected = isSelected)
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(500L), emptyList())
+    }.stateIn(coroutineScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
 
     private val _query = MutableStateFlow("")
     val query = _query.asStateFlow()
 
-
-    private var searchJob: Job? = null
 
     // Set the labels when its an update request
     fun setSelectedLabels(labels: List<TaskLabelModel>) {
@@ -73,18 +72,20 @@ class AddLabelToTasksViewModel(
         }
     }
 
+    private var searchJob: Job? = null
+
     fun searchLabels(search: String = "") {
         _query.update { search }
         searchJob?.cancel()
-        searchJob = viewModelScope.launch(Dispatchers.IO) {
+        searchJob = coroutineScope.launch(dispatcher) {
             labelRepo.searchLabels(search).cancellable().onEach { models ->
-                    _queriedLabels.update { models }
-                }.launchIn(this)
+                _queriedLabels.update { models }
+            }.launchIn(this)
         }
     }
 
     fun createLabel() {
-        viewModelScope.launch(Dispatchers.IO) {
+        coroutineScope.launch(dispatcher) {
             if (query.value.isNotEmpty()) {
                 val trimmedLabel = _query.value.trim()
                 when (val res = labelRepo.createLabel(trimmedLabel)) {

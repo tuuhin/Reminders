@@ -27,7 +27,6 @@ fun DrawerLabelItems(
     onEdit: () -> Unit,
     labels: List<TaskLabelModel>,
 ) {
-    Divider()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,8 +104,8 @@ class DrawerLabelItemsPreViewParams : PreviewParameterProvider<List<TaskLabelMod
 }
 
 
+@Preview
 @Composable
-@Preview(name = "Drawer Labels")
 fun DrawerLabelItemsPreview(
     @PreviewParameter(DrawerLabelItemsPreViewParams::class)
     items: List<TaskLabelModel>

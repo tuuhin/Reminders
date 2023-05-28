@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,7 +40,9 @@ class AddTaskViewModel @Inject constructor(
 
     private val validator = TaskValidator()
 
-    val addLabelToTasks = AddLabelToTasksViewModel(labelsRepository)
+    val addLabelToTasks = AddLabelToTasksPresenter(
+        coroutineScope = viewModelScope, dispatcher = Dispatchers.IO, labelRepo = labelsRepository
+    )
 
     private val _taskState = MutableStateFlow(AddTaskState())
 
@@ -60,12 +61,11 @@ class AddTaskViewModel @Inject constructor(
         ShowContent(isLoading = true, content = AddTaskState())
     )
 
-    init {
-        setCurrentData()
-    }
+    init { setCurrentData() }
 
     private fun setCurrentData() {
         if (taskId != null && taskId != -1) {
+
             viewModelScope.launch(Dispatchers.IO) {
                 when (val resource = repository.getTaskById(taskId)) {
                     is Resource.Error -> {
@@ -76,11 +76,9 @@ class AddTaskViewModel @Inject constructor(
                     is Resource.Loading -> _isLoading.update { true }
                     is Resource.Success -> {
                         val state = resource.data.toUpdateState()
-                        _taskState.update { state }
-                        _taskState.update { it.copy(isCreate = false) }
-                        withContext(Dispatchers.Main) {
-                            addLabelToTasks.setSelectedLabels(resource.data.labels)
-                        }
+                        _taskState.update { state.copy(isCreate = false) }
+                        addLabelToTasks.setSelectedLabels(resource.data.labels)
+
                     }
                 }
             }
@@ -106,11 +104,7 @@ class AddTaskViewModel @Inject constructor(
             }
 
             is TaskRemindersEvents.OnIsExactChange -> _taskState.update {
-                it.copy(
-                    reminderState = it.reminderState.copy(
-                        isExact = event.isExact
-                    )
-                )
+                it.copy(reminderState = it.reminderState.copy(isExact = event.isExact))
             }
         }
     }
@@ -135,9 +129,11 @@ class AddTaskViewModel @Inject constructor(
         val isUpdate = !_taskState.value.isCreate
         val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
         if (isUpdate) {
+
             val updateModel = _taskState.value.toUpdateModel(labels = labels)
+            val validate = validator.updateValidator(updateModel)
+
             viewModelScope.launch(Dispatchers.IO) {
-                val validate = validator.updateValidator(updateModel)
                 if (validate.isValid) {
                     when (val change = repository.updateTask(updateModel)) {
                         is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
@@ -146,28 +142,26 @@ class AddTaskViewModel @Inject constructor(
                     }
                 } else {
                     _uiEvents.emit(
-                        UIEvents.ShowSnackBar(
-                            validate.error ?: "Cannot update the task"
-                        )
+                        UIEvents.ShowSnackBar(validate.error ?: "Cannot update the task")
                     )
                 }
             }
         } else {
-            val createModel =
-                _taskState.value.toCreateModel(labels = labels)
+            val createModel = _taskState.value.toCreateModel(labels = labels)
+            val validate = validator.createValidator(createModel)
+
             viewModelScope.launch(Dispatchers.IO) {
-                val validate = validator.createValidator(createModel)
                 if (validate.isValid) {
                     when (val change = repository.createTask(createModel)) {
+
                         is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(change.message))
                         is Resource.Loading -> {}
                         is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
+
                     }
                 } else {
                     _uiEvents.emit(
-                        UIEvents.ShowSnackBar(
-                            validate.error ?: "Cannot create the task"
-                        )
+                        UIEvents.ShowSnackBar(validate.error ?: "Cannot create the task")
                     )
                 }
             }
@@ -175,9 +169,10 @@ class AddTaskViewModel @Inject constructor(
     }
 
     private fun onDelete() {
+
         val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
-        val updateModel =
-            _taskState.value.toUpdateModel(labels = labels)
+        val updateModel = _taskState.value.toUpdateModel(labels = labels)
+
         viewModelScope.launch(Dispatchers.IO) {
             when (val resource = repository.deleteTask(updateModel)) {
                 is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
@@ -188,22 +183,23 @@ class AddTaskViewModel @Inject constructor(
     }
 
     private fun makeCopy() {
+
         val labels = addLabelToTasks.selectedLabelsAsFlow.value.map { it.toModel() }
-        val createModel =
-            _taskState.value.toCreateModel(labels = labels)
+        val createModel = _taskState.value.toCreateModel(labels = labels)
+        val validate = validator.createValidator(createModel)
+
         viewModelScope.launch(Dispatchers.IO) {
-            val validate = validator.createValidator(createModel)
             if (validate.isValid) {
+
                 when (val resource = repository.createTask(createModel)) {
                     is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(resource.message))
                     is Resource.Loading -> {}
                     is Resource.Success -> _uiEvents.emit(UIEvents.NavigateBack)
                 }
+
             } else {
                 _uiEvents.emit(
-                    UIEvents.ShowSnackBar(
-                        validate.error ?: "Cannot create the task"
-                    )
+                    UIEvents.ShowSnackBar(validate.error ?: "Cannot create the task")
                 )
             }
         }

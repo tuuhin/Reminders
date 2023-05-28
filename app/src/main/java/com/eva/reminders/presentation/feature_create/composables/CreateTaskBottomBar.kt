@@ -1,6 +1,8 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Palette
@@ -34,6 +36,8 @@ fun CreateTaskBottomBar(
         modifier = modifier
             .fillMaxWidth(),
         floatingActionButton = floatingActionButton,
+        windowInsets = WindowInsets.navigationBars,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         actions = {
             IconButton(onClick = onColor) {
                 Icon(

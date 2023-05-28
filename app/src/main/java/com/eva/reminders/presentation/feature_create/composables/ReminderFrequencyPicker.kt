@@ -25,7 +25,6 @@ fun ReminderFrequencyPicker(
 
     var isExpanded by remember { mutableStateOf(false) }
 
-
     Column(
         modifier = modifier
             .fillMaxWidth()

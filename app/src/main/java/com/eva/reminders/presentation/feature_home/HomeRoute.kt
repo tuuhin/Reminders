@@ -95,18 +95,18 @@ fun HomeRoute(
                     onDrawerClick = { scope.launch { drawerState.open() } },
                     arrangement = arrangement,
                     onArrangementChange = onArrangementChange,
-                    modifier = Modifier.fillMaxWidth(),
                     labels = labels,
                     colors = colorOptions,
                     searchResultsType = searchResultsType,
                     onSearchType = onSearchType,
                     onTaskSelect = { taskId ->
                         navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
+                ExtendedFloatingActionButton(
                     onClick = {
                         navController.navigate(NavRoutes.AddTask.route)
                     }
@@ -115,6 +115,8 @@ fun HomeRoute(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Task"
                     )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(text = "Add")
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) },

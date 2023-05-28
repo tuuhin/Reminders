@@ -48,9 +48,8 @@ fun TaskSearchResults(
             TaskArrangementStyle.GRID_STYLE -> TasksGridLayout(
                 tasks = tasks,
                 modifier = modifier.fillMaxHeight(),
-                onTaskSelect = onTaskSelect,
-
-                )
+                onTaskSelect = onTaskSelect
+            )
 
             TaskArrangementStyle.BLOCK_STYLE -> TasksLinearLayout(
                 tasks = tasks,

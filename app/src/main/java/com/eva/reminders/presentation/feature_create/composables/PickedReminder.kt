@@ -7,7 +7,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Timelapse
-import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import com.eva.reminders.presentation.feature_create.utils.ReminderFrequency
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickedReminder(
     show: Boolean,
@@ -42,7 +44,7 @@ fun PickedReminder(
                 "${state.date.text}, $formattedTime ( $repeat )"
             }
         }
-        AssistChip(
+        FilterChip(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Outlined.Timelapse,
@@ -51,6 +53,7 @@ fun PickedReminder(
             },
             onClick = onClick,
             label = { Text(text = data) },
+            selected = true,
             modifier = modifier
         )
     }

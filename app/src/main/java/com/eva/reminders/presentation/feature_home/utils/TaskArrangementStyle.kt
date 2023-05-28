@@ -5,7 +5,7 @@ enum class TaskArrangementStyle {
     BLOCK_STYLE
 }
 
-sealed class TaskArrangementEvent {
-    object GridStyleEvent : TaskArrangementEvent()
-    object BlockStyleEvent : TaskArrangementEvent()
+sealed interface TaskArrangementEvent {
+    object GridStyleEvent : TaskArrangementEvent
+    object BlockStyleEvent : TaskArrangementEvent
 }

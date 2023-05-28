@@ -52,42 +52,42 @@ fun SearchResultsNoResults(
                 textAlign = TextAlign.Center
             )
         }
-    }
-    LazyColumn(
-        contentPadding = PaddingValues(8.dp),
-        modifier = modifier
-    ) {
-        if (labels.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Labels",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 2.dp)
-                )
+    } else
+        LazyColumn(
+            contentPadding = PaddingValues(8.dp),
+            modifier = modifier
+        ) {
+            if (labels.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Labels",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+                item {
+                    SearchOptionLabels(
+                        labels = labels,
+                        onLabelClick = { onSearchType(SearchType.LabelSearch(it)) },
+                        modifier = Modifier.fillParentMaxWidth()
+                    )
+                }
             }
-            item {
-                SearchOptionLabels(
-                    labels = labels,
-                    onLabelClick = { onSearchType(SearchType.LabelSearch(it)) },
-                    modifier = Modifier.fillParentMaxWidth()
-                )
+            if (colors.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Colors",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+                item {
+                    SearchOptionColor(
+                        colors = colors,
+                        onColorSelect = { onSearchType(SearchType.ColorSearch(it)) },
+                        modifier = Modifier.fillParentMaxWidth()
+                    )
+                }
             }
         }
-        if (colors.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Colors",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 2.dp)
-                )
-            }
-            item {
-                SearchOptionColor(
-                    colors = colors,
-                    onColorSelect = { onSearchType(SearchType.ColorSearch(it)) },
-                    modifier = Modifier.fillParentMaxWidth()
-                )
-            }
-        }
-    }
 }

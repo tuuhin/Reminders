@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Label
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,16 +25,16 @@ fun SearchOptionLabels(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         labels.forEach { label ->
-            SuggestionChip(
+            AssistChip(
                 onClick = { onLabelClick(label) },
-                label = { Text(text = label.label) }, icon = {
+                label = { Text(text = label.label) },
+                leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Label,
-                        contentDescription = "Label"
+                        contentDescription = "Label: ${label.label}"
                     )
                 }
             )
         }
     }
-
 }

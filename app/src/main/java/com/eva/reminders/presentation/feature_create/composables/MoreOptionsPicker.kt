@@ -35,14 +35,14 @@ fun MoreOptionsPicker(
     ) {
         ModalBottomSheet(
             onDismissRequest = {
-                if (sheetState.isVisible) scope.launch { sheetState.hide() }
+                if (sheetState.isVisible)
+                    scope.launch { sheetState.hide() }
             },
             modifier = modifier,
             sheetState = sheetState
         ) {
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                modifier = Modifier.padding(4.dp)
             ) {
                 ListItem(
                     headlineContent = { Text(text = "Delete") },
