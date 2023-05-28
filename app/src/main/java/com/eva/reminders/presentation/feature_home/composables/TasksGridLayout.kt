@@ -95,6 +95,8 @@ fun TaskGridLayoutPreview() {
                     reminderAt = TaskReminderModel(),
                     isArchived = false,
                     updatedAt = LocalDateTime.now(),
+                    isExact = true,
+                    labels = emptyList()
                 ), TaskModel(
                     id = 1,
                     title = "Something",
@@ -104,6 +106,8 @@ fun TaskGridLayoutPreview() {
                     reminderAt = TaskReminderModel(at = LocalDateTime.now()),
                     isArchived = false,
                     updatedAt = LocalDateTime.now().plusDays(1),
+                    isExact = false,
+                    labels = emptyList()
                 ), TaskModel(
                     id = 2,
                     title = "Something",
@@ -114,7 +118,7 @@ fun TaskGridLayoutPreview() {
                         at = LocalDateTime.now().minusDays(1), isRepeating = true
                     ),
                     isArchived = false,
-                    updatedAt = LocalDateTime.now(),
+                    updatedAt = LocalDateTime.now(), isExact = false,
                     labels = listOf(TaskLabelModel(0, "One"), TaskLabelModel(1, "Two"))
                 ), TaskModel(
                     id = 4,
@@ -124,7 +128,7 @@ fun TaskGridLayoutPreview() {
                     color = TaskColorEnum.ROSE,
                     reminderAt = TaskReminderModel(at = LocalDateTime.now()),
                     isArchived = false,
-                    updatedAt = LocalDateTime.now(),
+                    updatedAt = LocalDateTime.now(), isExact = true,
                     labels = listOf(
                         TaskLabelModel(0, "One"),
                         TaskLabelModel(1, "Two"),

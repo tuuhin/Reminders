@@ -52,7 +52,7 @@ fun AddTaskState.toCreateModel(labels: List<TaskLabelModel>): CreateTaskModel = 
         at = if (isReminderPresent)
             reminderState.date.schedule.atTime(reminderState.time.schedule)
         else null, isRepeating = reminderState.frequency.isRepeating
-    )
+    ), isExact = reminderState.isExact
 )
 
 fun AddTaskState.toUpdateModel(labels: List<TaskLabelModel>): TaskModel = TaskModel(
@@ -68,5 +68,6 @@ fun AddTaskState.toUpdateModel(labels: List<TaskLabelModel>): TaskModel = TaskMo
             reminderState.date.schedule.atTime(reminderState.time.schedule)
         else null, isRepeating = reminderState.frequency.isRepeating
     ),
-    updatedAt = LocalDateTime.now()
+    updatedAt = LocalDateTime.now(),
+    isExact = reminderState.isExact
 )

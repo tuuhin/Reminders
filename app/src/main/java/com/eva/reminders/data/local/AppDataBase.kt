@@ -1,6 +1,7 @@
 package com.eva.reminders.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -23,8 +24,11 @@ import com.eva.reminders.data.local.entity.TaskLabelRel
         TaskLabelRel::class,
         LabelFtsEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(ColorEnumAdapter::class, DateTimeAdapter::class)
 abstract class AppDataBase : RoomDatabase() {

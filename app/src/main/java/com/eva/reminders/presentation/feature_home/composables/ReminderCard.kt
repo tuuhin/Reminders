@@ -195,6 +195,8 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
             reminderAt = TaskReminderModel(),
             isArchived = false,
             updatedAt = LocalDateTime.now(),
+            isExact = true, labels = emptyList()
+
         ), TaskModel(
             id = 1,
             title = "Something",
@@ -204,6 +206,8 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
             reminderAt = TaskReminderModel(at = LocalDateTime.now()),
             isArchived = false,
             updatedAt = LocalDateTime.now().plusDays(1),
+            isExact = false,
+            labels = emptyList()
         ), TaskModel(
             id = 2,
             title = "Something",
@@ -215,6 +219,7 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
             ),
             isArchived = false,
             updatedAt = LocalDateTime.now(),
+            isExact = false,
             labels = listOf(TaskLabelModel(0, "One"), TaskLabelModel(1, "Two"))
         ), TaskModel(
             id = 4,
@@ -225,6 +230,7 @@ private class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
             reminderAt = TaskReminderModel(at = LocalDateTime.now()),
             isArchived = false,
             updatedAt = LocalDateTime.of(2023, 6, 1, 10, 40),
+            isExact = true,
             labels = listOf(
                 TaskLabelModel(0, "One"),
                 TaskLabelModel(1, "Two"),

@@ -9,5 +9,6 @@ data class CreateTaskModel(
     val isArchive: Boolean,
     val time: TaskReminderModel?,
     val labels: List<TaskLabelModel>,
-    val colorEnum: TaskColorEnum
+    val colorEnum: TaskColorEnum,
+    val isExact: Boolean,
 )

@@ -38,4 +38,7 @@ data class TaskEntity(
     @ColumnInfo(name = "UPDATED AT")
     val updateTime: LocalDateTime = LocalDateTime.now(),
 
+    @ColumnInfo(name = "IS_EXACT", defaultValue = "0")
+    val exact: Boolean = false
+
 )

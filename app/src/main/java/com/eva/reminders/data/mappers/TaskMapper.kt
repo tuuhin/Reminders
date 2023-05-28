@@ -14,6 +14,8 @@ fun TaskEntity.toModel(): TaskModel = TaskModel(
     reminderAt = TaskReminderModel(time, isRepeating),
     isArchived = isArchived,
     updatedAt = updateTime,
+    isExact = exact,
+    labels = emptyList()
 )
 
 fun TaskModel.toEntity(): TaskEntity = TaskEntity(

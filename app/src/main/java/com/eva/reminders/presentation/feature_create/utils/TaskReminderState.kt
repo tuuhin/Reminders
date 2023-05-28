@@ -7,12 +7,15 @@ data class TaskReminderState(
         ?: ReminderTimeOptions.Custom(time = LocalTime.of(23, 59)),
     val invalidTime: String? = null,
     val date: ReminderDateOptions = ReminderDateOptions.Today(),
-    val frequency: ReminderFrequency = ReminderFrequency.DO_NOT_REPEAT
+    val frequency: ReminderFrequency = ReminderFrequency.DO_NOT_REPEAT,
+    val isExact: Boolean = false
 )
 
 
-sealed class TaskRemindersEvents {
-    data class OnDateChanged(val date: ReminderDateOptions) : TaskRemindersEvents()
-    data class OnTimeChanged(val time: ReminderTimeOptions) : TaskRemindersEvents()
-    data class OnReminderChanged(val frequency: ReminderFrequency) : TaskRemindersEvents()
+sealed interface TaskRemindersEvents {
+    data class OnDateChanged(val date: ReminderDateOptions) : TaskRemindersEvents
+    data class OnTimeChanged(val time: ReminderTimeOptions) : TaskRemindersEvents
+    data class OnReminderChanged(val frequency: ReminderFrequency) : TaskRemindersEvents
+
+    data class OnIsExactChange(val isExact: Boolean) : TaskRemindersEvents
 }

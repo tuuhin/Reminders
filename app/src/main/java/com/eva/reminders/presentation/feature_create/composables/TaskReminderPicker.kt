@@ -5,9 +5,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.eva.reminders.presentation.feature_create.utils.ReminderFrequency
 import com.eva.reminders.presentation.feature_create.utils.TaskReminderState
 import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
 
@@ -30,7 +32,6 @@ fun TaskReminderPicker(
                 dismissOnBackPress = false
             )
         ) {
-
             Card(
                 modifier = modifier,
                 shape = MaterialTheme.shapes.extraLarge
@@ -74,6 +75,27 @@ fun TaskReminderPicker(
                         },
                     )
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Exact",
+                            color = if (state.frequency == ReminderFrequency.DAILY)
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            else
+                                MaterialTheme.colorScheme.outline
+                        )
+                        Checkbox(
+                            enabled = state.frequency == ReminderFrequency.DAILY,
+                            checked = state.isExact,
+                            onCheckedChange = { isExact ->
+                                onRemindersEvents(TaskRemindersEvents.OnIsExactChange(isExact))
+                            },
+                        )
+                    }
+                    Divider()
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp),
@@ -90,5 +112,15 @@ fun TaskReminderPicker(
 }
 
 
-
-
+@Preview
+@Composable
+fun TaskReminderPickerPreview() {
+    TaskReminderPicker(
+        state = TaskReminderState(isExact = true),
+        showDialog = true,
+        onDismissRequest = { },
+        onSave = { },
+        onDelete = { },
+        onRemindersEvents = {}
+    )
+}

@@ -12,6 +12,8 @@ class BootAlarmInitImpl @Inject constructor(
     private val tasksDao: TaskDao
 ) : BootAlarmInitRepo {
     override suspend fun initializeTasks(): List<TaskModel> =
-        withContext(Dispatchers.IO) { tasksDao.getTasks().map { it.toModel() } }
+        withContext(Dispatchers.IO) {
+            tasksDao.getTasks().filter { it.time != null }.map { it.toModel() }
+        }
 
 }

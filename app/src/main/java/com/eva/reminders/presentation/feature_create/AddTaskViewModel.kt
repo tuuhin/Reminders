@@ -104,6 +104,14 @@ class AddTaskViewModel @Inject constructor(
             is TaskRemindersEvents.OnTimeChanged -> _taskState.update {
                 it.copy(reminderState = it.reminderState.copy(time = event.time))
             }
+
+            is TaskRemindersEvents.OnIsExactChange -> _taskState.update {
+                it.copy(
+                    reminderState = it.reminderState.copy(
+                        isExact = event.isExact
+                    )
+                )
+            }
         }
     }
 

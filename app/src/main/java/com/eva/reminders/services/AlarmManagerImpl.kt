@@ -119,13 +119,11 @@ class AlarmManagerImpl(
             Log.i(alarmTag, "setExactAndAllowWhileIdle : ${taskModel.reminderAt.at}")
             return
         }
-
         alarmManager?.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             alarmTime,
             pendingIntent
         )
-
         Log.d(alarmTag, "setAndAllowWhileIdle : ${taskModel.reminderAt.at} ")
     }
 
@@ -145,13 +143,21 @@ class AlarmManagerImpl(
         } else 0
 
         val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
-
-        alarmManager?.setInexactRepeating(
-            AlarmManager.RTC_WAKEUP,
-            alarmTime + extraMillis,
-            intervalInMillis,
-            pendingIntent
-        )
+        if (taskModel.isExact) {
+            alarmManager?.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                alarmTime + extraMillis,
+                intervalInMillis,
+                pendingIntent
+            )
+        } else {
+            alarmManager?.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                alarmTime + extraMillis,
+                intervalInMillis,
+                pendingIntent
+            )
+        }
 
         val alarmTimeLog =
             Instant.ofEpochMilli(alarmTime + extraMillis)

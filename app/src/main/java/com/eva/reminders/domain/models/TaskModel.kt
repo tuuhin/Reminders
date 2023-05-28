@@ -12,5 +12,6 @@ data class TaskModel(
     val reminderAt: TaskReminderModel,
     val isArchived: Boolean,
     val updatedAt: LocalDateTime,
-    val labels: List<TaskLabelModel> = emptyList()
+    val labels: List<TaskLabelModel>,
+    val isExact:Boolean ,
 )

@@ -13,5 +13,6 @@ fun TaskWithLabelRelation.toModel(): TaskModel = TaskModel(
     reminderAt = TaskReminderModel(task.time,task.isRepeating),
     isArchived = task.isArchived,
     updatedAt = task.updateTime,
-    labels = labels.map { it.toModel() }
+    labels = labels.map { it.toModel() },
+    isExact = task.exact
 )
