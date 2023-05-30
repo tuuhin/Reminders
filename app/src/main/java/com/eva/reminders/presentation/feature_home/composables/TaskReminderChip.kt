@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AvTimer
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,10 +61,16 @@ fun TaskReminderChip(
                 .padding(vertical = 4.dp, horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = if (isExact) Icons.Outlined.AvTimer else Icons.Outlined.Timer,
-                contentDescription = "Timer"
-            )
+            if (isExact)
+                Icon(
+                    imageVector = Icons.Outlined.Schedule,
+                    contentDescription = "Timer"
+                )
+            else
+                Icon(
+                    imageVector = Icons.Outlined.Alarm,
+                    contentDescription = "Fixed time"
+                )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = reminderTime,

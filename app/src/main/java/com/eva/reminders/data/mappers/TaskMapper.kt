@@ -26,8 +26,8 @@ fun TaskModel.toEntity(): TaskEntity = TaskEntity(
     color = color,
     time = reminderAt.at,
     isArchived = isArchived,
-    updateTime = updatedAt,
-    isRepeating = reminderAt.isRepeating
+    isRepeating = reminderAt.isRepeating,
+    exact = isExact
 )
 
 fun CreateTaskModel.toEntity(): TaskEntity = TaskEntity(
@@ -37,5 +37,6 @@ fun CreateTaskModel.toEntity(): TaskEntity = TaskEntity(
     color = colorEnum,
     time = time?.at,
     isArchived = isArchive,
-    isRepeating = time?.isRepeating ?: false
+    isRepeating = time?.isRepeating ?: false,
+    exact = isExact
 )

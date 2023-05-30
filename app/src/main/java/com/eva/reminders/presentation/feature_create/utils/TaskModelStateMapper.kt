@@ -9,7 +9,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-
 fun TaskModel.toUpdateState(): AddTaskState = AddTaskState(
     id = id,
     title = title,
@@ -35,7 +34,8 @@ fun TaskModel.toUpdateState(): AddTaskState = AddTaskState(
                 LocalDate.now().plusDays(1) -> ReminderDateOptions.Tomorrow()
                 LocalDate.now().plusWeeks(1) -> ReminderDateOptions.NextWeek()
                 else -> ReminderDateOptions.Custom(dateTime.toLocalDate())
-            }
+            },
+            isExact = isExact
         )
     } ?: TaskReminderState(),
     isReminderPresent = reminderAt.at != null
