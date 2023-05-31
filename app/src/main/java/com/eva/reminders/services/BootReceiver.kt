@@ -9,9 +9,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +19,8 @@ import javax.inject.Inject
 class BootReceiver : BroadcastReceiver() {
 
     private val receiverTag = "ON_BOOT"
+
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     @Inject
     lateinit var alarmManagerRepo: AlarmManagerRepo
@@ -29,22 +31,23 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
         Log.i(receiverTag, "READY TO GO")
-        // Initialize The Alarms
-        try {
-            CoroutineScope(Dispatchers.IO + SupervisorJob())
-                .launch {
-                    initRepo
-                        .initializeTasks()
-                        .map { async { alarmManagerRepo.createAlarm(it) } }
-                        .awaitAll()
-                    Log.i(receiverTag, "INITIALIZATION FINISHED")
-                }
-        } catch (e: Exception) {
-            if (e is CancellationException) {
-                throw e
-            }
-            Log.i(receiverTag, e.message ?: "Failed")
-        }
 
+        // Initialize The Alarms
+        scope.launch {
+            try {
+                initRepo
+                    .initializeTasks()
+                    .map { async { alarmManagerRepo.createAlarm(it) } }
+                    .awaitAll()
+                Log.i(receiverTag, "INITIALIZATION FINISHED")
+            } catch (e: Exception) {
+                if (e is CancellationException)
+                    throw e
+                Log.i(receiverTag, e.message ?: "Failed")
+            } finally {
+                cancel()
+                Log.i(receiverTag, "COROUTINE HAS BEEN CANCELED")
+            }
+        }
     }
 }
