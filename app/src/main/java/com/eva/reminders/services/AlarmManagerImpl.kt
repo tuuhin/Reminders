@@ -41,7 +41,7 @@ class AlarmManagerImpl(
             context,
             taskModel.id,
             intent,
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val alarmTime =
@@ -91,7 +91,8 @@ class AlarmManagerImpl(
     }
 
     override fun updateAlarm(taskModel: TaskModel) {
-        stopAlarm(taskModel)
+        if (taskModel.reminderAt.at == null)
+            stopAlarm(taskModel)
         createAlarm(taskModel)
     }
 

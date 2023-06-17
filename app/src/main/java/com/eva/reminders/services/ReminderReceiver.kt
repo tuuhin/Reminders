@@ -53,7 +53,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 action = NotificationConstants.NOTIFICATION_INTENT_ACTION
             },
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val readAction =
@@ -82,7 +82,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setOngoing(true)
                 .setContentTitle(title)
-                .setContentIntent(activityIntent)
+             //   .setContentIntent(activityIntent)
                 .apply {
                     if (!content.isNullOrEmpty()) {
                         setContentText(content.getFirstSentence())
