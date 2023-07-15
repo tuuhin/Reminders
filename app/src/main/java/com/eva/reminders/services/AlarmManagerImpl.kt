@@ -22,7 +22,7 @@ class AlarmManagerImpl(
 
     private val alarmTag = "ALARM_TAG"
 
-    private val alarmManager = context.getSystemService<AlarmManager>()
+    private val alarmManager by lazy { context.getSystemService<AlarmManager>() }
 
     override fun createAlarm(taskModel: TaskModel) {
 
@@ -41,7 +41,7 @@ class AlarmManagerImpl(
             context,
             taskModel.id,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
 
         val alarmTime =
@@ -72,9 +72,7 @@ class AlarmManagerImpl(
 
         val intent = Intent(context, ReminderReceiver::class.java)
             .apply {
-                putExtra("TITLE", taskModel.title)
-                putExtra("CONTENT", taskModel.content)
-                putExtra("ID", taskModel.id)
+                action = NotificationConstants.NOTIFICATION_READ_ACTION
             }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -103,16 +101,10 @@ class AlarmManagerImpl(
     ) {
         if (taskModel.reminderAt.at == null) return
         //Checking if the time has already passed for the non repeating alarm
-        if (taskModel.reminderAt.at < LocalDateTime.now() && !taskModel.reminderAt.isRepeating) {
-            Log.w(alarmTag, "Cannot set the non repeating alarm as the time had already passed")
-            return
-        }
+        if (taskModel.reminderAt.at < LocalDateTime.now()) return
 
-        if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            && alarmManager?.canScheduleExactAlarms() == true
-        ) {
-            alarmManager.setExactAndAllowWhileIdle(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager?.canScheduleExactAlarms() == true) {
+            alarmManager?.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 alarmTime,
                 pendingIntent
@@ -138,12 +130,19 @@ class AlarmManagerImpl(
 
         // Adding the extra days to make the alarm work properly
         val daysDifference = if (taskModel.reminderAt.at < LocalDateTime.now()) {
-            val extra =
-                LocalDate.now().dayOfYear - taskModel.reminderAt.at.toLocalDate().dayOfYear
+            val currentDayOfYear = LocalDate.now().dayOfYear
+            val modelDayOfYear = taskModel.reminderAt.at.dayOfYear
+            val extra = currentDayOfYear - modelDayOfYear
             if (extra != 0) extra else 1
         } else 0
 
         val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
+
+        val alarmTimeLog =
+            Instant.ofEpochMilli(alarmTime + extraMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+
         if (taskModel.isExact) {
             alarmManager?.setRepeating(
                 AlarmManager.RTC_WAKEUP,
@@ -151,23 +150,16 @@ class AlarmManagerImpl(
                 intervalInMillis,
                 pendingIntent
             )
-        } else {
-            alarmManager?.setInexactRepeating(
-                AlarmManager.RTC_WAKEUP,
-                alarmTime + extraMillis,
-                intervalInMillis,
-                pendingIntent
-            )
+            Log.d(alarmTag, "setRepeating : $alarmTimeLog")
+            return
         }
-
-        val alarmTimeLog =
-            Instant.ofEpochMilli(alarmTime + extraMillis)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-
+        alarmManager?.setInexactRepeating(
+            AlarmManager.RTC_WAKEUP,
+            alarmTime + extraMillis,
+            intervalInMillis,
+            pendingIntent
+        )
         Log.d(alarmTag, "setInexactRepeating : $alarmTimeLog")
 
-        return
     }
-
 }

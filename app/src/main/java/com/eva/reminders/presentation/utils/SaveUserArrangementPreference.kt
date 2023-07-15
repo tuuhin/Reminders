@@ -12,21 +12,25 @@ import kotlinx.coroutines.flow.map
 
 const val PREFERENCE_NAME = "USER_PREFERENCES"
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCE_NAME)
-
 class SaveUserArrangementPreference(
     private val context: Context
 ) {
 
-    private val arrangementInfo = booleanPreferencesKey("IS_ARRANGEMENT_LIST")
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCE_NAME)
 
-    val readArrangementStyle: Flow<TaskArrangementStyle> = context.dataStore.data.map { prefs ->
-        if (prefs[arrangementInfo] == true) TaskArrangementStyle.BLOCK_STYLE else TaskArrangementStyle.GRID_STYLE
-    }
 
-    suspend fun updateArrangementStyle(arrangementStyle: TaskArrangementStyle) {
+    private val arrangementKey = booleanPreferencesKey("IS_ARRANGEMENT_LIST")
+
+    val readArrangementStyle: Flow<TaskArrangementStyle> = context.dataStore.data
+        .map { prefs ->
+            if (prefs[arrangementKey] == true)
+                TaskArrangementStyle.BLOCK_STYLE
+            else TaskArrangementStyle.GRID_STYLE
+        }
+
+    suspend fun updateArrangementStyle(style: TaskArrangementStyle) {
         context.dataStore.edit { prefs ->
-            prefs[arrangementInfo] = when (arrangementStyle) {
+            prefs[arrangementKey] = when (style) {
                 TaskArrangementStyle.GRID_STYLE -> false
                 TaskArrangementStyle.BLOCK_STYLE -> true
             }

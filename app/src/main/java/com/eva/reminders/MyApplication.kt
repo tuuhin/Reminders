@@ -21,7 +21,6 @@ class MyApplication : Application() {
             description = NotificationConstants.NOTIFICATION_CHANNEL_DESC
             lockscreenVisibility = NotificationCompat.VISIBILITY_PRIVATE
             setShowBadge(true)
-            vibrationPattern = longArrayOf(0L, 400L, 200L, 400L)
         }
         val notificationManager = getSystemService<NotificationManager>()
         notificationManager?.createNotificationChannel(channel)

@@ -35,9 +35,10 @@ class BootReceiver : BroadcastReceiver() {
         // Initialize The Alarms
         scope.launch {
             try {
-                initRepo
-                    .initializeTasks()
-                    .map { async { alarmManagerRepo.createAlarm(it) } }
+                initRepo.initializeTasks()
+                    .map { model ->
+                        async { alarmManagerRepo.createAlarm(model) }
+                    }
                     .awaitAll()
                 Log.i(receiverTag, "INITIALIZATION FINISHED")
             } catch (e: Exception) {

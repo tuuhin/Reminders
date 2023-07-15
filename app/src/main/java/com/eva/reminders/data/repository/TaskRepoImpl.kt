@@ -13,12 +13,11 @@ import com.eva.reminders.services.AlarmManagerRepo
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
 
-class TaskRepoImpl @Inject constructor(
+class TaskRepoImpl(
     private val taskDao: TaskDao,
     private val taskLabelRel: TaskLabelRelDao,
-    private val alarmRepo: AlarmManagerRepo
+    private val alarmRepo: AlarmManagerRepo,
 ) : TaskRepository {
     override suspend fun createTask(model: CreateTaskModel): Resource<TaskModel?> {
         return try {
@@ -94,6 +93,7 @@ class TaskRepoImpl @Inject constructor(
             taskDao.updateTask(task.toEntity())
             taskLabelRel.deleteLabelsByTaskId(task.id)
             taskLabelRel.addTaskLabelsRel(labels)
+
             alarmRepo.updateAlarm(task)
             Resource.Success(task)
         } catch (e: SQLiteConstraintException) {

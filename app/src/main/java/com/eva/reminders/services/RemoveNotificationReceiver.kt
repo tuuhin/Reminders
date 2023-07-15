@@ -18,7 +18,5 @@ class RemoveNotificationReceiver : BroadcastReceiver() {
 
         val notificationManager = context.getSystemService<NotificationManager>()
         notificationManager?.cancel(notificationId)
-
     }
-
 }

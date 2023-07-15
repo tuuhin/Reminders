@@ -10,9 +10,8 @@ import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.flow.*
-import javax.inject.Inject
 
-class TaskLabelsRepoImpl @Inject constructor(
+class TaskLabelsRepoImpl(
     private val labelDao: LabelsDao,
     private val labelFts: LabelsFtsDao
 ) : TaskLabelsRepository {

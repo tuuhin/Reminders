@@ -6,9 +6,8 @@ import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.repository.BootAlarmInitRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-class BootAlarmInitImpl @Inject constructor(
+class BootAlarmInitImpl(
     private val tasksDao: TaskDao
 ) : BootAlarmInitRepo {
     override suspend fun initializeTasks(): List<TaskModel> =

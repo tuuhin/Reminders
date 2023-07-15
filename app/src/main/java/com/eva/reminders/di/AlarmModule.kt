@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ServiceModule {
+object AlarmModule {
 
     @Provides
     @Singleton
@@ -26,5 +26,4 @@ object ServiceModule {
     @Singleton
     fun getAlarmManager(@ApplicationContext context: Context): AlarmManagerRepo =
         AlarmManagerImpl(context)
-
 }
