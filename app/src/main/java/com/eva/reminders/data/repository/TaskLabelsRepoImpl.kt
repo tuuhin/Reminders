@@ -56,9 +56,11 @@ class TaskLabelsRepoImpl(
     }
 
     override suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>> {
-        return flow {
-            val allFlow = labelFts.all().takeIf { query.isEmpty() } ?: labelFts.search(query)
-            emitAll(allFlow.map { entries -> entries.map { it.toModel() } })
-        }
+        return (labelFts.all().takeIf { query.isEmpty() }
+            ?: labelFts.search(query))
+            .map { entities ->
+                entities.map { entity -> entity.toModel() }
+            }
+
     }
 }

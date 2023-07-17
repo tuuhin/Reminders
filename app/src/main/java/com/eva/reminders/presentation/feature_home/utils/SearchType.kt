@@ -6,8 +6,8 @@ import com.eva.reminders.domain.models.TaskModel
 
 sealed interface SearchType {
     object BlankSearch : SearchType
-    data class LabelSearch(val labelModel: TaskLabelModel) : SearchType
-    data class ColorSearch(val search: TaskColorEnum) : SearchType
+    data class LabelSearch(val label: TaskLabelModel) : SearchType
+    data class ColorSearch(val color: TaskColorEnum) : SearchType
     data class BasicSearch(val query: String) : SearchType
 
 }

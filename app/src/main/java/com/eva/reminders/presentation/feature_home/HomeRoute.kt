@@ -27,13 +27,15 @@ import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.presentation.feature_home.composables.DrawerContent
 import com.eva.reminders.presentation.feature_home.composables.HomeSearchBar
-import com.eva.reminders.presentation.feature_home.composables.TasksGridLayout
-import com.eva.reminders.presentation.feature_home.composables.TasksLinearLayout
+import com.eva.reminders.presentation.feature_home.composables.TasksLayout
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarEvents
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarState
 import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
 import com.eva.reminders.presentation.feature_home.utils.SearchType
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
+import com.eva.reminders.presentation.utils.LocalArrangementStyle
 import com.eva.reminders.presentation.utils.NavConstants
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.ShowContent
@@ -47,14 +49,16 @@ fun HomeRoute(
     labels: List<TaskLabelModel>,
     tasks: ShowContent<List<TaskModel>>,
     tab: HomeTabs,
+    searchBarState: HomeSearchBarState,
     colorOptions: List<TaskColorEnum>,
-    arrangement: TaskArrangementStyle,
     searchResultsType: SearchResultsType,
     onSearchType: (SearchType) -> Unit,
     onArrangementChange: (TaskArrangementEvent) -> Unit,
+    onSearchBarEvents: (HomeSearchBarEvents) -> Unit,
     onTabChange: (HomeTabs) -> Unit,
     uiEvents: Flow<UIEvents>,
     modifier: Modifier = Modifier,
+    style: TaskArrangementStyle = LocalArrangementStyle.current
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -79,10 +83,10 @@ fun HomeRoute(
                 windowInsets = WindowInsets.statusBars
             ) {
                 DrawerContent(
-                    navController = navController,
                     labels = labels,
                     tab = tab,
                     onTabChange = onTabChange,
+                    onEdit = { navController.navigate(NavRoutes.EditLabels.route) },
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -93,12 +97,13 @@ fun HomeRoute(
             topBar = {
                 HomeSearchBar(
                     onDrawerClick = { scope.launch { drawerState.open() } },
-                    arrangement = arrangement,
                     onArrangementChange = onArrangementChange,
                     labels = labels,
                     colors = colorOptions,
                     searchResultsType = searchResultsType,
                     onSearchType = onSearchType,
+                    state = searchBarState,
+                    onSearchEvent = onSearchBarEvents,
                     onTaskSelect = { taskId ->
                         navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
                     },
@@ -126,7 +131,6 @@ fun HomeRoute(
                     .padding(padding)
                     .fillMaxSize()
             ) {
-                Spacer(modifier = Modifier.height(4.dp))
                 if (tasks.isLoading)
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -135,11 +139,12 @@ fun HomeRoute(
                     )
                 AnimatedVisibility(
                     visible = !tasks.isLoading,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
+                    enter = fadeIn() + expandVertically(expandFrom = Alignment.Bottom),
+                    exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+                    modifier = Modifier.padding(vertical = 4.dp)
                 ) {
-                    if (!tasks.isLoading && tasks.content.isEmpty()) {
-                        Column(
+                    when {
+                        tasks.content.isEmpty() -> Column(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
@@ -156,24 +161,16 @@ fun HomeRoute(
                                 color = MaterialTheme.colorScheme.secondary
                             )
                         }
-                    } else
-                        when (arrangement) {
-                            TaskArrangementStyle.GRID_STYLE -> TasksGridLayout(
-                                tasks = tasks.content,
-                                modifier = Modifier.fillMaxHeight(),
-                                onTaskSelect = { taskId ->
-                                    navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
-                                }
-                            )
 
-                            TaskArrangementStyle.BLOCK_STYLE -> TasksLinearLayout(
-                                tasks = tasks.content,
-                                modifier = Modifier.fillMaxHeight(),
-                                onTaskSelect = { taskId ->
-                                    navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
-                                }
-                            )
-                        }
+                        else -> TasksLayout(
+                            tasks = tasks.content,
+                            style = style,
+                            onTaskSelect = { taskId ->
+                                navController
+                                    .navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
+                            }
+                        )
+                    }
                 }
             }
         }

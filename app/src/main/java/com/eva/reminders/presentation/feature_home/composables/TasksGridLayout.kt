@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.domain.models.TaskModel
-import com.eva.reminders.presentation.feature_home.utils.taskModelList
+import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -31,6 +31,10 @@ fun TasksGridLayout(
     val isPinned by remember {
         derivedStateOf { tasks.any { it.pinned } }
     }
+    val allNotPinned by remember {
+        derivedStateOf { !tasks.all { it.pinned } }
+    }
+
     val pinnedTasks by remember(tasks) {
         derivedStateOf { tasks.filter { it.pinned } }
     }
@@ -41,21 +45,21 @@ fun TasksGridLayout(
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(10.dp),
+        contentPadding = PaddingValues(horizontal = 10.dp),
         verticalItemSpacing = 4.dp,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
     ) {
-
-        if (isPinned) {
+        if (isPinned && allNotPinned) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 Text(
                     text = "Pinned",
                     modifier = Modifier.padding(vertical = 2.dp),
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
-            itemsIndexed(pinnedTasks) { _, item ->
+            itemsIndexed(pinnedTasks, key = { _, item -> item.id }) { _, item ->
                 ReminderCard(
                     taskModel = item,
                     onTap = { onTaskSelect(item.id) },
@@ -67,9 +71,10 @@ fun TasksGridLayout(
                     text = "Others",
                     modifier = Modifier.padding(vertical = 2.dp),
                     style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
-            itemsIndexed(unPinnedTask) { _, item ->
+            itemsIndexed(unPinnedTask, key = { _, item -> item.id }) { _, item ->
                 ReminderCard(
                     taskModel = item,
                     onTap = { onTaskSelect(item.id) },
@@ -77,7 +82,7 @@ fun TasksGridLayout(
                 )
             }
         } else {
-            itemsIndexed(tasks) { _, item ->
+            itemsIndexed(tasks, key = { _, item -> item.id }) { _, item ->
                 ReminderCard(
                     taskModel = item,
                     onTap = { onTaskSelect(item.id) },
@@ -93,5 +98,8 @@ fun TasksGridLayout(
 @Preview(showBackground = true)
 @Composable
 fun TaskGridLayoutPreview() {
-    TasksGridLayout(tasks = taskModelList.toList(), onTaskSelect = {})
+    TasksGridLayout(
+        tasks = PreviewTaskModels.taskModelsList,
+        onTaskSelect = {}
+    )
 }

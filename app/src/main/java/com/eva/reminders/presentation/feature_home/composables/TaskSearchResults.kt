@@ -3,7 +3,6 @@ package com.eva.reminders.presentation.feature_home.composables
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +24,8 @@ fun TaskSearchResults(
     onTaskSelect: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (tasks.isEmpty()) {
-        Column(
+    when {
+        tasks.isEmpty() -> Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -43,19 +42,13 @@ fun TaskSearchResults(
                 color = MaterialTheme.colorScheme.secondary
             )
         }
-    } else {
-        when (arrangement) {
-            TaskArrangementStyle.GRID_STYLE -> TasksGridLayout(
-                tasks = tasks,
-                modifier = modifier.fillMaxHeight(),
-                onTaskSelect = onTaskSelect
-            )
 
-            TaskArrangementStyle.BLOCK_STYLE -> TasksLinearLayout(
-                tasks = tasks,
-                modifier = modifier.fillMaxHeight(),
-                onTaskSelect = onTaskSelect
-            )
-        }
+        else -> TasksLayout(
+            tasks = tasks,
+            style = arrangement,
+            onTaskSelect = onTaskSelect,
+            modifier = modifier.fillMaxSize()
+        )
     }
+
 }

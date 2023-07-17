@@ -37,8 +37,8 @@ fun TaskReminderLabelChips(
 ) {
     var showLabels by remember { mutableStateOf(false) }
 
-    if (labels.isNotEmpty()) {
-        Column(
+    when {
+        labels.isNotEmpty() -> Column(
             modifier = modifier.animateContentSize()
         ) {
             AssistChip(
@@ -61,8 +61,8 @@ fun TaskReminderLabelChips(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(0.dp)
                 ) {
-                    if (labels.size <= 3) {
-                        labels.forEach {
+                    when {
+                        labels.size <= 3 -> labels.forEach {
                             SuggestionChip(
                                 onClick = {},
                                 label = {
@@ -76,33 +76,36 @@ fun TaskReminderLabelChips(
                                 )
                             )
                         }
-                    } else {
-                        labels.subList(0, 3).forEach {
+
+                        else -> {
+                            labels.subList(0, 3).forEach {
+                                SuggestionChip(
+                                    onClick = {},
+                                    label = {
+                                        Text(
+                                            text = it.label,
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    },
+                                    colors = SuggestionChipDefaults.suggestionChipColors(
+                                        containerColor = colorResource(id = R.color.white_overlay)
+                                    )
+                                )
+                            }
                             SuggestionChip(
                                 onClick = {},
                                 label = {
                                     Text(
-                                        text = it.label,
-                                        style = MaterialTheme.typography.labelSmall
+                                        text = "+${labels.size - 3}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        letterSpacing = 8.sp
                                     )
-                                }, colors = SuggestionChipDefaults.suggestionChipColors(
+                                },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
                                     containerColor = colorResource(id = R.color.white_overlay)
                                 )
                             )
                         }
-                        SuggestionChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    text = "+${labels.size - 3}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    letterSpacing = 8.sp
-                                )
-                            },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = colorResource(id = R.color.white_overlay)
-                            )
-                        )
                     }
                 }
             }

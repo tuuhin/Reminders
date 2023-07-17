@@ -11,16 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.domain.models.TaskLabelModel
+import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawerLabelItems(
     modifier: Modifier = Modifier,
@@ -28,48 +26,45 @@ fun DrawerLabelItems(
     labels: List<TaskLabelModel>,
 ) {
     Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
-            text = buildAnnotatedString {
-                append("Labels ")
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                ) {
-                    append("(${labels.size})")
-                }
-            }
+            text = "Labels ",
+            style = MaterialTheme.typography.titleMedium
         )
-        TextButton(onClick = onEdit) {
+        Badge(
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ) {
             Text(
-                text = "Edit",
-                style = MaterialTheme.typography.bodyMedium
+                text = "${labels.size}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
     }
-    NavigationDrawerItem(
-        label = { Text(text = "Create New Label") },
-        selected = false,
-        onClick = onEdit,
-        icon = {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add New Label"
-            )
-        }
-    )
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
         verticalArrangement = Arrangement.Top
     ) {
+        item {
+            NavigationDrawerItem(
+                label = { Text(text = "Create New Label") },
+                selected = false,
+                onClick = onEdit,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add New Label"
+                    )
+                }
+            )
+        }
         itemsIndexed(labels) { _, item ->
             NavigationDrawerItem(
                 label = {
@@ -92,17 +87,12 @@ fun DrawerLabelItems(
 }
 
 
-class DrawerLabelItemsPreViewParams : PreviewParameterProvider<List<TaskLabelModel>> {
-    override val values: Sequence<List<TaskLabelModel>> = sequenceOf(
+class DrawerLabelItemsPreViewParams : CollectionPreviewParameterProvider<List<TaskLabelModel>>(
+    listOf(
         emptyList(),
-        listOf(
-            TaskLabelModel(0, "One"),
-            TaskLabelModel(1, "Two"),
-            TaskLabelModel(2, "Three")
-        )
+        PreviewTaskModels.taskLabelModelList
     )
-}
-
+)
 
 @Preview
 @Composable

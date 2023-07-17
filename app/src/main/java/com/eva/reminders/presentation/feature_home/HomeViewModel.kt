@@ -1,9 +1,13 @@
 package com.eva.reminders.presentation.feature_home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarEvents
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarState
+import com.eva.reminders.presentation.feature_home.utils.HomeTaskPresenter
 import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
 import com.eva.reminders.presentation.feature_home.utils.SearchType
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
@@ -31,14 +35,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
-    private val preference: SaveUserArrangementPreference
+    private val preference: SaveUserArrangementPreference,
+    private val presenter: HomeTaskPresenter
 ) : ViewModel() {
-
-    val arrangement = preference.readArrangementStyle.stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        initialValue = TaskArrangementStyle.BLOCK_STYLE
-    )
 
     private val _uiEvent = MutableSharedFlow<UIEvents>()
     val uiEvents = _uiEvent.asSharedFlow()
@@ -50,71 +49,64 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<ShowContent<List<TaskModel>>>(ShowContent(content = emptyList()))
 
     val tasks = combine(_currentTab, _tasks) { tabs, tasks ->
-        when (tabs) {
-            HomeTabs.AllReminders -> tasks.copy(content = tasks.content
-                .filter { !it.isArchived })
-
-            HomeTabs.Archived -> tasks.copy(content = tasks.content
-                .filter { it.isArchived })
-
-            HomeTabs.NonScheduled -> tasks.copy(content = tasks.content
-                .filter { !it.isArchived && it.reminderAt.at == null })
-
-            HomeTabs.Scheduled -> tasks.copy(content = tasks.content
-                .filter { !it.isArchived && it.reminderAt.at != null })
-        }
+        presenter.showTaskByTabs(tabs, tasks)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(500L),
         ShowContent(content = emptyList())
     )
 
-    val colorOptions = tasks.map {
-        it.content.map { model -> model.color }.distinct()
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(500L),
-        emptyList()
-    )
 
     private val _searchType = MutableStateFlow<SearchType>(SearchType.BlankSearch)
 
     val searchedTasks = combine(_tasks, _searchType) { tasks, type ->
-        when (type) {
-            is SearchType.BasicSearch ->
-                SearchResultsType.SearchResults(
-                    tasks.content
-                        .filter {
-                            val colorFilter =
-                                Regex(".*${type.query}").matches(it.color.name)
-                            val labelFilter =
-                                it.labels.map { label -> label.label.trim().lowercase() }
-                                    .map { label -> Regex(".*${type.query}").matches(label) }
-                                    .any()
-                            colorFilter || labelFilter
-                        }
-                )
-
-            SearchType.BlankSearch -> SearchResultsType.NoResultsType
-            is SearchType.ColorSearch ->
-                SearchResultsType.SearchResults(
-                    tasks.content.filter { it.color == type.search }
-                )
-
-            is SearchType.LabelSearch ->
-                SearchResultsType.SearchResults(
-                    tasks.content.filter { it.labels.contains(type.labelModel) }
-                )
-        }
+        Log.d("TYPE", type.toString())
+        presenter.searchResultsType(type, tasks.content)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(500L),
         SearchResultsType.NoResultsType
     )
 
+    private val _homeSearchBarState = MutableStateFlow(HomeSearchBarState())
+    val homeSearchBarState = _homeSearchBarState.asStateFlow()
+
+    val colorOptions = tasks.map { showContent ->
+        presenter.colorOptions(showContent.content)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(500L),
+        emptyList()
+    )
+
+    val arrangement = preference.readArrangementStyle
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            initialValue = TaskArrangementStyle.BLOCK_STYLE
+        )
 
     init {
         getAllTasks()
+    }
+
+    fun onSearchBarEvents(events: HomeSearchBarEvents) {
+        when (events) {
+            is HomeSearchBarEvents.OnActiveChange -> {
+                _homeSearchBarState
+                    .update { it.copy(isActive = events.active, query = "") }
+                _searchType.update { SearchType.BlankSearch }
+            }
+
+            is HomeSearchBarEvents.OnQueryChange -> _homeSearchBarState
+                .update { it.copy(query = events.query) }
+
+            is HomeSearchBarEvents.OnSearch -> {
+                if (events.search.isEmpty())
+                    _searchType.update { SearchType.BlankSearch }
+                else _searchType.update { SearchType.BasicSearch(events.search) }
+            }
+        }
     }
 
     fun onSearchType(type: SearchType): Unit = _searchType.update { type }
@@ -122,15 +114,12 @@ class HomeViewModel @Inject constructor(
     fun onArrangementChange(event: TaskArrangementEvent) {
         viewModelScope.launch {
 
-            when (event) {
-                TaskArrangementEvent.BlockStyleEvent -> preference.updateArrangementStyle(
-                    TaskArrangementStyle.BLOCK_STYLE
-                )
+            val style = when (event) {
+                TaskArrangementEvent.BlockStyleEvent -> TaskArrangementStyle.BLOCK_STYLE
 
-                TaskArrangementEvent.GridStyleEvent -> preference.updateArrangementStyle(
-                    TaskArrangementStyle.GRID_STYLE
-                )
+                TaskArrangementEvent.GridStyleEvent -> TaskArrangementStyle.GRID_STYLE
             }
+            preference.updateArrangementStyle(style)
         }
     }
 
@@ -138,20 +127,21 @@ class HomeViewModel @Inject constructor(
 
     private fun getAllTasks() {
         viewModelScope.launch {
-            taskRepository.getAllTasks().onEach { res ->
-                when (res) {
-                    is Resource.Error -> {
-                        _uiEvent.emit(UIEvents.ShowSnackBar(res.message))
-                        _tasks.update { it.copy(isLoading = false, content = emptyList()) }
-                    }
+            taskRepository.getAllTasks()
+                .onEach { res ->
+                    when (res) {
+                        is Resource.Error -> {
+                            _uiEvent.emit(UIEvents.ShowSnackBar(res.message))
+                            _tasks.update { it.copy(isLoading = false, content = emptyList()) }
+                        }
 
-                    is Resource.Loading -> _tasks.update { it.copy(isLoading = true) }
-                    is Resource.Success -> _tasks.update {
-                        it.copy(isLoading = false, content = res.data)
+                        is Resource.Loading -> _tasks.update { it.copy(isLoading = true) }
+                        is Resource.Success -> _tasks.update {
+                            it.copy(isLoading = false, content = res.data)
+                        }
                     }
                 }
-            }.launchIn(this)
+                .launchIn(this)
         }
     }
-
 }

@@ -21,10 +21,6 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,10 +29,13 @@ import androidx.compose.ui.unit.dp
 import com.eva.reminders.R
 import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarEvents
+import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarState
 import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
 import com.eva.reminders.presentation.feature_home.utils.SearchType
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
+import com.eva.reminders.presentation.utils.LocalArrangementStyle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,16 +43,16 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 fun HomeSearchBar(
     labels: List<TaskLabelModel>,
     colors: List<TaskColorEnum>,
-    arrangement: TaskArrangementStyle,
+    state: HomeSearchBarState,
+    onSearchEvent: (HomeSearchBarEvents) -> Unit,
     searchResultsType: SearchResultsType,
     onSearchType: (SearchType) -> Unit,
     onArrangementChange: (TaskArrangementEvent) -> Unit,
     onDrawerClick: () -> Unit,
     onTaskSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    arrangement: TaskArrangementStyle = LocalArrangementStyle.current,
 ) {
-    var isActive by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
 
     //Status bar color
     val systemUiController = rememberSystemUiController()
@@ -62,44 +61,35 @@ fun HomeSearchBar(
     val statusBarColorUnFocused = MaterialTheme.colorScheme.surface
 
 
-    LaunchedEffect(systemUiController, isActive) {
+    LaunchedEffect(systemUiController, state.isActive) {
         systemUiController.setNavigationBarColor(
-            color = if (isActive) statusBarColorFocused else statusBarColorUnFocused
+            color = if (state.isActive) statusBarColorFocused else statusBarColorUnFocused
         )
         systemUiController.setStatusBarColor(
-            color = if (isActive) statusBarColorFocused else statusBarColorUnFocused
+            color = if (state.isActive) statusBarColorFocused else statusBarColorUnFocused
         )
     }
 
     SearchBar(
-        query = query,
-        onQueryChange = { query = it },
-        onSearch = { searchedText ->
-            if (searchedText.isNotEmpty())
-                onSearchType(SearchType.BasicSearch(searchedText))
-            else
-                onSearchType(SearchType.BlankSearch)
-        },
-        active = isActive,
-        onActiveChange = {
-            onSearchType(SearchType.BlankSearch)
-            isActive = it
-            query = ""
-        },
+        query = state.query,
+        onQueryChange = { onSearchEvent(HomeSearchBarEvents.OnQueryChange(it)) },
+        onSearch = { onSearchEvent(HomeSearchBarEvents.OnSearch(it)) },
+        active = state.isActive,
+        onActiveChange = { onSearchEvent(HomeSearchBarEvents.OnActiveChange(it)) },
         placeholder = { Text(text = "Search ....") },
         leadingIcon = {
-            if (!isActive)
+            if (state.isActive)
+                IconButton(onClick = { onSearchEvent(HomeSearchBarEvents.OnActiveChange(false)) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "Close the search bar"
+                    )
+                }
+            else
                 IconButton(onClick = onDrawerClick) {
                     Icon(
                         imageVector = Icons.Outlined.Menu,
                         contentDescription = "Menu Item"
-                    )
-                }
-            else
-                IconButton(onClick = { isActive = false }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = "Close the search bar"
                     )
                 }
 
@@ -109,21 +99,20 @@ fun HomeSearchBar(
                 tooltip = { Text(text = "Arrangement") }
             ) {
                 AnimatedVisibility(
-                    visible = !isActive,
+                    visible = !state.isActive,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
                     IconButton(
                         onClick = {
-                            when (arrangement) {
-                                TaskArrangementStyle.GRID_STYLE -> onArrangementChange(
+                            val newStyle = when (arrangement) {
+                                TaskArrangementStyle.GRID_STYLE ->
                                     TaskArrangementEvent.BlockStyleEvent
-                                )
 
-                                TaskArrangementStyle.BLOCK_STYLE -> onArrangementChange(
+                                TaskArrangementStyle.BLOCK_STYLE ->
                                     TaskArrangementEvent.GridStyleEvent
-                                )
                             }
+                            onArrangementChange(newStyle)
                         },
                     ) {
                         Icon(
@@ -179,10 +168,12 @@ fun HomeSearchBarPreview() {
         onDrawerClick = {},
         arrangement = TaskArrangementStyle.GRID_STYLE,
         onArrangementChange = {},
+        state = HomeSearchBarState(),
         labels = emptyList(),
         colors = emptyList(),
         searchResultsType = SearchResultsType.NoResultsType,
         onSearchType = {},
-        onTaskSelect = {}
+        onTaskSelect = {},
+        onSearchEvent = {}
     )
 }

@@ -11,11 +11,11 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskModel
-import com.eva.reminders.presentation.feature_home.utils.taskModelList
+import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
 
 @Composable
 fun ReminderCard(
@@ -25,7 +25,6 @@ fun ReminderCard(
 ) {
     Card(
         modifier = modifier
-            .padding(vertical = 4.dp)
             .clip(MaterialTheme.shapes.medium)
             .clickable(onClick = onTap)
             .animateContentSize(),
@@ -33,11 +32,16 @@ fun ReminderCard(
             containerColor = if (taskModel.color != TaskColorEnum.TRANSPARENT)
                 colorResource(id = taskModel.color.color)
             else
-                MaterialTheme.colorScheme.surfaceVariant
+                MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (taskModel.color != TaskColorEnum.TRANSPARENT)
+                MaterialTheme.colorScheme.onSurfaceVariant
+            else
+                MaterialTheme.colorScheme.onSurface
         ), shape = MaterialTheme.shapes.medium
     ) {
         Column(
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
                 text = taskModel.title,
@@ -45,15 +49,12 @@ fun ReminderCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = taskModel.content,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(modifier = Modifier.height(4.dp))
             taskModel.reminderAt.at?.let { time ->
                 TaskReminderChip(
                     time = time,
@@ -66,14 +67,15 @@ fun ReminderCard(
     }
 }
 
-class ReminderCardPreviewParams : PreviewParameterProvider<TaskModel> {
-    override val values: Sequence<TaskModel> = taskModelList
-}
+class ReminderCardPreviewModels :
+    CollectionPreviewParameterProvider<TaskModel>(PreviewTaskModels.taskModelsList)
 
 @Composable
 @Preview
 private fun ReminderCardPreview(
-    @PreviewParameter(ReminderCardPreviewParams::class) task: TaskModel
+
+    @PreviewParameter(ReminderCardPreviewModels::class)
+    task: TaskModel
 ) {
     ReminderCard(task, onTap = {})
 }
