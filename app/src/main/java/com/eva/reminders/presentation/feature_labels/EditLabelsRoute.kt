@@ -1,23 +1,21 @@
 package com.eva.reminders.presentation.feature_labels
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_labels.composabels.CreateNewLabel
 import com.eva.reminders.presentation.feature_labels.composabels.EditableLabels
@@ -25,46 +23,27 @@ import com.eva.reminders.presentation.feature_labels.utils.CreateLabelEvents
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelEvents
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelState
-import com.eva.reminders.presentation.utils.UIEvents
-import kotlinx.coroutines.flow.Flow
-
+import com.eva.reminders.presentation.feature_labels.utils.EditLabelsActions
+import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditLabelRoute(
-    navController: NavController,
     createLabelState: CreateLabelState,
     onCreateLabelEvent: (CreateLabelEvents) -> Unit,
     editLabelState: List<EditLabelState>,
     onEditLabelEvent: (EditLabelEvents) -> Unit,
-    uiEvents: Flow<UIEvents>,
+    onEditActions: (EditLabelsActions) -> Unit,
     modifier: Modifier = Modifier,
+    navigation: (@Composable () -> Unit)? = null,
+    snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current
 ) {
-    val snackBar = remember { SnackbarHostState() }
-
-    LaunchedEffect(true) {
-        uiEvents.collect { event ->
-            when (event) {
-                is UIEvents.ShowSnackBar -> snackBar.showSnackbar(event.message)
-                else -> {}
-            }
-        }
-    }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackBar) },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(text = "Edit Labels") },
-                navigationIcon = {
-                    if (navController.previousBackStackEntry != null)
-                        IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back Button"
-                            )
-                        }
-                }
+                navigationIcon = navigation ?: {}
             )
         },
         contentWindowInsets = WindowInsets.systemBars
@@ -73,7 +52,6 @@ fun EditLabelRoute(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-
         ) {
             Divider()
             CreateNewLabel(
@@ -84,37 +62,43 @@ fun EditLabelRoute(
                 onValueChange = { onCreateLabelEvent(CreateLabelEvents.OnValueChange(it)) }
             )
             Divider()
+
             AnimatedVisibility(
                 visible = editLabelState.isNotEmpty(),
-                enter = slideInVertically(),
-                exit = slideOutVertically()
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
-                    items(editLabelState.size) { idx ->
-                        val item = editLabelState[idx]
+                    itemsIndexed(
+                        editLabelState,
+                        key = { _, item -> item.labelId ?: -1 }
+                    ) { _, state ->
                         EditableLabels(
-                            state = item,
-                            onEdit = { onEditLabelEvent(EditLabelEvents.ToggleEnabled(item)) },
-                            onDelete = { onEditLabelEvent(EditLabelEvents.OnDelete(item)) },
+                            state = state,
+                            onEdit = { onEditLabelEvent(EditLabelEvents.ToggleEnabled(state)) },
+                            onDelete = { onEditActions(EditLabelsActions.OnDelete(state)) },
                             onValueChange = {
-                                onEditLabelEvent(EditLabelEvents.OnValueChange(it, item))
+                                onEditLabelEvent(EditLabelEvents.OnValueChange(it, state))
                             },
-                            onDone = { onEditLabelEvent(EditLabelEvents.OnUpdate(item)) },
-                            onCancel = { onEditLabelEvent(EditLabelEvents.ToggleEnabled(item)) }
+                            onDone = { onEditActions(EditLabelsActions.OnUpdate(state)) },
+                            onCancel = { onEditLabelEvent(EditLabelEvents.ToggleEnabled(state)) }
                         )
                     }
                 }
             }
-            if (editLabelState.isEmpty())
-                Column(
+
+            when {
+                editLabelState.isEmpty() -> Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.label),
+                        painter = painterResource(id = R.drawable.ic_labels),
                         contentDescription = "No Labels are present",
                         colorFilter = ColorFilter.tint(
                             color = MaterialTheme.colorScheme.surfaceTint
@@ -126,6 +110,7 @@ fun EditLabelRoute(
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
+            }
         }
     }
 }

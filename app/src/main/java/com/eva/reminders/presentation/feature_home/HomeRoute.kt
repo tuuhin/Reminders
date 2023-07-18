@@ -11,8 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +37,7 @@ import com.eva.reminders.presentation.utils.LocalArrangementStyle
 import com.eva.reminders.presentation.utils.NavConstants
 import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.ShowContent
-import com.eva.reminders.presentation.utils.UIEvents
-import kotlinx.coroutines.flow.Flow
+import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,24 +53,12 @@ fun HomeRoute(
     onArrangementChange: (TaskArrangementEvent) -> Unit,
     onSearchBarEvents: (HomeSearchBarEvents) -> Unit,
     onTabChange: (HomeTabs) -> Unit,
-    uiEvents: Flow<UIEvents>,
     modifier: Modifier = Modifier,
-    style: TaskArrangementStyle = LocalArrangementStyle.current
+    style: TaskArrangementStyle = LocalArrangementStyle.current,
+    snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(key1 = Unit) {
-        uiEvents.collect { event ->
-            when (event) {
-                is UIEvents.ShowSnackBar -> snackBarHostState.showSnackbar(event.message)
-                else -> {}
-            }
-        }
-    }
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,

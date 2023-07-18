@@ -1,10 +1,11 @@
 package com.eva.reminders.presentation.feature_labels.composabels
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -23,9 +24,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.utils.noColor
 
@@ -40,90 +43,115 @@ fun CreateNewLabel(
 ) {
     val focusRequest = remember { FocusRequester() }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onAdd, role = Role.Button),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (!state.isEnabled) {
-            IconButton(
-                onClick = onAdd,
-                modifier = Modifier.weight(.1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Add,
-                    contentDescription = "Add label"
-                )
-            }
-            Spacer(modifier = Modifier.weight(.1f))
-            Text(
-                text = "Create New Label",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(.8f)
-            )
-        } else {
+    Crossfade(
+        targetState = state.isEnabled,
+        label = "Create New Label"
+    ) { enabled ->
+        when {
+            enabled -> {
+                LaunchedEffect(Unit) {
+                    focusRequest.requestFocus()
+                }
+                Row(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onAdd, role = Role.Button),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-            LaunchedEffect(Unit) {
-                focusRequest.requestFocus()
-            }
-
-            IconButton(
-                onClick = onCancel,
-                modifier = Modifier.weight(.1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Close,
-                    contentDescription = "Cancel Label Creation"
-                )
-            }
-            Column(
-                modifier = Modifier.weight(.7f)
-            ) {
-                TextField(
-                    value = state.label,
-                    onValueChange = onValueChange,
-                    colors = TextFieldDefaults.noColor(),
-                    keyboardActions = KeyboardActions(onDone = { onDone() }),
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    ),
-                    textStyle = MaterialTheme.typography.bodyMedium,
-                    placeholder = {
-                        Text(
-                            text = "New Label",
-                            style = MaterialTheme.typography.bodyMedium,
+                    IconButton(
+                        onClick = onCancel,
+                        modifier = Modifier.weight(.1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "Cancel Label Creation"
                         )
-                    },
-                    modifier = Modifier.focusRequester(focusRequest),
-                )
-                state.isError?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    }
+                    Column(
+                        modifier = Modifier.weight(.7f)
+                    ) {
+                        TextField(
+                            value = state.label,
+                            onValueChange = onValueChange,
+                            colors = TextFieldDefaults.noColor(),
+                            keyboardActions = KeyboardActions(onDone = { onDone() }),
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Words,
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            placeholder = {
+                                Text(
+                                    text = "New Label",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequest),
+                        )
+
+                        state.isError?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = {
+                            onDone()
+                            focusRequest.freeFocus()
+                        },
+                        modifier = Modifier.weight(.1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Create Label"
+                        )
+                    }
                 }
             }
-            IconButton(
-                onClick = onDone,
-                modifier = Modifier.weight(.1f)
+
+            else -> Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clickable(onClick = onAdd, role = Role.Button),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Create Label"
+                IconButton(
+                    onClick = onAdd,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Add,
+                        contentDescription = "Add label"
+                    )
+                }
+                Text(
+                    text = "Create New Label",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
                 )
             }
         }
     }
 }
 
+
 private class CreateNewLabelPreviewParams
     : PreviewParameterProvider<CreateLabelState> {
     override val values: Sequence<CreateLabelState> = sequenceOf(
         CreateLabelState(isEnabled = false),
+        CreateLabelState(isEnabled = true, isError = "Some error"),
         CreateLabelState(isEnabled = true)
     )
 }

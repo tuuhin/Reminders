@@ -6,8 +6,8 @@ data class CreateLabelState(
     val isError: String? = null
 )
 
-sealed class CreateLabelEvents {
-    object ToggleEnabled : CreateLabelEvents()
-    data class OnValueChange(val text: String) : CreateLabelEvents()
-    object OnSubmit : CreateLabelEvents()
+sealed interface CreateLabelEvents {
+    object ToggleEnabled : CreateLabelEvents
+    data class OnValueChange(val text: String) : CreateLabelEvents
+    object OnSubmit : CreateLabelEvents
 }

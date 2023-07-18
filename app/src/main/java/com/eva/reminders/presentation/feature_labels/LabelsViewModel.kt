@@ -8,9 +8,10 @@ import com.eva.reminders.domain.usecase.LabelValidator
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelEvents
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelEvents
-import com.eva.reminders.presentation.feature_labels.utils.EditLabelState
+import com.eva.reminders.presentation.feature_labels.utils.EditLabelsActions
+import com.eva.reminders.presentation.feature_labels.utils.toEditState
+import com.eva.reminders.presentation.feature_labels.utils.toUpdateModel
 import com.eva.reminders.presentation.utils.UIEvents
-import com.eva.reminders.presentation.utils.toMutableStateFlow
 import com.eva.reminders.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,115 +21,137 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LabelsViewModel @Inject constructor(
-    private val labelRepo: TaskLabelsRepository
+    private val labelRepo: TaskLabelsRepository,
 ) : ViewModel() {
-
-    private val _validator = LabelValidator()
+    private val labelValidator: LabelValidator = LabelValidator()
 
     private val _labels = MutableStateFlow<List<TaskLabelModel>>(emptyList())
     val allLabels = _labels.asStateFlow()
 
-    private val _createLabelState = MutableStateFlow(CreateLabelState())
-    val createLabelState = _createLabelState.asStateFlow()
-
-    private val _updateLabels = _labels.map { models ->
-        models.map { model -> EditLabelState.fromLabel(model) }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyList())
-        .toMutableStateFlow(viewModelScope)
-
-    val updatedLabels = _updateLabels.asStateFlow()
+    private val _newLabelState = MutableStateFlow(CreateLabelState())
+    val newLabelState = _newLabelState.asStateFlow()
 
     private val _uiEvents = MutableSharedFlow<UIEvents>()
     val uiEvents = _uiEvents.asSharedFlow()
 
+    private val _editLabelEvents = MutableStateFlow<EditLabelEvents>(EditLabelEvents.ShowAllLabels)
+
+    private val _updatedLabelModelFlow = _labels.map { models ->
+        models.map { model -> model.toEditState() }
+    }
+
+
+    val editLabelStates = combine(_updatedLabelModelFlow, _editLabelEvents) { labels, event ->
+        when (event) {
+            is EditLabelEvents.OnValueChange -> labels.map { label ->
+                if (label.labelId == event.item.labelId)
+                    label.copy(updatedLabel = event.text)
+                else label
+            }
+
+            is EditLabelEvents.ToggleEnabled -> labels.map { label ->
+                if (label.labelId == event.item.labelId)
+                    label.copy(isEdit = !event.item.isEdit)
+                else label
+            }
+
+            else -> labels
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Lazily,
+        initialValue = emptyList()
+    )
+
+
     init {
+        getSavedLabels()
+    }
+
+    private fun getSavedLabels() {
         viewModelScope.launch(Dispatchers.IO) {
             labelRepo.getLabels()
-                .onEach { models ->
-                    _labels.update { models }
-                }
+                .catch { err -> err.printStackTrace() }
+                .onEach { models -> _labels.update { models } }
                 .launchIn(this)
         }
     }
 
     fun onCreateLabelEvent(event: CreateLabelEvents) {
         when (event) {
-            is CreateLabelEvents.OnValueChange -> _createLabelState
-                .update {
-                    it.copy(label = event.text)
-                }
+            is CreateLabelEvents.OnValueChange -> _newLabelState
+                .update { state -> state.copy(label = event.text) }
 
-            CreateLabelEvents.ToggleEnabled -> _createLabelState
-                .update {
-                    it.copy(isEnabled = !it.isEnabled, isError = null, label = "")
-                }
+            CreateLabelEvents.ToggleEnabled -> _newLabelState
+                .update { state -> CreateLabelState(isEnabled = !state.isEnabled) }
 
             CreateLabelEvents.OnSubmit -> createLabel()
         }
     }
 
-    fun onUpdateLabelEvent(event: EditLabelEvents) {
-        when (event) {
-            is EditLabelEvents.OnDelete -> event.item.model?.let { onDelete(it) }
-            is EditLabelEvents.OnUpdate -> event.item.toUpdateModel()?.let { onUpdate(it) }
-            is EditLabelEvents.OnValueChange -> {
-                _updateLabels.update { states ->
-                    states.map { state ->
-                        if (state == event.item)
-                            state.copy(text = event.text)
-                        else state
-                    }
-                }
-            }
+    fun onLabelAction(actions: EditLabelsActions) {
+        _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
+        when (actions) {
+            is EditLabelsActions.OnDelete -> actions.item.model
+                ?.let { model -> onDelete(model) }
 
-            is EditLabelEvents.ToggleEnabled -> {
-                _updateLabels.update { states ->
-                    states.map { state ->
-                        if (state == event.item)
-                            state.copy(isEdit = !state.isEdit)
-                        else state
-                    }
-
-                }
-            }
+            is EditLabelsActions.OnUpdate -> actions.item.toUpdateModel()
+                ?.let { model -> onUpdate(model) }
         }
     }
+
+    fun onUpdateLabelEvent(event: EditLabelEvents) = _editLabelEvents.update { event }
 
     private fun onDelete(label: TaskLabelModel) {
         viewModelScope.launch(Dispatchers.IO) {
             when (val res = labelRepo.deleteLabel(label)) {
-                is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
+                is Resource.Error -> _uiEvents
+                    .emit(UIEvents.ShowSnackBar(message = res.message))
+
+                is Resource.Success -> _uiEvents
+                    .emit(UIEvents.ShowSnackBar(message = "${label.label} is removed"))
+
                 else -> {}
             }
         }
     }
 
     private fun onUpdate(label: TaskLabelModel) {
-        val validator =
-            _validator.validate(label.label, _labels.value.map { it.label })
+        val validator = labelValidator.validate(
+            label = label.label,
+            others = _labels.value.map { it.label }
+        )
 
         viewModelScope.launch(Dispatchers.IO) {
             if (validator.isValid)
                 when (val res = labelRepo.updateLabel(label)) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
+                    is Resource.Error -> _uiEvents
+                        .emit(UIEvents.ShowSnackBar(message = res.message))
+
                     else -> {}
                 }
+            else _uiEvents.emit(UIEvents.ShowSnackBar(validator.error ?: "Cannot update label"))
         }
     }
 
     private fun createLabel() {
-        val validator =
-            _validator.validate(_createLabelState.value.label, _labels.value.map { it.label })
+        val validator = labelValidator.validate(
+            label = _newLabelState.value.label,
+            others = _labels.value.map { it.label }
+        )
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (validator.isValid)
-                when (val res = labelRepo.createLabel(_createLabelState.value.label)) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
+            if (validator.isValid) {
+                val trimmedLabel = _newLabelState.value.label.trim()
+                when (val res = labelRepo.createLabel(trimmedLabel)) {
+                    is Resource.Error -> _uiEvents
+                        .emit(UIEvents.ShowSnackBar(message = res.message))
+
                     is Resource.Loading -> {}
-                    is Resource.Success -> _createLabelState.update { CreateLabelState() }
+                    is Resource.Success -> _newLabelState.update { CreateLabelState() }
                 }
-            else
-                _uiEvents.emit(UIEvents.ShowSnackBar(validator.error ?: "Failed to create label"))
+            } else
+                _newLabelState.update { state -> state.copy(isError = validator.error) }
         }
     }
 }
