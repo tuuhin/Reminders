@@ -103,12 +103,22 @@ fun NavigationGraph(
             ) {
                 val viewModel = hiltViewModel<AddTaskViewModel>()
 
-                val addLabelViewModel = viewModel.addLabelToTasks
-                val queriedLabels by addLabelViewModel.labelSelector.collectAsStateWithLifecycle()
-                val query by addLabelViewModel.query.collectAsStateWithLifecycle()
-                val content by viewModel.showContent.collectAsStateWithLifecycle()
+                val queriedLabels by viewModel.labelsSelectorStates.collectAsStateWithLifecycle()
+                val query by viewModel.labelQuery.collectAsStateWithLifecycle()
+                val content by viewModel.taskState.collectAsStateWithLifecycle()
+                val selectedLabels by viewModel.selectedLabels.collectAsStateWithLifecycle()
 
-                val pickedLabels by addLabelViewModel.selectedLabelsAsFlow.collectAsStateWithLifecycle()
+
+                LaunchedEffect(key1 = Unit) {
+                    viewModel.uiEvents.collect { event ->
+                        when (event) {
+                            is UIEvents.ShowSnackBar -> snackBarHostState
+                                .showSnackbar(event.message)
+
+                            UIEvents.NavigateBack -> navHost.navigateUp()
+                        }
+                    }
+                }
 
                 if (content.isLoading)
                     Box(
@@ -124,36 +134,29 @@ fun NavigationGraph(
                     CreateTaskRoute(
                         state = content.content,
                         labelSearchQuery = query,
-                        onLabelSearchQuery = addLabelViewModel::searchLabels,
-                        onNewLabelCreate = addLabelViewModel::createLabel,
+                        onLabelSearchQuery = viewModel::searchLabels,
+                        onNewLabelCreate = viewModel::createNewLabel,
                         onAddTaskEvents = viewModel::onAddTaskEvents,
                         queriedLabels = queriedLabels,
-                        pickedLabels = pickedLabels.map { it.toModel() },
-                        onLabelSelect = addLabelViewModel::onSelect,
-                        uiEvents = viewModel.uiEvents,
+                        pickedLabels = selectedLabels,
+                        onLabelSelect = viewModel::onSelect,
                         navigation = {
                             if (navHost.previousBackStackEntry != null)
-                                IconButton(
-                                    onClick = { navHost.navigateUp() }
-                                ) {
+                                IconButton(onClick = { navHost.navigateUp() }) {
                                     Icon(
                                         imageVector = Icons.Default.ArrowBack,
                                         contentDescription = "Back Button"
                                     )
                                 }
                         },
-                        navigateBack = { navHost.navigateUp() }
                     )
                 }
-
             }
             composable(NavRoutes.EditLabels.route) {
 
                 val viewModel = hiltViewModel<LabelsViewModel>()
                 val createState = viewModel.newLabelState.collectAsStateWithLifecycle()
                 val editState = viewModel.editLabelStates.collectAsStateWithLifecycle()
-
-
 
                 LaunchedEffect(Unit) {
                     viewModel.uiEvents.collect { uiEvents ->
@@ -163,7 +166,6 @@ fun NavigationGraph(
 
                             else -> {}
                         }
-
                     }
                 }
 
@@ -172,6 +174,7 @@ fun NavigationGraph(
                     editLabelState = editState.value,
                     onCreateLabelEvent = viewModel::onCreateLabelEvent,
                     onEditLabelEvent = viewModel::onUpdateLabelEvent,
+                    onEditActions = viewModel::onLabelAction,
                     navigation = {
                         if (navHost.previousBackStackEntry != null)
                             IconButton(onClick = { navHost.navigateUp() }) {
@@ -180,7 +183,7 @@ fun NavigationGraph(
                                     contentDescription = "Back Button"
                                 )
                             }
-                    }, onEditActions = viewModel::onLabelAction
+                    },
                 )
             }
         }

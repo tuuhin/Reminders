@@ -135,7 +135,7 @@ fun HomeRoute(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.bell),
+                                painter = painterResource(id = R.drawable.ic_reminder_logo),
                                 contentDescription = "No associated notes are found",
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceTint)
                             )

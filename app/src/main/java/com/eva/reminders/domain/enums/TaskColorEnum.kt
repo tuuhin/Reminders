@@ -20,5 +20,27 @@ enum class TaskColorEnum(val color: Int) {
     PURPLE(R.color.purple_200),
     FUCHSIA(R.color.fuchsia_300),
     PINK(R.color.pink_300),
-    ROSE(R.color.rose_30)
+    ROSE(R.color.rose_30);
+
+    fun toText(): String =
+        when (this) {
+            TRANSPARENT -> ""
+            RED -> "Red"
+            ORANGE -> "Orange"
+            AMBER -> "Amber"
+            YELLOW -> "Yellow"
+            LIME -> "Lime"
+            GREEN -> "Green"
+            EMERALD -> "Emerald"
+            TEAL -> "Teal"
+            CYAN -> "Cyan"
+            SKY -> "Sky"
+            BLUE -> "Blue"
+            INDIGO -> "Indigo"
+            VIOLET -> "Violet"
+            PURPLE -> "Purple"
+            FUCHSIA -> "Fuchsia"
+            PINK -> "Pink"
+            ROSE -> "Rose"
+        }
 }

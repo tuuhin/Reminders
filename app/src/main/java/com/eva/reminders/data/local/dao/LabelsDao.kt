@@ -12,7 +12,10 @@ interface LabelsDao {
     fun getAllLabels(): Flow<List<LabelEntity>>
 
     @Upsert
-    suspend fun insertUpdateLabel(labelEntity: LabelEntity)
+    suspend fun insertUpdateLabel(labelEntity: LabelEntity): Long
+
+    @Query("SELECT * FROM ${TableNames.TASK_LABEL_TABLE} WHERE LABEL_ID=:id")
+    fun getLabelFromId(id: Long): LabelEntity
 
     @Delete
     suspend fun deleteLabel(labelEntity: LabelEntity)

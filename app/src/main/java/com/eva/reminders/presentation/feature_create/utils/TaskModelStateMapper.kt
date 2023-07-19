@@ -38,7 +38,8 @@ fun TaskModel.toUpdateState(): AddTaskState = AddTaskState(
             isExact = isExact
         )
     } ?: TaskReminderState(),
-    isReminderPresent = reminderAt.at != null
+    isReminderPresent = reminderAt.at != null,
+    editedAt = updatedAt
 )
 
 fun AddTaskState.toCreateModel(labels: List<TaskLabelModel>): CreateTaskModel = CreateTaskModel(

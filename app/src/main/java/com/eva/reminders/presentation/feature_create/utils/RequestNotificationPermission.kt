@@ -36,7 +36,10 @@ fun checkNotificationPermissions(
     )
 
     LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission.value) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && !hasNotificationPermission.value
+        ) {
             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }

@@ -43,7 +43,7 @@ fun SearchResultsNoResults(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.menu),
+                painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = "No options found",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceTint),
             )

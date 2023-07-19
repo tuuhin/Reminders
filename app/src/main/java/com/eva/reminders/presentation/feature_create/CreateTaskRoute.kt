@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,24 +12,23 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.*
 import com.eva.reminders.presentation.feature_create.utils.AddTaskEvents
 import com.eva.reminders.presentation.feature_create.utils.AddTaskState
-import com.eva.reminders.presentation.feature_labels.utils.SelectLabelState
-import com.eva.reminders.presentation.utils.UIEvents
+import com.eva.reminders.presentation.feature_create.utils.SelectLabelState
+import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import com.eva.reminders.presentation.utils.noColor
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateReminderRoute(
+fun CreateTaskRoute(
     state: AddTaskState,
-    navController: NavController,
+    navigation: @Composable () -> Unit,
     labelSearchQuery: String,
     onLabelSearchQuery: (String) -> Unit,
     onLabelSelect: (SelectLabelState) -> Unit,
@@ -41,18 +37,16 @@ fun CreateReminderRoute(
     onAddTaskEvents: (AddTaskEvents) -> Unit,
     queriedLabels: List<SelectLabelState>,
     pickedLabels: List<TaskLabelModel>,
-    uiEvents: Flow<UIEvents>,
+    snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current
 ) {
+    val coroutineScope = rememberCoroutineScope()
 
     val colorSheetState = rememberModalBottomSheetState()
     val optionsSheetState = rememberModalBottomSheetState()
 
-    val scope = rememberCoroutineScope()
-
     val titleFocus = remember { FocusRequester() }
     val contentFocus = remember { FocusRequester() }
 
-    val snackBarHostState = remember { SnackbarHostState() }
 
     var showReminderDialog by remember { mutableStateOf(false) }
     var showLabelPicker by remember { mutableStateOf(false) }
@@ -62,16 +56,6 @@ fun CreateReminderRoute(
         if (state.isCreate)
             titleFocus.requestFocus()
     }
-
-    LaunchedEffect(key1 = Unit) {
-        uiEvents.collect { event ->
-            when (event) {
-                is UIEvents.ShowSnackBar -> snackBarHostState.showSnackbar(event.message)
-                UIEvents.NavigateBack -> navController.navigateUp()
-            }
-        }
-    }
-
 
     TaskLabelPicker(
         show = showLabelPicker,
@@ -85,7 +69,7 @@ fun CreateReminderRoute(
     Scaffold(
         topBar = {
             CreateTaskTopBar(
-                navController = navController,
+                navigation = navigation,
                 isPinned = state.isPinned,
                 isReminder = state.isReminderPresent,
                 isArchived = state.isArchived,
@@ -96,30 +80,13 @@ fun CreateReminderRoute(
         },
         bottomBar = {
             CreateTaskBottomBar(
-                onColor = { scope.launch { colorSheetState.show() } },
-                onMoreOptions = { scope.launch { optionsSheetState.show() } },
-                floatingActionButton = {
-                    ExtendedFloatingActionButton(
-                        onClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) },
-                        elevation = FloatingActionButtonDefaults.elevation()
-                    ) {
-                        if (state.isCreate) {
-                            Icon(
-                                imageVector = Icons.Outlined.Check,
-                                contentDescription = "Add this task"
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(text = "Save")
-                        } else {
-                            Icon(
-                                imageVector = Icons.Outlined.Update,
-                                contentDescription = "Update this task"
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(text = "Update")
-                        }
-                    }
-                }
+                editedAt = state.editedAt,
+                isCreate = state.isCreate,
+                onColor = { coroutineScope.launch { colorSheetState.show() } },
+                onMoreOptions = { coroutineScope.launch { optionsSheetState.show() } },
+                onActionClick = { onAddTaskEvents(AddTaskEvents.OnSubmit) },
+                floatingActionBarColor = MaterialTheme.colorScheme.secondaryContainer,
+                floatingActionBarContentColor = MaterialTheme.colorScheme.onSecondaryContainer
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
@@ -152,7 +119,7 @@ fun CreateReminderRoute(
             isVisible = optionsSheetState.isVisible,
             sheetState = optionsSheetState,
             onLabels = {
-                scope.launch {
+                coroutineScope.launch {
                     if (optionsSheetState.isVisible)
                         optionsSheetState.hide()
                 }
@@ -164,8 +131,7 @@ fun CreateReminderRoute(
             onCopy = { onAddTaskEvents(AddTaskEvents.MakeCopy) }
         )
         LazyColumn(
-            modifier = modifier
-                .fillMaxSize(),
+            modifier = modifier.fillMaxSize(),
             contentPadding = padding
         ) {
             item {
@@ -177,7 +143,9 @@ fun CreateReminderRoute(
                     textStyle = MaterialTheme.typography.headlineSmall,
                     placeholder = {
                         Text(
-                            text = "Title", style = MaterialTheme.typography.headlineSmall
+                            text = "Title",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     },
                     colors = TextFieldDefaults.noColor(),
@@ -199,6 +167,7 @@ fun CreateReminderRoute(
                         Text(
                             text = "Note",
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     },
                     singleLine = false,
@@ -231,9 +200,10 @@ fun CreateReminderRoute(
             }
             item {
                 PickedColor(
-                    color = if (state.color != TaskColorEnum.TRANSPARENT) state.color else null,
+                    color = if (state.color != TaskColorEnum.TRANSPARENT) state.color
+                    else null,
                     onClick = {
-                        scope.launch {
+                        coroutineScope.launch {
                             if (!colorSheetState.isVisible)
                                 colorSheetState.show()
                         }
@@ -241,7 +211,22 @@ fun CreateReminderRoute(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
-
         }
     }
+}
+
+@Preview
+@Composable
+fun CreateTaskRoutePreview() {
+    CreateTaskRoute(
+        state = AddTaskState(),
+        navigation = { },
+        labelSearchQuery = "",
+        onLabelSearchQuery = {},
+        onLabelSelect = {},
+        onNewLabelCreate = {  },
+        onAddTaskEvents = {},
+        queriedLabels = emptyList(),
+        pickedLabels = emptyList(),
+    )
 }

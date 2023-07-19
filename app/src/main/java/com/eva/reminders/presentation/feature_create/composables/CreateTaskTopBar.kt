@@ -1,6 +1,8 @@
 package com.eva.reminders.presentation.feature_create.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Archive
@@ -9,37 +11,26 @@ import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import com.eva.reminders.presentation.feature_create.utils.checkNotificationPermissions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskTopBar(
-    navController: NavController,
     isPinned: Boolean,
     isReminder: Boolean,
     isArchived: Boolean,
     onPinClick: () -> Unit,
     onReminderClick: () -> Unit,
     onArchiveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigation: @Composable () -> Unit = {},
 ) {
 
     val permission = checkNotificationPermissions()
 
     TopAppBar(
         title = {},
-        navigationIcon = {
-            if (navController.currentBackStackEntry != null)
-                IconButton(
-                    onClick = { navController.navigateUp() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back Button"
-                    )
-                }
-        },
+        navigationIcon = navigation,
         actions = {
             PlainTooltipBox(
                 tooltip = { Text(text = "Pinned") },
@@ -57,7 +48,8 @@ fun CreateTaskTopBar(
                 }
             }
             AnimatedVisibility(
-                visible = permission
+                visible = permission,
+                enter = slideInHorizontally() + fadeIn()
             ) {
                 PlainTooltipBox(
                     tooltip = { Text(text = "Reminder") }
@@ -76,20 +68,33 @@ fun CreateTaskTopBar(
                     }
                 }
             }
-            PlainTooltipBox(
-                tooltip = { Text(text = "Archive") }
-            ) {
-                IconButton(
-                    onClick = onArchiveClick,
-                    modifier = Modifier.tooltipAnchor()
+            when {
+                isArchived -> PlainTooltipBox(
+                    tooltip = { Text(text = "Archive") }
                 ) {
-                    Icon(
-                        imageVector = if (isArchived)
-                            Icons.Filled.Archive
-                        else
-                            Icons.Outlined.Archive,
-                        contentDescription = "Archived"
-                    )
+                    IconButton(
+                        onClick = onArchiveClick,
+                        modifier = Modifier.tooltipAnchor()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Archive,
+                            contentDescription = "Archived"
+                        )
+                    }
+                }
+
+                else -> PlainTooltipBox(
+                    tooltip = { Text(text = "Un Archived") },
+                ) {
+                    IconButton(
+                        onClick = onArchiveClick,
+                        modifier = Modifier.tooltipAnchor()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Archive,
+                            contentDescription = "Un archived"
+                        )
+                    }
                 }
             }
         },

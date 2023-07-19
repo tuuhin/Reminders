@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.domain.models.TaskLabelModel
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PickedLabels(
     onLabelClick: () -> Unit,
@@ -41,7 +41,15 @@ fun PickedLabels(
         AssistChip(
             onClick = { isVisible = !isVisible },
             label = { Text(text = "Labels (${selectedLabels.size})") },
-            modifier = modifier
+            modifier = modifier,
+            colors = AssistChipDefaults.assistChipColors(
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                leadingIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            border = AssistChipDefaults.assistChipBorder(
+                borderColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         )
         AnimatedVisibility(
             visible = isVisible,
@@ -50,10 +58,10 @@ fun PickedLabels(
         ) {
             FlowRow(
                 modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 selectedLabels.forEach { item ->
-                    FilterChip(
+                    AssistChip(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Label,
@@ -63,7 +71,14 @@ fun PickedLabels(
                         onClick = onLabelClick,
                         label = { Text(text = item.label) },
                         modifier = Modifier.padding(horizontal = 2.dp),
-                        selected = true
+                        colors = AssistChipDefaults.assistChipColors(
+                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            leadingIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        border = AssistChipDefaults.assistChipBorder(
+                            borderColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     )
                 }
             }

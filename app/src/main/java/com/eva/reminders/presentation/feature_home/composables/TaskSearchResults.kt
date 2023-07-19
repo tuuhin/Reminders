@@ -31,7 +31,7 @@ fun TaskSearchResults(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.loupe),
+                painter = painterResource(id = R.drawable.ic_no_search_results),
                 contentDescription = "No associated notes are found",
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceTint)
             )

@@ -13,7 +13,5 @@ sealed interface AddTaskEvents {
     data class OnReminderEvent(val event: TaskRemindersEvents) : AddTaskEvents
     object OnSubmit : AddTaskEvents
     object OnDelete : AddTaskEvents
-
-
-    object MakeCopy:AddTaskEvents
+    object MakeCopy : AddTaskEvents
 }

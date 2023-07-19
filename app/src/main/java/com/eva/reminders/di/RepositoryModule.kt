@@ -5,6 +5,7 @@ import com.eva.reminders.data.repository.TaskLabelsRepoImpl
 import com.eva.reminders.data.repository.TaskRepoImpl
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.domain.repository.TaskRepository
+import com.eva.reminders.presentation.feature_create.AddLabelToTasksPresenter
 import com.eva.reminders.presentation.feature_home.utils.HomeTaskPresenter
 import com.eva.reminders.services.AlarmManagerRepo
 import dagger.Module
@@ -37,4 +38,8 @@ object RepositoryModule {
     @Provides
     fun homePresenter(repository: TaskLabelsRepository): HomeTaskPresenter =
         HomeTaskPresenter(repository)
+
+    @Provides
+    fun addTaskPresenter(repository: TaskLabelsRepository): AddLabelToTasksPresenter =
+        AddLabelToTasksPresenter(repository)
 }

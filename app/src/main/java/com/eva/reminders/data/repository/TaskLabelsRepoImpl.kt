@@ -15,11 +15,12 @@ class TaskLabelsRepoImpl(
     private val labelDao: LabelsDao,
     private val labelFts: LabelsFtsDao
 ) : TaskLabelsRepository {
-    override suspend fun createLabel(label: String): Resource<Boolean> {
+    override suspend fun createLabel(label: String): Resource<TaskLabelModel> {
         return try {
             val entity = LabelEntity(label = label)
-            labelDao.insertUpdateLabel(entity)
-            Resource.Success(data = true)
+            val id = labelDao.insertUpdateLabel(entity)
+            val model = labelDao.getLabelFromId(id).toModel()
+            Resource.Success(data = model)
         } catch (e: SQLiteConstraintException) {
             Resource.Error(message = e.message ?: "Constraint Exception")
         } catch (e: Exception) {
@@ -27,10 +28,11 @@ class TaskLabelsRepoImpl(
         }
     }
 
-    override suspend fun updateLabel(label: TaskLabelModel): Resource<Boolean> {
+    override suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel> {
         return try {
-            labelDao.insertUpdateLabel(label.toEntity())
-            Resource.Success(data = true)
+            val id = labelDao.insertUpdateLabel(label.toEntity())
+            val model = labelDao.getLabelFromId(id).toModel()
+            Resource.Success(data = model)
         } catch (e: SQLiteConstraintException) {
             Resource.Error(message = e.message ?: "Constraint Exception")
         } catch (e: Exception) {
