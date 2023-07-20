@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.getSystemService
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.eva.reminders.presentation.NavigationGraph
 import com.eva.reminders.ui.theme.RemindersTheme
 import com.eva.reminders.utils.NotificationConstants
@@ -21,6 +22,8 @@ class MainActivity : ComponentActivity() {
     private val notificationManager by lazy { getSystemService<NotificationManager>() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         // If the notification start the activity
         if (intent.action == NotificationConstants.NOTIFICATION_INTENT_ACTION) {

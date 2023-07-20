@@ -7,7 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-<!--    Note Colors-->
+    <!--    Note Colors-->
     <color name="transparent">#00ffffff</color>
     <color name="stone_300">#d6d3d1</color>
     <color name="red_300">#fca5a5</color>
@@ -29,5 +29,8 @@
     <color name="rose_30">#fda4af</color>
 
     <color name="white_overlay">#88ffffff</color>
+    <color name="surface">#fffdfbff</color>
+    <color name="primary_container">#ffd7e3ff</color>
+    <color name="on_primary_container">#ff001b3f</color>
 
 </resources>

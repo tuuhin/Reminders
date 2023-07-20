@@ -29,5 +29,8 @@
     <color name="rose_30">#881337</color>
 
     <color name="white_overlay">#44ffffff</color>
+    <color name="surface">#ff1a1b1f</color>
+    <color name="primary_container">#ff00458f</color>
+    <color name="on_primary_container">#ffd7e3ff</color>
 
 </resources>
