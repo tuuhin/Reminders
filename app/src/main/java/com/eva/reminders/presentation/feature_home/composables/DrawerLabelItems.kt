@@ -50,7 +50,7 @@ fun DrawerLabelItems(
     LazyColumn(
         modifier = modifier
             .fillMaxSize(),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         item {
             NavigationDrawerItem(
@@ -65,7 +65,7 @@ fun DrawerLabelItems(
                 }
             )
         }
-        itemsIndexed(labels) { _, item ->
+        itemsIndexed(labels, key = { _, item -> item.id }) { _, item ->
             NavigationDrawerItem(
                 label = {
                     Text(
@@ -87,12 +87,13 @@ fun DrawerLabelItems(
 }
 
 
-class DrawerLabelItemsPreViewParams : CollectionPreviewParameterProvider<List<TaskLabelModel>>(
-    listOf(
-        emptyList(),
-        PreviewTaskModels.taskLabelModelList
+class DrawerLabelItemsPreViewParams :
+    CollectionPreviewParameterProvider<List<TaskLabelModel>>(
+        listOf(
+            emptyList(),
+            PreviewTaskModels.taskLabelModelList
+        )
     )
-)
 
 @Preview
 @Composable

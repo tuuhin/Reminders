@@ -78,7 +78,6 @@ fun NavigationGraph(
 
                 CompositionLocalProvider(LocalArrangementStyle provides style) {
                     HomeRoute(
-                        navController = navHost,
                         labels = labels,
                         tasks = tasks,
                         tab = currentTab,
@@ -88,7 +87,12 @@ fun NavigationGraph(
                         onArrangementChange = homeViewModel::onArrangementChange,
                         onTabChange = homeViewModel::changeCurrentTab,
                         onSearchType = homeViewModel::onSearchType,
-                        onSearchBarEvents = homeViewModel::onSearchBarEvents
+                        onSearchBarEvents = homeViewModel::onSearchBarEvents,
+                        onAdd = { navHost.navigate(NavRoutes.AddTask.route) },
+                        onEditRoute = { navHost.navigate(NavRoutes.EditLabels.route) },
+                        onTaskSelect = { taskId ->
+                            navHost.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
+                        }
                     )
                 }
             }
@@ -142,7 +146,7 @@ fun NavigationGraph(
                         onLabelSelect = viewModel::onSelect,
                         navigation = {
                             if (navHost.previousBackStackEntry != null)
-                                IconButton(onClick = { navHost.navigateUp() }) {
+                                IconButton(onClick = navHost::navigateUp) {
                                     Icon(
                                         imageVector = Icons.Default.ArrowBack,
                                         contentDescription = "Back Button"
@@ -177,7 +181,7 @@ fun NavigationGraph(
                     onEditActions = viewModel::onLabelAction,
                     navigation = {
                         if (navHost.previousBackStackEntry != null)
-                            IconButton(onClick = { navHost.navigateUp() }) {
+                            IconButton(onClick = navHost::navigateUp) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowBack,
                                     contentDescription = "Back Button"

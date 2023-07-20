@@ -90,6 +90,7 @@ fun CreateTaskRoute(
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+        contentWindowInsets = WindowInsets.navigationBars
     ) { padding ->
 
         TaskReminderPicker(

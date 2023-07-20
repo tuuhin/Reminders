@@ -1,6 +1,5 @@
 package com.eva.reminders.presentation.feature_home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eva.reminders.domain.models.TaskModel
@@ -59,9 +58,8 @@ class HomeViewModel @Inject constructor(
 
     private val _searchType = MutableStateFlow<SearchType>(SearchType.BlankSearch)
 
-    val searchedTasks = combine(_tasks, _searchType) { tasks, type ->
-        Log.d("TYPE", type.toString())
-        presenter.searchResultsType(type, tasks.content)
+    val searchedTasks = combine(_tasks, _searchType, _currentTab) { tasks, type, tab ->
+        presenter.searchResultsType(searchType = type, tabs = tab, tasks = tasks.content)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(500L),
@@ -136,8 +134,8 @@ class HomeViewModel @Inject constructor(
                         }
 
                         is Resource.Loading -> _tasks.update { it.copy(isLoading = true) }
-                        is Resource.Success -> _tasks.update {
-                            it.copy(isLoading = false, content = res.data)
+                        is Resource.Success -> _tasks.update { content ->
+                            content.copy(isLoading = false, content = res.data)
                         }
                     }
                 }

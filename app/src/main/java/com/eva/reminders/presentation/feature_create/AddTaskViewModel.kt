@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.stateIn
@@ -43,7 +44,8 @@ class AddTaskViewModel @Inject constructor(
     private val _uiEvents = MutableSharedFlow<UIEvents>()
     val uiEvents = _uiEvents.asSharedFlow()
 
-    val labelQuery = presenter.labelQuery
+    private val _labelQuery = MutableStateFlow("")
+    val labelQuery = _labelQuery.asStateFlow()
 
     val selectedLabels = presenter.stateToModels.stateIn(
         viewModelScope,
@@ -80,7 +82,7 @@ class AddTaskViewModel @Inject constructor(
     fun onSelect(state: SelectLabelState) = presenter.onLabelSelect(state)
     fun createNewLabel() {
         viewModelScope.launch(Dispatchers.IO) {
-            when (val res = presenter.createLabels()) {
+            when (val res = presenter.createLabels(_labelQuery.value)) {
                 is Resource.Error -> _uiEvents
                     .emit(UIEvents.ShowSnackBar(res.message))
 
@@ -92,13 +94,16 @@ class AddTaskViewModel @Inject constructor(
         }
     }
 
-    fun searchLabels(search: String = "") = viewModelScope
-        .launch(Dispatchers.IO) {
-            searchLabelJob?.cancel()
-            searchLabelJob = presenter
-                .onSearch(search)
-                .launchIn(this)
-        }
+    fun searchLabels(search: String = "") {
+        _labelQuery.update { search }
+        viewModelScope
+            .launch(Dispatchers.IO) {
+                searchLabelJob?.cancel()
+                searchLabelJob = presenter
+                    .onSearch(search)
+                    .launchIn(this)
+            }
+    }
 
 
     private fun setCurrentData() {

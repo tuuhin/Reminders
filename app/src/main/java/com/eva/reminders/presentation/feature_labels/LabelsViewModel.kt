@@ -45,7 +45,7 @@ class LabelsViewModel @Inject constructor(
         when (event) {
             is EditLabelEvents.OnValueChange -> labels.map { label ->
                 if (label.labelId == event.item.labelId)
-                    label.copy(updatedLabel = event.text)
+                    label.copy(updatedLabel = event.text, isEdit = true)
                 else label
             }
 
@@ -123,13 +123,16 @@ class LabelsViewModel @Inject constructor(
         )
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (validator.isValid)
-                when (val res = labelRepo.updateLabel(label)) {
+            if (validator.isValid) {
+                //just trimming off the extra blank spaces
+                val trimmedLabel = label.copy(label = label.label.trim())
+                when (val res = labelRepo.updateLabel(trimmedLabel)) {
                     is Resource.Error -> _uiEvents
                         .emit(UIEvents.ShowSnackBar(message = res.message))
 
                     else -> {}
                 }
+            }
             else _uiEvents.emit(UIEvents.ShowSnackBar(validator.error ?: "Cannot update label"))
         }
     }

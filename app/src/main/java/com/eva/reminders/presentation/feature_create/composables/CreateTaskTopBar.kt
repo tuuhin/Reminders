@@ -36,7 +36,8 @@ fun CreateTaskTopBar(
                 tooltip = { Text(text = "Pinned") },
             ) {
                 IconButton(
-                    onClick = onPinClick, modifier = Modifier.tooltipAnchor()
+                    onClick = onPinClick,
+                    modifier = Modifier.tooltipAnchor()
                 ) {
                     Icon(
                         imageVector = if (isPinned)

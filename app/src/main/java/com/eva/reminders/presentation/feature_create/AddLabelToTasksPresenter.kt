@@ -6,7 +6,6 @@ import com.eva.reminders.presentation.feature_create.utils.SelectLabelState
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -17,8 +16,6 @@ import kotlinx.coroutines.flow.update
 class AddLabelToTasksPresenter(
     private val labelsRepository: TaskLabelsRepository
 ) {
-    private val _labelQuery = MutableStateFlow("")
-    val labelQuery = _labelQuery.asStateFlow()
 
     private val _queriedLabels = MutableStateFlow(emptyList<TaskLabelModel>())
 
@@ -43,7 +40,6 @@ class AddLabelToTasksPresenter(
 
 
     suspend fun onSearch(search: String = ""): Flow<List<TaskLabelModel>> {
-        _labelQuery.update { search }
         return labelsRepository
             .searchLabels(search)
             .catch { err -> err.printStackTrace() }
@@ -61,13 +57,16 @@ class AddLabelToTasksPresenter(
             states.filter { it.idx != state.idx }
         }
         else _selectedLabelFlow.update { states ->
-            states + state
+            buildList {
+                addAll(states)
+                add(state)
+            }
         }
     }
 
-    suspend fun createLabels(): Resource<TaskLabelModel> {
-        if (_labelQuery.value.isNotEmpty()) {
-            val trimmedLabel = _labelQuery.value.trim()
+    suspend fun createLabels(label:String): Resource<TaskLabelModel> {
+        if (label.isNotEmpty()) {
+            val trimmedLabel = label.trim()
             return labelsRepository.createLabel(trimmedLabel)
         }
         return Resource.Error(message = "Label cannot be empty")

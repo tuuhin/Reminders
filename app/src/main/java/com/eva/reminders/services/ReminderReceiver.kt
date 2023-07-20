@@ -35,6 +35,7 @@ class ReminderReceiver : BroadcastReceiver() {
             context, notificationReadRequestCode,
             Intent(context, RemoveNotificationReceiver::class.java).apply {
                 putExtra("TASK_ID", taskId)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 action = NotificationConstants.NOTIFICATION_INTENT_ACTION
             },
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -44,7 +45,6 @@ class ReminderReceiver : BroadcastReceiver() {
             context, activityRequestCode,
             Intent(context, MainActivity::class.java).apply {
                 putExtra("TASK_ID", taskId)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 action = NotificationConstants.NOTIFICATION_INTENT_ACTION
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT

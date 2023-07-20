@@ -1,10 +1,10 @@
 package com.eva.reminders.presentation.feature_create.composables
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -54,12 +53,16 @@ fun TaskLabelPicker(
     searchBoxColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
     surfaceColor: Color = MaterialTheme.colorScheme.surface
 ) {
+
+
+    val systemUiController = rememberSystemUiController()
+
     AnimatedVisibility(
         visible = show,
-        enter = fadeIn(),
-        exit = fadeOut()
+        enter = fadeIn() + slideInVertically(),
+        exit = fadeOut() + slideOutVertically()
     ) {
-        val systemUiController = rememberSystemUiController()
+
 
         DisposableEffect(systemUiController) {
             systemUiController.setStatusBarColor(searchBoxColor)
@@ -67,6 +70,7 @@ fun TaskLabelPicker(
                 systemUiController.setStatusBarColor(surfaceColor)
             }
         }
+
         Dialog(
             onDismissRequest = onDismissRequest,
             properties = DialogProperties(
@@ -92,58 +96,57 @@ fun TaskLabelPicker(
                             contentDescription = "Close the search box"
                         )
                     }
-                }
+                },
+                modifier = modifier
             ) {
-                Column(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(vertical = 4.dp)
+                AnimatedVisibility(
+                    visible = labels.isEmpty() && query.isEmpty(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
                 ) {
-                    AnimatedVisibility(
-                        visible = labels.isEmpty() && query.isEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_search),
+                            contentDescription = "Not found",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "No labels are found",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    itemsIndexed(
+                        labels, key = { _, item -> item.idx }
+                    ) { _, item ->
+                        CheckLabelItem(
+                            item = item,
+                            onSelect = { onSelect(item) },
+                            modifier = Modifier.animateItemPlacement()
+                        )
+                    }
+                    item(key = -1) {
+                        AnimatedVisibility(
+                            visible = labels.isEmpty() && query.isNotEmpty(),
+                            enter = fadeIn(),
+                            exit = fadeOut()
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_search),
-                                contentDescription = "Not found",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "No labels are found",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.secondary
+                            CreateNewLabelCard(
+                                onClick = onCreateNew,
+                                modifier = Modifier.animateItemPlacement()
                             )
                         }
-                    }
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                        contentPadding = PaddingValues(8.dp)
-                    ) {
-                        itemsIndexed(
-                            labels, key = { _, item -> item.idx }
-                        ) { _, item ->
-                            CheckLabelItem(
-                                item = item,
-                                onSelect = { onSelect(item) },
-                                modifier = Modifier.animateItemPlacement(
-                                    tween(100, easing = EaseInOut)
-                                )
-                            )
-                        }
-                    }
-                    AnimatedVisibility(
-                        visible = query.isNotEmpty(),
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        CreateNewLabelCard(onClick = onCreateNew)
                     }
                 }
             }

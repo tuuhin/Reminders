@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.eva.reminders.R
 import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
@@ -34,15 +33,12 @@ import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
 import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
 import com.eva.reminders.presentation.utils.LocalArrangementStyle
-import com.eva.reminders.presentation.utils.NavConstants
-import com.eva.reminders.presentation.utils.NavRoutes
 import com.eva.reminders.presentation.utils.ShowContent
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeRoute(
-    navController: NavController,
     labels: List<TaskLabelModel>,
     tasks: ShowContent<List<TaskModel>>,
     tab: HomeTabs,
@@ -53,6 +49,9 @@ fun HomeRoute(
     onArrangementChange: (TaskArrangementEvent) -> Unit,
     onSearchBarEvents: (HomeSearchBarEvents) -> Unit,
     onTabChange: (HomeTabs) -> Unit,
+    onAdd: () -> Unit,
+    onEditRoute: () -> Unit,
+    onTaskSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     style: TaskArrangementStyle = LocalArrangementStyle.current,
     snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current
@@ -65,13 +64,13 @@ fun HomeRoute(
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.fillMaxWidth(0.75f),
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.navigationBars
             ) {
                 DrawerContent(
                     labels = labels,
                     tab = tab,
                     onTabChange = onTabChange,
-                    onEdit = { navController.navigate(NavRoutes.EditLabels.route) },
+                    onEdit = onEditRoute,
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -89,17 +88,13 @@ fun HomeRoute(
                     onSearchType = onSearchType,
                     state = searchBarState,
                     onSearchEvent = onSearchBarEvents,
-                    onTaskSelect = { taskId ->
-                        navController.navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
-                    },
+                    onTaskSelect = onTaskSelect,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
             floatingActionButton = {
                 ExtendedFloatingActionButton(
-                    onClick = {
-                        navController.navigate(NavRoutes.AddTask.route)
-                    }
+                    onClick = onAdd
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -110,6 +105,7 @@ fun HomeRoute(
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+            contentWindowInsets = WindowInsets.navigationBars
         ) { padding ->
             Column(
                 modifier = modifier
@@ -150,10 +146,7 @@ fun HomeRoute(
                         else -> TasksLayout(
                             tasks = tasks.content,
                             style = style,
-                            onTaskSelect = { taskId ->
-                                navController
-                                    .navigate(NavRoutes.AddTask.route + "?${NavConstants.TASK_ID}=$taskId")
-                            }
+                            onTaskSelect = onTaskSelect
                         )
                     }
                 }

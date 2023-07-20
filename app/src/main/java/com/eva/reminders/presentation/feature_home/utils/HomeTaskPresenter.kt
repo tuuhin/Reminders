@@ -12,7 +12,8 @@ class HomeTaskPresenter(
 ) {
 
     fun showTaskByTabs(
-        tabs: HomeTabs, tasks: ShowContent<List<TaskModel>>
+        tabs: HomeTabs,
+        tasks: ShowContent<List<TaskModel>>
     ): ShowContent<List<TaskModel>> {
         return when (tabs) {
             HomeTabs.AllReminders -> tasks.copy(content = tasks.content
@@ -30,13 +31,14 @@ class HomeTaskPresenter(
     }
 
     suspend fun searchResultsType(
-        type: SearchType,
+        searchType: SearchType,
+        tabs: HomeTabs,
         tasks: List<TaskModel>
-    ): SearchResultsType = when (type) {
+    ): SearchResultsType = when (searchType) {
         is SearchType.BasicSearch -> {
 
             val colorFilterResults = tasks.filter {
-                Regex(".*${type.query}").matches(it.color.name)
+                Regex(".*${searchType.query}").matches(it.color.name)
 
 //                val labelFilter =
 //                    it.labels.map { label -> label.label.trim().lowercase() }
@@ -45,25 +47,39 @@ class HomeTaskPresenter(
 //                colorFilter || labelFilter
             }
 
-            val filterLabels = repository.searchLabels(type.query).first()
+            val filterLabels = repository.searchLabels(searchType.query).first()
 
 
             val labelFilterResults = tasks
                 .filter { task ->
                     filterLabels.all { label -> task.labels.contains(label) }
                 }
+            //The archived data should be not directly
+            //But if the achieve tab is selected we can view all
+            val results = when (tabs) {
+                HomeTabs.Archived -> colorFilterResults + labelFilterResults
+                else -> (colorFilterResults + labelFilterResults).filter { !it.isArchived }
+            }
 
-            SearchResultsType.SearchResults(colorFilterResults + labelFilterResults)
+            SearchResultsType.SearchResults(results)
         }
 
         SearchType.BlankSearch -> SearchResultsType.NoResultsType
-        is SearchType.ColorSearch -> SearchResultsType.SearchResults(
-            tasks.filter { it.color == type.color }
-        )
+        is SearchType.ColorSearch -> when (tabs) {
+            HomeTabs.Archived -> SearchResultsType
+                .SearchResults(tasks.filter { it.color == searchType.color })
 
-        is SearchType.LabelSearch -> SearchResultsType.SearchResults(
-            tasks.filter { it.labels.contains(type.label) }
-        )
+            else -> SearchResultsType
+                .SearchResults(tasks.filter { it.color == searchType.color && !it.isArchived })
+        }
+
+        is SearchType.LabelSearch -> when (tabs) {
+            HomeTabs.Archived -> SearchResultsType
+                .SearchResults(tasks.filter { it.labels.contains(searchType.label) })
+
+            else -> SearchResultsType
+                .SearchResults(tasks.filter { it.labels.contains(searchType.label) && !it.isArchived })
+        }
     }
 
 

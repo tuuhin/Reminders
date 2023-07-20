@@ -22,6 +22,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // If the notification start the activity
+        if (intent.action == NotificationConstants.NOTIFICATION_INTENT_ACTION) {
+            val extra = intent.getIntExtra(NotificationConstants.INTENT_EXTRA_ID, -1)
+            if (extra == -1) return
+            notificationManager?.cancel(extra)
+        }
 
         setContent {
             RemindersTheme {
@@ -36,6 +42,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onNewIntent(intent: Intent?) {
+        //If the activity is active and the user clicks the notification.
         super.onNewIntent(intent)
         if (intent?.action != NotificationConstants.NOTIFICATION_INTENT_ACTION) return
         // Canceling the requested notification if this is requested via a notification

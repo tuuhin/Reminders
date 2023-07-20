@@ -1,11 +1,13 @@
 package com.eva.reminders.presentation.feature_home.composables
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,16 +45,17 @@ fun DrawerContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
+            Image(
                 painter = painterResource(id = R.drawable.ic_reminder_logo),
                 contentDescription = "Maybe logo",
                 modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimaryContainer)
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
                 text = stringResource(id = R.string.app_name),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
         allTabs.forEach { currentTab ->

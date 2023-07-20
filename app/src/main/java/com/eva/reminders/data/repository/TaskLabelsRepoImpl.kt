@@ -30,8 +30,8 @@ class TaskLabelsRepoImpl(
 
     override suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel> {
         return try {
-            val id = labelDao.insertUpdateLabel(label.toEntity())
-            val model = labelDao.getLabelFromId(id).toModel()
+            labelDao.insertUpdateLabel(label.toEntity())
+            val model = labelDao.getLabelFromId(label.id.toLong()).toModel()
             Resource.Success(data = model)
         } catch (e: SQLiteConstraintException) {
             Resource.Error(message = e.message ?: "Constraint Exception")
