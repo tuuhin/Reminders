@@ -27,9 +27,10 @@ class TaskRepoImpl(
                 TaskLabelRel(taskId = newEntityId, it.id)
             }
             taskLabelRel.addTaskLabelsRel(relations)
-            val fetchNewTask = taskDao.getTaskWithLabels(newEntityId)
-            alarmRepo.createAlarm(fetchNewTask.toModel())
-            Resource.Success(fetchNewTask.toModel())
+            val newlyCreatedTaskEntity = taskDao.getTaskWithLabels(newEntityId)
+            val taskModel = newlyCreatedTaskEntity.toModel()
+            alarmRepo.createAlarm(taskModel)
+            Resource.Success(taskModel)
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()
             Resource.Error(message = e.message ?: "Constraint Exception")
@@ -94,7 +95,7 @@ class TaskRepoImpl(
             taskLabelRel.deleteLabelsByTaskId(task.id)
             taskLabelRel.addTaskLabelsRel(labels)
 
-            alarmRepo.updateAlarm(task)
+            alarmRepo.cancelOrCreateAlarm(task)
             Resource.Success(task)
         } catch (e: SQLiteConstraintException) {
             e.printStackTrace()

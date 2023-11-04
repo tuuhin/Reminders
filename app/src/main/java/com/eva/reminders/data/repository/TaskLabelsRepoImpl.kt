@@ -6,10 +6,12 @@ import com.eva.reminders.data.local.dao.LabelsFtsDao
 import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.mappers.toEntity
 import com.eva.reminders.data.mappers.toModel
+import com.eva.reminders.data.mappers.toModels
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.utils.Resource
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class TaskLabelsRepoImpl(
     private val labelDao: LabelsDao,
@@ -52,17 +54,15 @@ class TaskLabelsRepoImpl(
     }
 
     override suspend fun getLabels(): Flow<List<TaskLabelModel>> {
-        return labelDao.getAllLabels().map { entities ->
-            entities.map { label -> label.toModel() }
-        }
+        return labelDao.getAllLabels().map { it.toModels() }
     }
 
     override suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>> {
-        return (labelFts.all().takeIf { query.isEmpty() }
-            ?: labelFts.search(query))
-            .map { entities ->
-                entities.map { entity -> entity.toModel() }
-            }
+        val ftsResults = when {
+            query.isEmpty() -> labelFts.all()
+            else -> labelFts.search(query)
+        }
+        return ftsResults.map { it.toModels() }
 
     }
 }

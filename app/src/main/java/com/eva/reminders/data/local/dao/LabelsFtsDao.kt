@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LabelsFtsDao {
+
     @Query("SELECT * FROM ${TableNames.TASK_LABEL_FTS_TABLE} WHERE LABEL_FTS MATCH :query")
     fun search(query: String): Flow<List<LabelFtsEntity>>
 

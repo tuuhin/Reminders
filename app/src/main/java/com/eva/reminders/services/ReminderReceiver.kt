@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.eva.reminders.MainActivity
 import com.eva.reminders.R
+import com.eva.reminders.utils.IntentsExtra
 import com.eva.reminders.utils.NotificationConstants
 import com.eva.reminders.utils.getFirstSentence
 import kotlin.random.Random
@@ -20,9 +21,9 @@ class ReminderReceiver : BroadcastReceiver() {
 
         if (intent.action != NotificationConstants.NOTIFICATION_READ_ACTION) return
 
-        val title = intent.getStringExtra("TITLE") ?: "Blank"
-        val content = intent.getStringExtra("CONTENT")
-        val taskId = intent.getIntExtra("ID", -1)
+        val title = intent.getStringExtra(IntentsExtra.TASK_TITLE) ?: ""
+        val content = intent.getStringExtra(IntentsExtra.TASK_CONTENT)
+        val taskId = intent.getIntExtra(IntentsExtra.TASK_ID, -1)
 
         val notificationReadRequestCode = -(1 * Random(taskId).nextInt())
         val activityRequestCode = -(2 * Random(taskId).nextInt())
@@ -34,7 +35,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val readIntent = PendingIntent.getBroadcast(
             context, notificationReadRequestCode,
             Intent(context, RemoveNotificationReceiver::class.java).apply {
-                putExtra("TASK_ID", taskId)
+                putExtra(IntentsExtra.TASK_ID, taskId)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 action = NotificationConstants.NOTIFICATION_INTENT_ACTION
             },
@@ -44,7 +45,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val activityIntent = PendingIntent.getActivity(
             context, activityRequestCode,
             Intent(context, MainActivity::class.java).apply {
-                putExtra("TASK_ID", taskId)
+                putExtra(IntentsExtra.TASK_ID, taskId)
                 action = NotificationConstants.NOTIFICATION_INTENT_ACTION
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -52,7 +53,11 @@ class ReminderReceiver : BroadcastReceiver() {
 
         val readAction =
             NotificationCompat.Action
-                .Builder(R.drawable.ic_notification_bell, "Read", readIntent)
+                .Builder(
+                    R.drawable.ic_notification_bell,
+                    context.getString(R.string.notification_read_action),
+                    readIntent
+                )
                 .setAuthenticationRequired(true)
                 .build()
 

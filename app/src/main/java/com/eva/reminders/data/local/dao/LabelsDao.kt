@@ -15,8 +15,11 @@ interface LabelsDao {
     suspend fun insertUpdateLabel(labelEntity: LabelEntity): Long
 
     @Query("SELECT * FROM ${TableNames.TASK_LABEL_TABLE} WHERE LABEL_ID=:id")
-    fun getLabelFromId(id: Long): LabelEntity
+    suspend fun getLabelFromId(id: Long): LabelEntity
 
     @Delete
     suspend fun deleteLabel(labelEntity: LabelEntity)
+
+    @Delete
+    suspend fun deleteLabels(labels: List<LabelEntity>)
 }

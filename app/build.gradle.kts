@@ -85,6 +85,10 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     //splash
     implementation("androidx.core:core-splashscreen:1.1.0-alpha02")
+    //room -testing
+    testImplementation("androidx.room:room-testing:2.6.0")
+    //hilt testing
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.48")
     //tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -96,4 +100,8 @@ dependencies {
     //tooling
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // turbine
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+    //koltin tests
+    testImplementation(kotlin("test"))
 }

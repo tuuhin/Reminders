@@ -10,9 +10,12 @@ import kotlinx.coroutines.withContext
 class BootAlarmInitImpl(
     private val tasksDao: TaskDao
 ) : BootAlarmInitRepo {
-    override suspend fun initializeTasks(): List<TaskModel> =
-        withContext(Dispatchers.IO) {
-            tasksDao.getTasks().filter { it.time != null }.map { it.toModel() }
-        }
 
+    override suspend fun initializeTasks(): List<TaskModel> {
+        return withContext(Dispatchers.IO) {
+            tasksDao.getTasksWithReminderTime()
+                .filter { it.time != null }
+                .map { it.toModel() }
+        }
+    }
 }

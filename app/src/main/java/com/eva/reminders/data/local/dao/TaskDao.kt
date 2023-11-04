@@ -19,13 +19,16 @@ interface TaskDao {
     @Query("SELECT * FROM ${TableNames.TASK_TABLE}")
     suspend fun getTasks(): List<TaskEntity>
 
+    @Query("SELECT * FROM ${TableNames.TASK_TABLE} WHERE TIME IS NOT NULL")
+    suspend fun getTasksWithReminderTime(): List<TaskEntity>
+
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_TABLE} ORDER BY TASK_ID DESC")
     fun getAllTasksWithLabels(): Flow<List<TaskWithLabelRelation>>
 
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_TABLE} WHERE TASK_ID=:taskId")
-    fun getTaskWithLabels(taskId: Int): TaskWithLabelRelation
+    suspend fun getTaskWithLabels(taskId: Int): TaskWithLabelRelation
 
     @Transaction
     @Query("SELECT * FROM ${TableNames.TASK_LABEL_TABLE}")

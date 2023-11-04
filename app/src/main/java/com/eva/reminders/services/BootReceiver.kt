@@ -6,11 +6,9 @@ import android.content.Intent
 import android.util.Log
 import com.eva.reminders.domain.repository.BootAlarmInitRepo
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +18,7 @@ class BootReceiver : BroadcastReceiver() {
 
     private val receiverTag = "ON_BOOT"
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @Inject
     lateinit var alarmManagerRepo: AlarmManagerRepo
@@ -30,21 +28,17 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        Log.i(receiverTag, "READY TO GO")
+        Log.i(receiverTag, "READY TO SET UP THE ALARMS")
 
-        // Initialize The Alarms
+        // Initialize The Alarms after the boot
         scope.launch {
             try {
-                initRepo.initializeTasks()
-                    .map { model ->
-                        async { alarmManagerRepo.createAlarm(model) }
-                    }
-                    .awaitAll()
+                val tasks = initRepo.initializeTasks()
+                tasks.forEach(alarmManagerRepo::createAlarm)
+
                 Log.i(receiverTag, "INITIALIZATION FINISHED")
             } catch (e: Exception) {
-                if (e is CancellationException)
-                    throw e
-                Log.i(receiverTag, e.message ?: "Failed")
+                Log.i(receiverTag, e.message ?: "FAILED TO INITIALIZE THE TASKS")
             } finally {
                 cancel()
                 Log.i(receiverTag, "COROUTINE HAS BEEN CANCELED")
