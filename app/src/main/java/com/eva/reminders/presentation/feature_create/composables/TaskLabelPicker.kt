@@ -24,7 +24,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,7 +33,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_create.utils.SelectLabelState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -51,25 +49,13 @@ fun TaskLabelPicker(
     onCreateNew: () -> Unit,
     modifier: Modifier = Modifier,
     searchBoxColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
-    surfaceColor: Color = MaterialTheme.colorScheme.surface
 ) {
-
-
-    val systemUiController = rememberSystemUiController()
 
     AnimatedVisibility(
         visible = show,
         enter = fadeIn() + slideInVertically(),
         exit = fadeOut() + slideOutVertically()
     ) {
-
-
-        DisposableEffect(systemUiController) {
-            systemUiController.setStatusBarColor(searchBoxColor)
-            onDispose {
-                systemUiController.setStatusBarColor(surfaceColor)
-            }
-        }
 
         Dialog(
             onDismissRequest = onDismissRequest,

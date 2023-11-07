@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="scaffold_padding">10dp</dimen>
+    <dimen name="reminder_card_inter_padding">12dp</dimen>
+    <dimen name="reminders_sub_heading_v_padding">6dp</dimen>
+    <dimen name="reminder_card_spacing">6dp</dimen>
+</resources>

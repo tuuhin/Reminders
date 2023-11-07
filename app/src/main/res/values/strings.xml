@@ -1,7 +1,29 @@
 <resources>
     <string name="app_name">Reminders</string>
-    <string name="search_help">Search can be only used to search labels and colors</string>
+    <string name="search_information_text">Search can be only used to search labels and colors</string>
     <string name="no_search_results">Nothing is added to make a search…</string>
-    <string name="no_reminders">No reminders are added yet …</string>
+    <string name="no_reminders_to_show">No Reminders are added yet,Create Some</string>
     <string name="notification_read_action">Read</string>
+    <string name="pinned_text_subheading">Pinned</string>
+    <string name="un_pinned_text_subheading">Others</string>
+    <string name="create_new_task_button">Create New Task Button</string>
+    <string name="create_new_task_text">Add New</string>
+    <!--    Drawer-->
+    <string name="drawer_option_all_reminder">All Reminders</string>
+    <string name="drawer_option_not_scheduled">Not Scheduled</string>
+    <string name="drawer_option_scheduled">Scheduled</string>
+    <string name="drawer_option_achieved">Archived</string>
+    <string name="create_new_label">Create New Label</string>
+    <string name="subheading_labels">Labels</string>
+    <!--    Search Bar-->
+    <string name="search_placeholder">Search…</string>
+    <string name="reminder_arrangement_style">Arrangement Mode</string>
+    <!--    Icon descriptions-->
+    <string name="icon_label_desc">Label Icon</string>
+    <string name="close_icon_desc">Close Icon</string>
+    <string name="menu_icon_desc">Menu Icon</string>
+    <string name="subheading_colors">Colors</string>
+    <string name="search_icon_desc">No Search Icon</string>
+    <string name="list_icon_desc">List Icon Desc</string>
+    <string name="grid_icon_desc">Grid Icon Desc</string>
 </resources>

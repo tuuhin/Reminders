@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.feature_home.composables
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import com.eva.reminders.domain.enums.TaskColorEnum
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
 import com.eva.reminders.presentation.feature_home.utils.SearchType
+import com.eva.reminders.ui.theme.RemindersTheme
 
 @Composable
 fun SearchResultsNoResults(
@@ -64,7 +66,7 @@ fun SearchResultsNoResults(
                 labels.isNotEmpty() && colors.isNotEmpty() -> {
                     item {
                         Text(
-                            text = "Labels",
+                            text = stringResource(id = R.string.subheading_labels),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
@@ -78,7 +80,7 @@ fun SearchResultsNoResults(
                     }
                     item {
                         Text(
-                            text = "Colors",
+                            text = stringResource(id = R.string.subheading_colors),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
@@ -95,7 +97,7 @@ fun SearchResultsNoResults(
                 labels.isNotEmpty() -> {
                     item {
                         Text(
-                            text = "Labels",
+                            text = stringResource(id = R.string.subheading_labels),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
@@ -112,7 +114,7 @@ fun SearchResultsNoResults(
                 colors.isNotEmpty() -> {
                     item {
                         Text(
-                            text = "Colors",
+                            text = stringResource(id = R.string.subheading_colors),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
@@ -131,9 +133,14 @@ fun SearchResultsNoResults(
 }
 
 
-@Preview
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
 @Composable
-fun SearchNoResultsPreview() {
+fun SearchNoResultsPreview() = RemindersTheme {
     Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
         SearchResultsNoResults(
             labels = PreviewTaskModels.taskLabelModelList,
