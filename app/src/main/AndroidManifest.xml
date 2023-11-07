@@ -14,14 +14,15 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Reminders"
-        tools:targetApi="31">
+        tools:targetApi="33">
         <receiver
             android:name=".services.RemoveNotificationReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.eva.reminders.CLOSE_NOTIFICATION" />
+                <action android:name=".CLOSE_NOTIFICATION" />
             </intent-filter>
 
         </receiver>
@@ -38,7 +39,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.eva.reminders.RECEIVE_NOTIFICATION" />
+                <action android:name=".RECEIVE_NOTIFICATION" />
             </intent-filter>
         </receiver>
 
@@ -46,14 +47,18 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Reminders">
+            android:theme="@style/Theme.Reminders"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.eva.reminders.CLOSE_NOTIFICATION" />
-                <category android:name="android.intent.category.ALTERNATIVE" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="app"
+                    android:scheme="${applicationId}" />
             </intent-filter>
         </activity>
     </application>

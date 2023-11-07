@@ -3,7 +3,8 @@
     <string name="search_information_text">Search can be only used to search labels and colors</string>
     <string name="no_search_results">Nothing is added to make a search…</string>
     <string name="no_reminders_to_show">No Reminders are added yet,Create Some</string>
-    <string name="notification_read_action">Read</string>
+    <string name="notification_seen_action">Seen</string>
+    <string name="notification_open_action">Open</string>
     <string name="pinned_text_subheading">Pinned</string>
     <string name="un_pinned_text_subheading">Others</string>
     <string name="create_new_task_button">Create New Task Button</string>

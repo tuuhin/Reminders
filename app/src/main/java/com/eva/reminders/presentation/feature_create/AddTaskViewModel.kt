@@ -13,7 +13,7 @@ import com.eva.reminders.presentation.feature_create.utils.TaskRemindersEvents
 import com.eva.reminders.presentation.feature_create.utils.toCreateModel
 import com.eva.reminders.presentation.feature_create.utils.toUpdateModel
 import com.eva.reminders.presentation.feature_create.utils.toUpdateState
-import com.eva.reminders.presentation.utils.NavConstants
+import com.eva.reminders.presentation.navigation.NavConstants
 import com.eva.reminders.presentation.utils.ShowContent
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.utils.Resource

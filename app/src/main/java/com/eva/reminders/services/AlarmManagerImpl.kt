@@ -8,12 +8,12 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.eva.reminders.domain.models.TaskModel
+import com.eva.reminders.presentation.navigation.NavigationDeepLinks
 import com.eva.reminders.utils.IntentsExtra
 import com.eva.reminders.utils.NotificationConstants
+import com.eva.reminders.utils.millisToLocalDateTime
 import com.eva.reminders.utils.nextAlarmTimeInMillis
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.Calendar
 
 class AlarmManagerImpl(
@@ -35,6 +35,8 @@ class AlarmManagerImpl(
                 putExtra(IntentsExtra.TASK_TITLE, taskModel.title)
                 putExtra(IntentsExtra.TASK_CONTENT, taskModel.content)
                 putExtra(IntentsExtra.TASK_ID, taskModel.id)
+                /** data is not used but to help in [Intent.filterEquals] ,uri is sent*/
+                data = NavigationDeepLinks.taskUriFromTaskId(taskModel.id)
                 action = NotificationConstants.NOTIFICATION_READ_ACTION
             }
 
@@ -67,6 +69,8 @@ class AlarmManagerImpl(
 
         val intent = Intent(context, ReminderReceiver::class.java)
             .apply {
+                /** data is not used but to help in [Intent.filterEquals] ,uri is sent*/
+                data = NavigationDeepLinks.taskUriFromTaskId(taskModel.id)
                 action = NotificationConstants.NOTIFICATION_READ_ACTION
             }
 
@@ -74,7 +78,7 @@ class AlarmManagerImpl(
             context,
             taskModel.id,
             intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_NO_CREATE
         )
 
         if (pendingIntent != null) {
@@ -102,8 +106,13 @@ class AlarmManagerImpl(
                 && alarmManager?.canScheduleExactAlarms() == true
 
         val triggerTime = Calendar.getInstance().apply {
-            add(Calendar.SECOND, alarmTime.second)
+            set(Calendar.DAY_OF_YEAR, alarmTime.dayOfYear)
+            set(Calendar.HOUR, alarmTime.hour)
+            set(Calendar.MINUTE, alarmTime.minute)
+            set(Calendar.SECOND, alarmTime.second)
         }.timeInMillis
+
+        val alarmTimeLog = millisToLocalDateTime(triggerTime)
 
         if (canScheduleAlarm) {
             alarmManager?.setExactAndAllowWhileIdle(
@@ -111,7 +120,7 @@ class AlarmManagerImpl(
                 /* triggerAtMillis = */ triggerTime,
                 /* operation = */ pendingIntent
             )
-            Log.i(alarmTag, "SET EXACT AND ALLOW IDLE : $alarmTime")
+            Log.i(alarmTag, "SET EXACT AND ALLOW IDLE : $alarmTimeLog")
             return
         }
         alarmManager?.setAndAllowWhileIdle(
@@ -119,7 +128,7 @@ class AlarmManagerImpl(
             /* triggerAtMillis = */ triggerTime,
             /* operation = */ pendingIntent
         )
-        Log.d(alarmTag, "SET AND ALLOW IDLE : $alarmTime ")
+        Log.d(alarmTag, "SET AND ALLOW IDLE : $alarmTimeLog")
     }
 
     private fun setRepeatingAlarms(
@@ -131,10 +140,7 @@ class AlarmManagerImpl(
         // Adding the extra days to make the alarm work properly
         val triggerTime = alarmTime.nextAlarmTimeInMillis()
 
-        val alarmTimeLog =
-            Instant.ofEpochMilli(triggerTime)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
+        val alarmTimeLog = millisToLocalDateTime(triggerTime)
 
         if (isExact) {
             alarmManager?.setRepeating(
