@@ -176,26 +176,29 @@ fun NavigationGraph(
         composable(NavRoutes.EditLabels.route) {
 
             val viewModel = hiltViewModel<LabelsViewModel>()
-            val createState = viewModel.newLabelState.collectAsStateWithLifecycle()
-            val editState = viewModel.editLabelStates.collectAsStateWithLifecycle()
+            val createState by viewModel.newLabelState.collectAsStateWithLifecycle()
+            val editState by viewModel.editLabelStates.collectAsStateWithLifecycle()
+            val sortDialogState by viewModel.showSortDialog.collectAsStateWithLifecycle()
 
-            LaunchedEffect(Unit) {
-                viewModel.uiEvents.collect { uiEvents ->
-                    when (uiEvents) {
-                        is UIEvents.ShowSnackBar -> snackBarHostState
-                            .showSnackbar(uiEvents.message)
-
-                        else -> {}
+            LaunchedEffect(viewModel.uiEvents, lifecycleOwner.lifecycle) {
+                lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.uiEvents.collect { event ->
+                        when (event) {
+                            is UIEvents.ShowSnackBar -> snackBarHostState.showSnackbar(event.message)
+                            UIEvents.NavigateBack -> navHost.navigateUp()
+                        }
                     }
                 }
             }
 
             EditLabelRoute(
-                createLabelState = createState.value,
-                editLabelState = editState.value,
+                sortDialogState = sortDialogState,
+                createLabelState = createState,
+                editLabelState = editState,
                 onCreateLabelEvent = viewModel::onCreateLabelEvent,
                 onEditLabelEvent = viewModel::onUpdateLabelEvent,
                 onEditActions = viewModel::onLabelAction,
+                onSortEvents = viewModel::onSortEvents,
                 navigation = {
                     if (navHost.previousBackStackEntry != null)
                         IconButton(onClick = navHost::navigateUp) {
