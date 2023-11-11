@@ -18,7 +18,10 @@ class NextAlarmTimeExtensionTest {
 
     private fun dateTimeToMillis(dateTime: LocalDateTime): Long {
         val calender = Calendar.getInstance().apply {
-            add(Calendar.SECOND, dateTime.second)
+            set(Calendar.DAY_OF_YEAR, dateTime.dayOfYear)
+            set(Calendar.HOUR, dateTime.hour)
+            set(Calendar.MINUTE, dateTime.minute)
+            set(Calendar.SECOND, dateTime.second)
         }
         return calender.timeInMillis
     }
@@ -30,13 +33,11 @@ class NextAlarmTimeExtensionTest {
 
         val nextAlarmTime = alarmTime.nextAlarmTimeInMillis()
 
-        val expectedSeconds = (dateTimeToMillis(alarmTime) + oneDayMillis * 3) / 1000
-
-        val actualSeconds = nextAlarmTime / 1000
+        val expectedSeconds = (dateTimeToMillis(alarmTime) + oneDayMillis * 3)
 
         assertEquals(
             expected = expectedSeconds,
-            actual = actualSeconds,
+            actual = nextAlarmTime,
             message = "This is a correct one",
         )
     }
@@ -47,13 +48,11 @@ class NextAlarmTimeExtensionTest {
 
         val nextAlarmTime = alarmTime.nextAlarmTimeInMillis()
 
-        val expectedSeconds = dateTimeToMillis(alarmTime) / 1000
-
-        val actualSeconds = nextAlarmTime / 1000
+        val expectedSeconds = dateTimeToMillis(alarmTime)
 
         assertEquals(
             expected = expectedSeconds,
-            actual = actualSeconds,
+            actual = nextAlarmTime,
             message = "This is a correct one",
         )
 
@@ -65,13 +64,11 @@ class NextAlarmTimeExtensionTest {
 
         val nextAlarmTime = alarmTime.nextAlarmTimeInMillis()
 
-        val expectedSeconds = dateTimeToMillis(alarmTime) / 1000
-
-        val actualSeconds = nextAlarmTime / 1000
+        val expectedSeconds = dateTimeToMillis(alarmTime)
 
         assertEquals(
             expected = expectedSeconds,
-            actual = actualSeconds,
+            actual = nextAlarmTime,
             message = "This is a correct one",
         )
     }
@@ -82,13 +79,11 @@ class NextAlarmTimeExtensionTest {
 
         val nextAlarmTime = alarmTime.nextAlarmTimeInMillis()
 
-        val expectedSeconds = (dateTimeToMillis(alarmTime) + oneDayMillis * 6) / 1000
-
-        val actualSeconds = nextAlarmTime / 1000
+        val expectedSeconds = dateTimeToMillis(alarmTime) + oneDayMillis * 6
 
         assertEquals(
             expected = expectedSeconds,
-            actual = actualSeconds,
+            actual = nextAlarmTime,
             message = "This is a correct one",
         )
     }

@@ -17,8 +17,7 @@ class PreferencesFacadeTestImpl(
 
     override val arrangementStyle: Flow<ArrangementStyle>
         get() = dataStore.data.map { prefs ->
-            if (prefs[arrangementKey] == true)
-                ArrangementStyle.BLOCK_STYLE
+            if (prefs[arrangementKey] == true) ArrangementStyle.BLOCK_STYLE
             else ArrangementStyle.GRID_STYLE
         }
 

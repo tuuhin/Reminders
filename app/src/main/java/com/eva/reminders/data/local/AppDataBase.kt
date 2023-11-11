@@ -62,6 +62,7 @@ abstract class AppDataBase : RoomDatabase() {
 
         fun buildMockDatabase(context: Context): AppDataBase {
             return Room.inMemoryDatabaseBuilder(context, AppDataBase::class.java)
+                .allowMainThreadQueries()
                 .addTypeConverter(DateTimeAdapter.instance)
                 .addTypeConverter(ColorEnumAdapter.instance)
                 .build()

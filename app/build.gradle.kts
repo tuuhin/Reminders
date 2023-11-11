@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.eva.reminders.utils.AppCustomRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -32,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -66,12 +66,13 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.2")
     // dependency injection
     implementation("com.google.dagger:hilt-android:2.48")
     ksp("com.google.dagger:hilt-android-compiler:2.48")
     //navigation
-    implementation("androidx.navigation:navigation-compose:2.7.4")
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     //room
     implementation("androidx.room:room-ktx:2.6.0")
     implementation("androidx.room:room-runtime:2.6.0")
@@ -92,6 +93,10 @@ dependencies {
     //tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    //tests-rules
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    //mockito
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     // espresso
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     // compose tests
@@ -102,6 +107,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     // turbine
     testImplementation("app.cash.turbine:turbine:1.0.0")
-    //koltin tests
+    androidTestImplementation("app.cash.turbine:turbine:1.0.0")
+    //kotlin tests
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }

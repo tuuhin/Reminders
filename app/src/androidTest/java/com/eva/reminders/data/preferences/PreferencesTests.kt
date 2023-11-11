@@ -37,7 +37,7 @@ class PreferencesTests {
         val initial = preferencesFacade.arrangementStyle.first()
         assertEquals(
             "The initial style should be grid style",
-            ArrangementStyle.GRID_STYLE,
+            ArrangementStyle.BLOCK_STYLE,
             initial
         )
     }

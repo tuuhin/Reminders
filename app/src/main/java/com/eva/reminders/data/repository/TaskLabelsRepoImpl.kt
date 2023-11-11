@@ -10,8 +10,10 @@ import com.eva.reminders.data.mappers.toModels
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.utils.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class TaskLabelsRepoImpl(
     private val labelDao: LabelsDao,
@@ -21,8 +23,9 @@ class TaskLabelsRepoImpl(
         return try {
             val entity = LabelEntity(label = label)
             val id = labelDao.insertUpdateLabel(entity)
-            val model = labelDao.getLabelFromId(id).toModel()
-            Resource.Success(data = model)
+            labelDao.getLabelFromId(id)?.toModel()
+                ?.let { model -> Resource.Success(data = model) }
+                ?: Resource.Error(message = "No such labels exists")
         } catch (e: SQLiteConstraintException) {
             Resource.Error(message = e.message ?: "Constraint Exception")
         } catch (e: Exception) {
@@ -32,9 +35,10 @@ class TaskLabelsRepoImpl(
 
     override suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel> {
         return try {
-            labelDao.insertUpdateLabel(label.toEntity())
-            val model = labelDao.getLabelFromId(label.id.toLong()).toModel()
-            Resource.Success(data = model)
+            val labelId = labelDao.insertUpdateLabel(label.toEntity())
+            labelDao.getLabelFromId(labelId)?.toModel()
+                ?.let { model -> Resource.Success(data = model) }
+                ?: Resource.Error(message = "No such labels exists")
         } catch (e: SQLiteConstraintException) {
             Resource.Error(message = e.message ?: "Constraint Exception")
         } catch (e: Exception) {
@@ -54,7 +58,7 @@ class TaskLabelsRepoImpl(
     }
 
     override suspend fun getLabels(): Flow<List<TaskLabelModel>> {
-        return labelDao.getAllLabels().map { it.toModels() }
+        return withContext(Dispatchers.IO) { labelDao.getAllLabels().map { it.toModels() } }
     }
 
     override suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>> {
