@@ -1,24 +1,22 @@
 package com.eva.reminders.presentation.feature_create.composables
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_create.utils.ReminderDateOptions
-import java.time.Instant
+import com.eva.reminders.ui.theme.RemindersTheme
+import com.eva.reminders.utils.formatToDayMonth
+import com.eva.reminders.utils.formatToDayMonthShort
+import com.eva.reminders.utils.millisToLocalDateTime
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,17 +25,19 @@ fun ReminderDatePicker(
     option: ReminderDateOptions,
     onDatePicked: (ReminderDateOptions) -> Unit,
     modifier: Modifier = Modifier,
+    properties: DialogProperties = DialogProperties(
+        usePlatformDefaultWidth = false,
+        dismissOnClickOutside = false,
+        dismissOnBackPress = false
+    ),
 ) {
 
-    var isDialogOpen by remember { mutableStateOf(false) }
+    var isDialogOpen by rememberSaveable { mutableStateOf(false) }
 
-    var isExpanded by remember { mutableStateOf(false) }
+    var isDropDownExpanded by rememberSaveable { mutableStateOf(false) }
 
-    var dropdownOffset by remember { mutableStateOf(DpOffset.Zero) }
 
-    val dateText by remember(option.schedule) {
-        derivedStateOf { option.schedule.format(DateTimeFormatter.ofPattern("dd MMMM")) }
-    }
+    val dateText by remember(option.schedule) { derivedStateOf { option.schedule.formatToDayMonth() } }
 
     val dateOptions = remember {
         listOf(
@@ -47,102 +47,121 @@ fun ReminderDatePicker(
         )
     }
 
+    fun dateValidator(millis: Long): Boolean =
+        millisToLocalDateTime(millis).toLocalDate() >= LocalDate.now()
+
     val datePickerState = rememberDatePickerState(
-        initialDisplayMode = DisplayMode.Picker
+        initialDisplayMode = DisplayMode.Picker,
     )
 
     if (isDialogOpen) {
+
         DatePickerDialog(
             onDismissRequest = { isDialogOpen = !isDialogOpen },
             dismissButton = {
                 TextButton(
-                    onClick = { isDialogOpen = !isDialogOpen }
+                    onClick = { isDialogOpen = !isDialogOpen },
+                    colors = ButtonDefaults
+                        .textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                 ) {
-                    Text(text = "Cancel")
+                    Text(
+                        text = stringResource(id = R.string.dialog_cancel_button_text)
+                    )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         isDialogOpen = !isDialogOpen
-                        val mills = datePickerState.selectedDateMillis
-                        if (mills != null) {
-                            val pickedDate =
-                                Instant.ofEpochMilli(mills).atZone(ZoneId.systemDefault())
-                                    .toLocalDate()
+                        val millis = datePickerState.selectedDateMillis
+                        if (millis != null) {
+                            val pickedDate = millisToLocalDateTime(millis).toLocalDate()
                             onDatePicked(ReminderDateOptions.Custom(date = pickedDate))
                         }
-                    }
-                ) { Text(text = "Done") }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_done_button_text)
+                    )
+                }
             },
-            modifier = Modifier.padding(40.dp),
-            properties = DialogProperties(
-                usePlatformDefaultWidth = true,
-                dismissOnClickOutside = false
-            )
+            properties = properties,
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 4.dp
         ) {
             DatePicker(
                 state = datePickerState,
-                dateValidator = { millis ->
-                    Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
-                        .toLocalDate() >= LocalDate.now()
-                }
+                dateValidator = ::dateValidator,
+                showModeToggle = true,
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.pick_reminder_date_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(
+                            PaddingValues(start = 24.dp, end = 12.dp, top = 16.dp)
+                        )
+                    )
+                },
+                colors = DatePickerDefaults
+                    .colors(titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer),
             )
         }
     }
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(true) {
-                    detectTapGestures(
-                        onTap = { tapOffset ->
-                            dropdownOffset =
-                                DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
-                        }
-                    )
-                }
-                .padding(vertical = 8.dp)
-                .clickable(
-                    onClick = { isExpanded = !isExpanded },
-                    role = Role.Button
-                ),
-        ) {
+
+    PickerWithOptions(
+        isExpanded = isDropDownExpanded,
+        onToggleExpanded = { isDropDownExpanded = !isDropDownExpanded },
+        selectedOptionTile = {
             Text(text = dateText, style = MaterialTheme.typography.bodyMedium)
-            Icon(
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = "Options for dates"
-            )
-        }
-        Divider()
-        DropdownMenu(
-            expanded = isExpanded,
-            onDismissRequest = { isExpanded = !isExpanded },
-            offset = dropdownOffset,
-            modifier = Modifier.fillMaxWidth(.5f)
-        ) {
-            dateOptions.forEach { date ->
+        },
+        dropDownContent = {
+            dateOptions.forEachIndexed { idx, date ->
+                if (idx != 0) Divider()
                 DropdownMenuItem(
                     text = { Text(text = date.text) },
                     onClick = {
                         onDatePicked(date)
-                        isExpanded = !isExpanded
+                        isDropDownExpanded = !isDropDownExpanded
+                    },
+                    trailingIcon = {
+                        Text(
+                            text = date.schedule.formatToDayMonthShort(),
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 )
             }
+            Divider()
             DropdownMenuItem(
-                text = { Text(text = "Select a date..") },
                 onClick = {
-                    isExpanded = !isExpanded
+                    isDropDownExpanded = !isDropDownExpanded
                     isDialogOpen = !isDialogOpen
-                }
+                },
+                text = {
+                    Text(text = stringResource(id = R.string.pick_custom_date_text))
+                },
             )
-        }
+        },
+        modifier = modifier
+    )
+}
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun ReminderDatePickerPreview() = RemindersTheme {
+    Surface(color = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)) {
+        ReminderDatePicker(
+            option = ReminderDateOptions.Today(),
+            onDatePicked = {},
+        )
     }
 }

@@ -86,6 +86,8 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     //splash
     implementation("androidx.core:core-splashscreen:1.1.0-alpha02")
+    //kotlin -immutable
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.6")
     //room -testing
     testImplementation("androidx.room:room-testing:2.6.0")
     //hilt testing

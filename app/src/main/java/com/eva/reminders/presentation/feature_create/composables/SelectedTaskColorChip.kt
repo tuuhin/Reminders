@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutCubic
@@ -20,33 +21,40 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import com.eva.reminders.domain.enums.TaskColorEnum
+import com.eva.reminders.ui.theme.RemindersTheme
 
 @Composable
-fun PickedColor(
-    color: TaskColorEnum?,
+fun SelectedTaskColorChip(
+    taskColor: TaskColorEnum?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    shape: Shape = MaterialTheme.shapes.medium
 ) {
-    val colorText by remember(color) {
-        derivedStateOf { color?.toText() ?: "" }
+    val colorText by remember(taskColor) {
+        derivedStateOf { taskColor?.toText() ?: "" }
     }
 
     AnimatedVisibility(
-        visible = color != null && color != TaskColorEnum.TRANSPARENT,
+        visible = taskColor != null && taskColor != TaskColorEnum.TRANSPARENT,
         enter = slideInVertically() + fadeIn(),
         exit = slideOutVertically() + fadeOut(),
     ) {
 
-        if (color != null) {
+        taskColor?.let {
             val colorVal by animateColorAsState(
-                targetValue = colorResource(id = color.color),
+                targetValue = colorResource(id = taskColor.color),
+                label = "",
                 animationSpec = tween(800, easing = EaseInOutCubic)
             )
+
+            val overlayColor = MaterialTheme.colorScheme.onSurfaceVariant
+
             AssistChip(
                 modifier = modifier,
                 onClick = onClick,
@@ -54,19 +62,17 @@ fun PickedColor(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.WaterDrop,
-                        contentDescription = "Color"
+                        contentDescription = colorText
                     )
                 },
                 colors = AssistChipDefaults
                     .assistChipColors(
                         containerColor = colorVal,
-                        labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .75f),
-                        leadingIconContentColor = MaterialTheme.colorScheme.onSurface
-                            .copy(alpha = .75f)
+                        labelColor = overlayColor,
+                        leadingIconContentColor = overlayColor
                     ),
-                border = AssistChipDefaults.assistChipBorder(
-                    borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .75f)
-                )
+                border = AssistChipDefaults.assistChipBorder(borderColor = overlayColor),
+                shape = shape
             )
         }
     }
@@ -81,14 +87,19 @@ class ColorPreviewParams : CollectionPreviewParameterProvider<TaskColorEnum>(
     )
 )
 
-@Preview
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
 @Composable
-fun PickedColorPreview(
+fun SelectedColorChipPreview(
     @PreviewParameter(ColorPreviewParams::class)
     color: TaskColorEnum
-) {
-    PickedColor(
-        color = color,
-        onClick = {  }
+) = RemindersTheme {
+    SelectedTaskColorChip(
+        taskColor = color,
+        onClick = { }
     )
 }

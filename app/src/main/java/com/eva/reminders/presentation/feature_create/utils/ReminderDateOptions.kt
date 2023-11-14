@@ -1,8 +1,13 @@
 package com.eva.reminders.presentation.feature_create.utils
 
 import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
-sealed class ReminderDateOptions(val text: String, val schedule: LocalDate) {
+sealed class ReminderDateOptions(
+    val text: String,
+    val schedule: LocalDate = LocalDate.now()
+) {
 
     class Today : ReminderDateOptions(
         text = "Today",
@@ -14,8 +19,15 @@ sealed class ReminderDateOptions(val text: String, val schedule: LocalDate) {
         schedule = LocalDate.now().plusDays(1)
     )
 
-    class NextWeek : ReminderDateOptions(
-        text = "Next ${LocalDate.now().dayOfWeek.name.replaceFirstChar { it.uppercaseChar() }}",
+    class NextWeek(
+        displayText: String = "Next ${
+            LocalDate.now().dayOfWeek.getDisplayName(
+                TextStyle.FULL,
+                Locale.getDefault()
+            )
+        }"
+    ) : ReminderDateOptions(
+        text = displayText,
         schedule = LocalDate.now().plusWeeks(1)
     )
 
