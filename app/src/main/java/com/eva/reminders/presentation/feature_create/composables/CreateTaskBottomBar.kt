@@ -1,14 +1,17 @@
 package com.eva.reminders.presentation.feature_create.composables
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -40,14 +43,16 @@ fun CreateTaskBottomBar(
     isCopyEnabled: Boolean,
     isDeleteEnabled: Boolean,
     onActionClick: () -> Unit,
+    onAddColor: () -> Unit,
     onDelete: () -> Unit,
     onCopy: () -> Unit,
     modifier: Modifier = Modifier,
     editedAt: LocalDateTime? = null,
     iconColor: Color = MaterialTheme.colorScheme.secondary,
-    floatingActionBarColor: Color = MaterialTheme.colorScheme.secondaryContainer,
-    floatingActionBarContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
-    timeColor: Color = MaterialTheme.colorScheme.secondary
+    floatingActionBarColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    floatingActionBarContentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    timeColor: Color = MaterialTheme.colorScheme.secondary,
+    windowInsets: WindowInsets = BottomAppBarDefaults.windowInsets
 ) {
     val currentTime by remember(editedAt) {
         derivedStateOf {
@@ -71,6 +76,22 @@ fun CreateTaskBottomBar(
         },
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         actions = {
+            PlainTooltipBox(
+                tooltip = { Text(text = stringResource(id = R.string.add_color_text)) }
+            ) {
+                IconButton(
+                    onClick = onAddColor,
+                    colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
+                    modifier = Modifier
+                        .tooltipAnchor()
+                        .align(Alignment.CenterVertically)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ColorLens,
+                        contentDescription = stringResource(id = R.string.icon_color_desc)
+                    )
+                }
+            }
             PlainTooltipBox(
                 tooltip = { Text(text = stringResource(id = R.string.delete_action)) }
             ) {
@@ -114,7 +135,8 @@ fun CreateTaskBottomBar(
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
-        }
+        },
+        windowInsets = windowInsets
     )
 }
 
@@ -134,5 +156,6 @@ fun CreateTaskBottomBarPreview() = RemindersTheme {
         onActionClick = {},
         onCopy = {},
         onDelete = {},
+        onAddColor = {},
     )
 }

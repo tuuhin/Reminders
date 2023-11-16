@@ -15,7 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.window.PopupProperties
+import com.eva.reminders.R
 import com.eva.reminders.utils.toDpOffset
 
 @Composable
@@ -23,7 +26,8 @@ fun AppBarMoreActions(
     isDropDownExpanded: Boolean,
     onToggleDropDown: () -> Unit,
     modifier: Modifier = Modifier,
-    actions: @Composable ColumnScope.() -> Unit
+    properties: PopupProperties = PopupProperties(),
+    actions: @Composable ColumnScope.() -> Unit,
 ) {
 
     var dpOffset by remember {
@@ -42,14 +46,16 @@ fun AppBarMoreActions(
         ) {
             Icon(
                 imageVector = Icons.Outlined.MoreVert,
-                contentDescription = null
+                contentDescription = stringResource(id = R.string.more_options_icon_desc)
             )
         }
 
         DropdownMenu(
             expanded = isDropDownExpanded,
             onDismissRequest = onToggleDropDown,
-            offset = dpOffset, content = actions
+            offset = dpOffset,
+            content = actions,
+            properties = properties
         )
     }
 }

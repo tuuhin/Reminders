@@ -13,6 +13,7 @@ fun TextFieldDefaults.noColor(): TextFieldColors = colors(
     disabledContainerColor = Color.Transparent,
     focusedIndicatorColor = Color.Transparent,
     unfocusedIndicatorColor = Color.Transparent,
-    cursorColor = MaterialTheme.colorScheme.onSecondaryContainer,
-    errorCursorColor = MaterialTheme.colorScheme.error
+    cursorColor = MaterialTheme.colorScheme.secondary,
+    errorCursorColor = MaterialTheme.colorScheme.error,
+    focusedTextColor = MaterialTheme.colorScheme.onSurface
 )

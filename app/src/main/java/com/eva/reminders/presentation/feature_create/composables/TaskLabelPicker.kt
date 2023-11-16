@@ -1,10 +1,14 @@
 package com.eva.reminders.presentation.feature_create.composables
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,128 +18,108 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_create.utils.SelectLabelState
+import com.eva.reminders.presentation.feature_create.utils.toSelectLabelState
+import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
+import com.eva.reminders.ui.theme.RemindersTheme
 
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TaskLabelPicker(
-    show: Boolean,
-    query: String,
-    onQueryChanged: (String) -> Unit,
     labels: List<SelectLabelState>,
-    onDismissRequest: () -> Unit,
-    onSelect: (SelectLabelState) -> Unit,
+    showPlaceHolder: Boolean,
+    showCreateLabelButton: Boolean,
     onCreateNew: () -> Unit,
-    modifier: Modifier = Modifier,
-    searchBoxColor: Color = MaterialTheme.colorScheme.inverseOnSurface,
+    onSelect: (SelectLabelState) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
-    AnimatedVisibility(
-        visible = show,
-        enter = fadeIn() + slideInVertically(),
-        exit = fadeOut() + slideOutVertically()
-    ) {
 
-        Dialog(
-            onDismissRequest = onDismissRequest,
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false
-            )
-        ) {
-            SearchBar(
-                query = query,
-                onQueryChange = onQueryChanged,
-                active = true,
-                onActiveChange = {},
-                onSearch = {},
-                colors = SearchBarDefaults
-                    .colors(
-                        dividerColor = MaterialTheme.colorScheme.secondary,
-                        containerColor = searchBoxColor
-                    ),
-                placeholder = { Text(text = "Search..") },
-                leadingIcon = {
-                    IconButton(onClick = onDismissRequest) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = "Close the search box"
-                        )
-                    }
-                },
-                modifier = modifier
+    Crossfade(
+        targetState = showPlaceHolder,
+        label = "Is there are no labels",
+        modifier = modifier, animationSpec = tween(easing = FastOutSlowInEasing)
+    ) { placeholder ->
+        when {
+            placeholder -> Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                AnimatedVisibility(
-                    visible = labels.isEmpty() && query.isEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_search),
-                            contentDescription = "Not found",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "No labels are found",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.no_search_results),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    itemsIndexed(
-                        labels, key = { _, item -> item.idx }
-                    ) { _, item ->
-                        CheckLabelItem(
-                            item = item,
-                            onSelect = { onSelect(item) },
+            else -> LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                val enterTransition = fadeIn() + expandVertically()
+                val exitTransition = fadeOut() + shrinkVertically()
+
+                item(key = -1) {
+                    AnimatedVisibility(
+                        visible = showCreateLabelButton,
+                        enter = enterTransition,
+                        exit = exitTransition,
+                    ) {
+                        CreateNewLabelCard(
+                            onClick = onCreateNew,
                             modifier = Modifier.animateItemPlacement()
                         )
                     }
-                    item(key = -1) {
-                        AnimatedVisibility(
-                            visible = labels.isEmpty() && query.isNotEmpty(),
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            CreateNewLabelCard(
-                                onClick = onCreateNew,
-                                modifier = Modifier.animateItemPlacement()
-                            )
-                        }
-                    }
+                }
+                itemsIndexed(
+                    items = labels,
+                    key = { _, item -> item.model.id }
+                ) { _, item ->
+                    SelectTaskLabelOption(
+                        item = item,
+                        onSelect = { onSelect(item) },
+                        modifier = Modifier.animateItemPlacement()
+                    )
                 }
             }
         }
+    }
+}
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun TaskLabelPickerPreview() = RemindersTheme {
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        TaskLabelPicker(
+            labels = PreviewTaskModels.taskLabelModelList.map { it.toSelectLabelState() },
+            showPlaceHolder = false,
+            showCreateLabelButton = true,
+            onCreateNew = {},
+            onSelect = {}
+        )
     }
 }

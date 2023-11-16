@@ -7,7 +7,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.NotificationAdd
 import androidx.compose.material.icons.outlined.PushPin
@@ -18,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.eva.reminders.R
@@ -34,7 +34,6 @@ fun CreateTaskTopBar(
     onReminderClick: () -> Unit,
     onArchiveClick: () -> Unit,
     onAddLabels: () -> Unit,
-    onAddColor: () -> Unit,
     modifier: Modifier = Modifier,
     navigation: @Composable () -> Unit = {},
 ) {
@@ -42,6 +41,8 @@ fun CreateTaskTopBar(
     val permission = checkNotificationPermissions()
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     TopAppBar(
         title = {},
@@ -97,7 +98,10 @@ fun CreateTaskTopBar(
             ) {
                 DropdownMenuItem(
                     text = { Text(text = stringResource(id = R.string.add_labels_text)) },
-                    onClick = onAddLabels,
+                    onClick = {
+                        onAddLabels()
+                        isExpanded = false
+                    },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Outlined.Label,
@@ -105,20 +109,9 @@ fun CreateTaskTopBar(
                         )
                     },
                 )
-                Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.add_color_text)) },
-                    onClick = onAddColor,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.ColorLens,
-                            contentDescription = stringResource(id = R.string.icon_color_desc)
-                        )
-                    },
-                )
             }
         },
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     )
 }
 
@@ -137,7 +130,6 @@ fun CreateTaskTopBarPreview() = RemindersTheme {
         onPinClick = { },
         onReminderClick = { },
         onArchiveClick = {},
-        onAddColor = {},
         onAddLabels = {},
         navigation = {
             Icon(
