@@ -15,7 +15,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.eva.reminders.presentation.navigation.NavigationGraph
+import com.eva.reminders.presentation.navigation.RootNavGraph
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import com.eva.reminders.ui.theme.RemindersTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     CompositionLocalProvider(
                         LocalSnackBarHostProvider provides snackBarHostState
                     ) {
-                        NavigationGraph(navHost = navController)
+                        RootNavGraph(navHost = navController)
                     }
                 }
             }

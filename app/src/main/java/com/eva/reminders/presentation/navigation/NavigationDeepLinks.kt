@@ -7,13 +7,15 @@ object NavigationDeepLinks {
 
     private val baseUri = "app://com.eva.reminders".toUri()
 
-    val taskUriPattern = "$baseUri${NavRoutes.AddTask.route + NavConstants.TASK_ID_QUERY_PARAMS}"
+    val taskUriPattern =
+        "$baseUri${NavRoutes.UpdateTask.route + NavConstants.TASK_ID_AS_PATH_PARAMS}"
 
     val homeUri = baseUri
 
-    fun taskUriFromTaskId(taskId: Int): Uri {
-        return "$baseUri${NavRoutes.AddTask.route}?${NavConstants.TASK_ID}=$taskId".toUri()
-    }
+    val homeUriAsString = baseUri.toString()
+
+    fun taskUriFromTaskId(taskId: Int): Uri =
+        "$baseUri${NavRoutes.UpdateTask.route}/$taskId".toUri()
 
 }
 
