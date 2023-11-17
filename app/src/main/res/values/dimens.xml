@@ -5,4 +5,12 @@
     <dimen name="reminders_sub_heading_v_padding">6dp</dimen>
     <dimen name="reminder_card_spacing">6dp</dimen>
     <dimen name="scaffold_padding_min">4dp</dimen>
+    <dimen name="dialogs_internal_padding">16dp</dimen>
+    <dimen name="reminder_pickers_option_vertical_padding">8dp</dimen>
+    <dimen name="reminder_pickers_option_horizontal_padding">4dp</dimen>
+    <dimen name="reminder_pickers_option_outer_padding">4dp</dimen>
+    <dimen name="dialogs_internal_padding_secondary">8dp</dimen>
+    <dimen name="dialogs_content_padding">8dp</dimen>
+    <dimen name="color_option_size">60dp</dimen>
+    <dimen name="color_option_size_secondary">50dp</dimen>
 </resources>
