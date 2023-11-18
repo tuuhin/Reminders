@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.eva.reminders.data.local.TableNames
 import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.local.entity.TaskEntity
@@ -39,6 +40,8 @@ interface TaskLabelRelDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertNewTask(task: TaskEntity): Long
 
+    @Update
+    suspend fun updateOldTask(entity: TaskEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertLabels(labels: List<LabelEntity>): List<Long>
@@ -69,13 +72,13 @@ interface TaskLabelRelDao {
             val alreadyPresent = labels.filter { it.id != null }
             val newlyAddedLabelIds = insertLabels(toBeCreated).filter { it != -1L }
             // converting them into task-label-relations
-            val newlyAddedLabelsRelations =  newlyAddedLabelIds.map { id ->
+            val newlyAddedLabelsRelations = newlyAddedLabelIds.map { id ->
                 TaskLabelRel(
                     taskId = taskId.toInt(),
                     labelId = id.toInt()
                 )
             }
-            val alreadyPresentDataRelation =  alreadyPresent.mapNotNull { entity ->
+            val alreadyPresentDataRelation = alreadyPresent.mapNotNull { entity ->
                 entity.id?.let { id -> TaskLabelRel(taskId = taskId.toInt(), labelId = id) }
             }
             newlyAddedLabelsRelations + alreadyPresentDataRelation
@@ -99,6 +102,8 @@ interface TaskLabelRelDao {
         labels: List<LabelEntity>,
     ): Long? {
         val taskId = task.id ?: return null
+        // update this task
+        updateOldTask(entity = task)
         val toBeCreated = labels.filter { it.id == null }
         val alreadyPresent = labels.filter { it.id != null }
         // filtering ensures that ignored labels are not considered

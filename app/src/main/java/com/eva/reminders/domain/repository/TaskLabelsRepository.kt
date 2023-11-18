@@ -8,6 +8,7 @@ interface TaskLabelsRepository {
     suspend fun createLabel(label: String): Resource<TaskLabelModel>
     suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel>
     suspend fun deleteLabel(label: TaskLabelModel): Resource<Boolean>
-    suspend fun getLabels(): Flow<List<TaskLabelModel>>
-    suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>>
+    suspend fun getLabels(): Flow<Resource<List<TaskLabelModel>>>
+    suspend fun searchLabels(query: String): Resource<List<TaskLabelModel>>
+
 }

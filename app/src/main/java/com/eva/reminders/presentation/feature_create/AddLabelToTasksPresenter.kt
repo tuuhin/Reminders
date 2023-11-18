@@ -7,13 +7,9 @@ import com.eva.reminders.presentation.feature_create.utils.toSelectLabelStates
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
@@ -43,14 +39,16 @@ class AddLabelToTasksPresenter(
 
     fun setSelectedLabels(labels: List<TaskLabelModel>) = _selectedLabels.update { labels }
 
-    suspend fun onSearch(search: String): Flow<List<TaskLabelModel>> = withContext(dispatcher) {
-        labelsRepository
-            .searchLabels(search)
-            .catch { err -> err.printStackTrace() }
-            .cancellable()
-            .onEach { models ->
-                _queriedLabels.update { models.toSelectLabelStates() }
-            }
+    suspend fun onSearch(search: String): Resource<List<TaskLabelModel>> {
+        val results = withContext(dispatcher) {
+            labelsRepository.searchLabels(search)
+        }
+        // if the result is a successful one take that otherwise not
+        val resultsAsSuccess = results as? Resource.Success
+        resultsAsSuccess?.data?.let { models ->
+            _queriedLabels.update { models.toSelectLabelStates() }
+        }
+        return results
     }
 
 

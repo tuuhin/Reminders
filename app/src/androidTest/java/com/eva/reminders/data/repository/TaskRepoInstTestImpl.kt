@@ -8,23 +8,21 @@ import com.eva.reminders.data.mappers.toModel
 import com.eva.reminders.domain.models.CreateTaskModel
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.repository.TaskRepository
-import com.eva.reminders.services.AlarmManagerRepo
 import com.eva.reminders.utils.Resource
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class TaskRepoImpl(
+class TaskRepoInstTestImpl @Inject constructor(
     private val taskDao: TaskDao,
     private val taskLabelRel: TaskLabelRelDao,
-    private val alarmRepo: AlarmManagerRepo,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val dispatcher: CoroutineDispatcher = StandardTestDispatcher(),
 ) : TaskRepository {
     override suspend fun createTask(model: CreateTaskModel): Resource<TaskModel?> {
         return withContext(dispatcher) {
@@ -38,11 +36,8 @@ class TaskRepoImpl(
                     ?: return@withContext Resource.Error(message = "Failed to find the task")
 
                 val taskModel = newlyCreatedTask.toModel()
-                alarmRepo.createAlarm(taskModel)
                 Resource.Success(taskModel)
 
-            } catch (e: CancellationException) {
-                throw e
             } catch (e: SQLiteConstraintException) {
                 e.printStackTrace()
                 Resource.Error(message = e.message ?: "Constraint Exception")
@@ -58,10 +53,7 @@ class TaskRepoImpl(
             try {
                 val entity = task.toEntity()
                 taskDao.deleteTask(entity)
-                alarmRepo.stopAlarm(task)
                 Resource.Success(true)
-            } catch (e: CancellationException) {
-                throw e
             } catch (e: SQLiteConstraintException) {
                 e.printStackTrace()
                 Resource.Error(message = e.message ?: "SQLITE EXCEPTION")
@@ -80,8 +72,6 @@ class TaskRepoImpl(
                     .map { relations -> Resource.Success(relations.map { it.toModel() }) }
                     .flowOn(dispatcher)
                 emitAll(savedTasks)
-            } catch (e: CancellationException) {
-                throw e
             } catch (e: SQLiteConstraintException) {
                 e.printStackTrace()
                 emit(Resource.Error(message = e.message ?: "SQLITE EXCEPTION"))
@@ -117,7 +107,6 @@ class TaskRepoImpl(
                     ?: return@withContext Resource.Error(message = "Cannot find resource ")
 
                 val taskModel = updatedTask.toModel()
-                alarmRepo.cancelOrCreateAlarm(taskModel)
                 Resource.Success(taskModel)
 
             } catch (e: SQLiteConstraintException) {

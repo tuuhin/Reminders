@@ -36,74 +36,76 @@ class TaskLabelRelTest {
     @Inject
     lateinit var labelDao: LabelsDao
 
+
     @Before
     fun setup() = hiltRule.inject()
 
 
     @Test
-    fun check_if_adding_tasks_with_labels_works_labels_are_initially_created() = runTest {
+    fun check_if_adding_tasks_with_labels_works_labels_are_initially_created() =
+        runTest {
 
-        val testLabels = List(4) { idx -> LabelEntity(label = "Test Label $idx") }
+            val testLabels = List(4) { idx -> LabelEntity(label = "Test Label $idx") }
 
-        val newlyAddedLabels = taskLabelRel.insertLabels(testLabels)
+            val newlyAddedLabels = taskLabelRel.insertLabels(testLabels)
 
-        val labelsToBeAdded = labelDao.getLabelFromIds(newlyAddedLabels)
+            val labelsToBeAdded = labelDao.getLabelFromIds(newlyAddedLabels)
 
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        val expectedLabelsText = labelsToBeAdded.map { it.label }
-        val actualLabelText = testLabels.map { it.label }
+            val expectedLabelsText = labelsToBeAdded.map { it.label }
+            val actualLabelText = testLabels.map { it.label }
 
-        Assert.assertEquals(
-            "After adding labels the fetch labels should be same",
-            expectedLabelsText,
-            actualLabelText
-        )
+            Assert.assertEquals(
+                "After adding labels the fetch labels should be same",
+                expectedLabelsText,
+                actualLabelText
+            )
 
-        val testEntity = TaskEntity(title = "Test 1", content = "Content 1")
+            val testEntity = TaskEntity(title = "Test 1", content = "Content 1")
 
-        // Adding the task
-        val taskId = taskLabelRel.insertTaskWithLabels(
-            task = testEntity,
-            labels = labelsToBeAdded,
-            createLabelIfNotExits = false
-        )
-        runCurrent()
+            // Adding the task
+            val taskId = taskLabelRel.insertTaskWithLabels(
+                task = testEntity,
+                labels = labelsToBeAdded,
+                createLabelIfNotExits = false
+            )
+            runCurrent()
 
-        Assert.assertNotNull(
-            "Ensures the newly added task is Added successfully",
-            taskId
-        )
+            Assert.assertNotNull(
+                "Ensures the newly added task is Added successfully",
+                taskId
+            )
 
-        if (taskId == null) return@runTest
-        //fetching the new task with labels
-        val newlyAddedTaskWithLabels = taskLabelRel.getTaskWithLabels(taskId = taskId)
-        // checking the newly created task
-        val newlyCreatedTask = taskDao.getTasks()
+            if (taskId == null) return@runTest
+            //fetching the new task with labels
+            val newlyAddedTaskWithLabels = taskLabelRel.getTaskWithLabels(taskId = taskId)
+            // checking the newly created task
+            val newlyCreatedTask = taskDao.getTasks()
 
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        Assert.assertEquals(
-            "The results should be just one as just a single task is added",
-            newlyCreatedTask.map { it.toTestModel() },
-            listOf(testEntity.toTestModel())
-        )
+            Assert.assertEquals(
+                "The results should be just one as just a single task is added",
+                newlyCreatedTask.map { it.toTestModel() },
+                listOf(testEntity.toTestModel())
+            )
 
-        Assert.assertEquals(
-            "Check if the results contains the same task model",
-            newlyAddedTaskWithLabels?.task?.toTestModel(),
-            testEntity.toTestModel(taskId = 1)
-        )
+            Assert.assertEquals(
+                "Check if the results contains the same task model",
+                newlyAddedTaskWithLabels?.task?.toTestModel(),
+                testEntity.toTestModel(taskId = 1)
+            )
 
-        val resultsLabelText = newlyAddedTaskWithLabels?.labels?.map { it.label }
-        Log.d("RESULTS", taskId.toString())
+            val resultsLabelText = newlyAddedTaskWithLabels?.labels?.map { it.label }
+            Log.d("RESULTS", taskId.toString())
 
-        Assert.assertEquals(
-            "The labels of the results should be same",
-            resultsLabelText,
-            actualLabelText,
-        )
-    }
+            Assert.assertEquals(
+                "The labels of the results should be same",
+                resultsLabelText,
+                actualLabelText,
+            )
+        }
 
     @Test
     fun check_if_adding_tasks_with_labels_works_labels_are_created_here() = runTest {
@@ -198,8 +200,10 @@ class TaskLabelRelTest {
         val taskLabelRelations = taskLabelRel.getTaskLabelRelations(taskId = taskId)
         runCurrent()
 
-        val expectedLabelRelations = mapOf(taskId.toInt() to taskLabelRelations.map { it.labelId })
-        val actualRelationMap = mapOf(taskId.toInt() to newlyAddedTask.labels.map { it.id ?: 0 })
+        val expectedLabelRelations =
+            mapOf(taskId.toInt() to taskLabelRelations.map { it.labelId })
+        val actualRelationMap =
+            mapOf(taskId.toInt() to newlyAddedTask.labels.map { it.id ?: 0 })
         // Making sure the relations is same as what its suppose to be
         Assert.assertEquals(
             "Is the map for the ids are same or not",

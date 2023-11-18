@@ -13,8 +13,8 @@ import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.withContext
@@ -74,12 +74,23 @@ class TaskLabelsRepoTestImpl @Inject constructor(
         }
     }
 
-    override suspend fun getLabels(): Flow<List<TaskLabelModel>> {
-        return labelDao.getAllLabels()
-            .map { it.toModels() }
-            .flowOn(dispatcher)
-
+    override suspend fun getLabels(): Flow<Resource<List<TaskLabelModel>>> {
+        return withContext(dispatcher) {
+            flow {
+                try {
+                    val results = labelDao.getAllLabels()
+                        .map { Resource.Success(data = it.toModels()) }
+                    emitAll(results)
+                } catch (e: SQLiteConstraintException) {
+                    emit(Resource.Error(message = e.message ?: "Constraint Exception"))
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    emit(Resource.Error(message = e.message ?: "Exception Occurred"))
+                }
+            }
+        }
     }
 
-    override suspend fun searchLabels(query: String): Flow<List<TaskLabelModel>> = emptyFlow()
+    override suspend fun searchLabels(query: String): Resource<List<TaskLabelModel>> =
+        Resource.Success(data = emptyList())
 }

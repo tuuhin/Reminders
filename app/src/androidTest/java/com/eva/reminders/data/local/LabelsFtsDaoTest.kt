@@ -1,7 +1,5 @@
 package com.eva.reminders.data.local
 
-import app.cash.turbine.test
-import app.cash.turbine.turbineScope
 import com.eva.reminders.data.local.dao.LabelsDao
 import com.eva.reminders.data.local.dao.LabelsFtsDao
 import com.eva.reminders.data.local.entity.LabelEntity
@@ -67,19 +65,11 @@ class LabelsFtsDaoTest {
             matcher.isEmpty() -> labelsFtsDao.all()
             else -> labelsFtsDao.search(matcher)
         }
-
-        turbineScope {
-            matcherFlow.test {
-                val results = awaitItem().map { it.label }
-
-                Assert.assertEquals(
-                    "These labels should match",
-                    expected,
-                    results
-                )
-                cancelAndIgnoreRemainingEvents()
-            }
-        }
+        Assert.assertEquals(
+            "These labels should match",
+            expected,
+            matcherFlow.map { it.label }
+        )
     }
 
 }

@@ -21,7 +21,7 @@ object RepositoryModule {
 
     @Provides
     @ViewModelScoped
-    fun getTaskLabelDao(
+    fun providesTaskLabelRepo(
         labelsDao: LabelsDao,
         labelsFtsDao: LabelsFtsDao
     ): TaskLabelsRepository =
@@ -32,7 +32,7 @@ object RepositoryModule {
 
     @Provides
     @ViewModelScoped
-    fun getTaskDao(
+    fun providesTaskRepo(
         taskDao: TaskDao,
         taskLabelRelDao: TaskLabelRelDao,
         alarmRepo: AlarmManagerRepo

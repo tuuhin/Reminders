@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -92,8 +91,13 @@ class LabelsViewModel @Inject constructor(
 
     private fun getSavedLabels() = viewModelScope.launch(Dispatchers.IO) {
         labelRepo.getLabels()
-            .catch { err -> err.printStackTrace() }
-            .onEach { models -> _labels.update { models } }
+            .onEach { res ->
+                when (res) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(res.message))
+                    is Resource.Success -> _labels.update { res.data }
+                    else -> {}
+                }
+            }
             .launchIn(this)
     }
 
