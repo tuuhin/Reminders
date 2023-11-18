@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.navigation.screens_ext
 
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -15,30 +16,36 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
-import androidx.navigation.navigation
+import androidx.navigation.compose.navigation
+import androidx.navigation.navDeepLink
 import com.eva.reminders.presentation.feature_create.AddTaskViewModel
 import com.eva.reminders.presentation.feature_create.CreateTaskRoute
 import com.eva.reminders.presentation.feature_create.SelectLabelsRoute
+import com.eva.reminders.presentation.navigation.NavConstants
 import com.eva.reminders.presentation.navigation.NavRoutes
+import com.eva.reminders.presentation.navigation.NavigationDeepLinks
 import com.eva.reminders.presentation.navigation.sharedViewModel
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import com.eva.reminders.presentation.utils.UIEvents
 
 fun NavGraphBuilder.createTaskRoute(navHost: NavHostController) = navigation(
+    startDestination = NavConstants.BLANK_ROUTE,
     route = NavRoutes.AddTask.route,
-    startDestination = NavRoutes.Home.route,
+    deepLinks = listOf(
+        navDeepLink {
+            uriPattern = NavigationDeepLinks.createNewTaskUriPattern
+            action = Intent.ACTION_VIEW
+        },
+    ),
 ) {
-
-    composable(route = NavRoutes.Home.route) { entry ->
+    composable(route = NavConstants.BLANK_ROUTE) { entry ->
         val lifecycleOwner = LocalLifecycleOwner.current
         val snackBarHostState = LocalSnackBarHostProvider.current
 
         val viewModel = entry.sharedViewModel<AddTaskViewModel>(controller = navHost)
 
-
         val content by viewModel.taskState.collectAsStateWithLifecycle()
         val selectedLabels by viewModel.labelsForTask.collectAsStateWithLifecycle()
-
 
         LaunchedEffect(viewModel.uiEvents, lifecycleOwner.lifecycle) {
             lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -50,31 +57,25 @@ fun NavGraphBuilder.createTaskRoute(navHost: NavHostController) = navigation(
                 }
             }
         }
-
-        if (!content.isLoading) {
-            CreateTaskRoute(
-                state = content.content,
-                onAddTaskEvents = viewModel::onAddTaskEvents,
-                selectedLabels = selectedLabels,
-                onLabelPickerDialog = { navHost.navigate(NavRoutes.TaskLabelsRoute.route) },
-                navigation = {
-                    if (navHost.previousBackStackEntry != null)
-                        IconButton(
-                            onClick = {
-                                navHost.popBackStack(
-                                    route = NavRoutes.AddTask.route,
-                                    inclusive = true
-                                )
-                            },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back Button"
-                            )
-                        }
-                },
-            )
-        }
+        CreateTaskRoute(
+            state = content.content,
+            onAddTaskEvents = viewModel::onAddTaskEvents,
+            selectedLabels = selectedLabels,
+            onLabelPickerDialog = { navHost.navigate(NavRoutes.TaskLabelsRoute.route) },
+            navigation = {
+                if (navHost.previousBackStackEntry != null)
+                    IconButton(
+                        onClick = {
+                            navHost.popBackStack(route = NavRoutes.AddTask.route, inclusive = true)
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                        )
+                    }
+            },
+        )
     }
     dialog(
         route = NavRoutes.TaskLabelsRoute.route,

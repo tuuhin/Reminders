@@ -3,6 +3,7 @@ package com.eva.reminders.services
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,7 @@ import com.eva.reminders.R
 import com.eva.reminders.presentation.navigation.NavigationDeepLinks
 import com.eva.reminders.utils.IntentsExtra
 import com.eva.reminders.utils.NotificationConstants
-import com.eva.reminders.utils.getFirstSentence
+import com.eva.reminders.utils.getFirstSentenceOfContent
 import kotlin.random.Random
 
 class ReminderReceiver : BroadcastReceiver() {
@@ -26,6 +27,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val content = intent.getStringExtra(IntentsExtra.TASK_CONTENT)
         val taskId = intent.getIntExtra(IntentsExtra.TASK_ID, -1)
 
+        // Need to add a random value as if two notification may appear together
         val randomValue = Random(taskId).nextInt()
 
         val seenPendingIntentRequestCode = -1 * randomValue
@@ -50,35 +52,41 @@ class ReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val taskLinkIntent = Intent(context, MainActivity::class.java).apply {
-            data = NavigationDeepLinks.taskUriFromTaskId(taskId)
-            action = Intent.ACTION_VIEW
+
+        val taskDeepLinkIntent = Intent(
+            Intent.ACTION_VIEW,
+            NavigationDeepLinks.taskUriFromTaskId(taskId),
+            context,
+            MainActivity::class.java
+        ).apply {
+            putExtra(IntentsExtra.TASK_ID,taskId)
         }
 
-        val openTaskPendingIntent = PendingIntent.getActivity(
-            context,
-            openPendingIntentRequestCode,
-            taskLinkIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
+        val openTaskPendingIntent = TaskStackBuilder.create(context).run {
+            addNextIntentWithParentStack(taskDeepLinkIntent)
+            getPendingIntent(
+                openPendingIntentRequestCode,
+                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
 
-        val homeLinkIntent = Intent(context, MainActivity::class.java).apply {
+        val homeIntent = Intent(context, MainActivity::class.java).apply {
             data = NavigationDeepLinks.homeUri
             action = Intent.ACTION_VIEW
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         }
 
         val activityIntent = PendingIntent.getActivity(
             context,
             homePendingIntentRequestCode,
-            homeLinkIntent,
+            homeIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val seenAction =
-            NotificationCompat.Action
-                .Builder(0, context.getString(R.string.notification_seen_action), readIntent)
-                .setAuthenticationRequired(true)
-                .build()
+        val seenAction = NotificationCompat.Action
+            .Builder(0, context.getString(R.string.notification_seen_action), readIntent)
+            .setAuthenticationRequired(true)
+            .build()
 
         val openAction = NotificationCompat.Action
             .Builder(1, context.getString(R.string.notification_open_action), openTaskPendingIntent)
@@ -86,38 +94,43 @@ class ReminderReceiver : BroadcastReceiver() {
             .build()
 
 
-        val publicNotification =
-            NotificationCompat.Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification_bell)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setContentTitle(title)
-                .setOngoing(true)
-                .build()
+        val publicNotification = NotificationCompat
+            .Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_bell)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setContentTitle(title)
+            .setOngoing(false)
+            .build()
 
 
-        val notification =
-            NotificationCompat
-                .Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification_bell)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setOngoing(true)
-                .setContentTitle(title)
-                .setContentIntent(activityIntent)
-                .apply {
-                    if (!content.isNullOrEmpty()) {
-                        setContentText(content.getFirstSentence())
-                        setStyle(NotificationCompat.BigTextStyle().bigText(content))
-                    }
+        val notification = NotificationCompat
+            .Builder(context, NotificationConstants.NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_bell)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setOngoing(true)
+            .setContentTitle(title)
+            .setContentIntent(activityIntent)
+            .apply {
+                content?.let { text ->
+                    if (text.isNotEmpty() && text.length > 20) {
+                        setStyle(
+                            NotificationCompat.BigTextStyle()
+                                .setBigContentTitle(title)
+                                .bigText(content)
+                                .setSummaryText(content.getFirstSentenceOfContent())
+                        )
+                    } else if (content.isNotEmpty()) setContentText(text)
                 }
-                .addAction(seenAction)
-                .addAction(openAction)
-                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                .setPublicVersion(publicNotification)
-                .setDefaults(Notification.DEFAULT_VIBRATE)
-                .setAutoCancel(true)
-                .build()
+            }
+            .addAction(seenAction)
+            .addAction(openAction)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(publicNotification)
+            .setDefaults(Notification.DEFAULT_VIBRATE)
+            .setAutoCancel(true)
+            .build()
 
         notificationManager?.notify(taskId, notification)
     }

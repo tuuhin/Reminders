@@ -2,8 +2,10 @@ package com.eva.reminders.presentation.navigation.screens_ext
 
 import android.content.Intent
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.shrinkOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -15,7 +17,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +33,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_create.AddTaskViewModel
 import com.eva.reminders.presentation.feature_create.CreateTaskRoute
 import com.eva.reminders.presentation.feature_create.SelectLabelsRoute
@@ -38,15 +44,10 @@ import com.eva.reminders.presentation.navigation.sharedViewModel
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import com.eva.reminders.presentation.utils.UIEvents
 
+@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.updateTaskRoute(navHost: NavHostController) = navigation(
     startDestination = NavConstants.TASK_ID_AS_PATH_PARAMS,
-    route = NavRoutes.UpdateTask.route + NavConstants.TASK_ID_AS_PATH_PARAMS,
-    arguments = listOf(
-        navArgument(NavConstants.TASK_ID) {
-            type = NavType.IntType
-            defaultValue = -1
-        }
-    ),
+    route = NavRoutes.UpdateTask.route,
 ) {
     composable(
         route = NavConstants.TASK_ID_AS_PATH_PARAMS,
@@ -56,12 +57,19 @@ fun NavGraphBuilder.updateTaskRoute(navHost: NavHostController) = navigation(
                 action = Intent.ACTION_VIEW
             },
         ),
+        arguments = listOf(
+            navArgument(NavConstants.TASK_ID) {
+                type = NavType.IntType
+                defaultValue = -1
+            }
+        ),
     ) { entry ->
 
         val taskId = entry.arguments?.getInt(NavConstants.TASK_ID) ?: -1
 
         val lifecycleOwner = LocalLifecycleOwner.current
         val snackBarHostState = LocalSnackBarHostProvider.current
+        val context = LocalContext.current
 
         val viewModel = entry.sharedViewModel<AddTaskViewModel>(controller = navHost)
 
@@ -83,8 +91,13 @@ fun NavGraphBuilder.updateTaskRoute(navHost: NavHostController) = navigation(
         Crossfade(
             targetState = !content.isLoading,
             label = "Cross fading the loading state",
-            animationSpec = tween(easing = FastOutLinearInEasing)
+            animationSpec = tween(easing = FastOutLinearInEasing),
+            modifier = Modifier.semantics {
+                contentDescription =
+                    context.getString(R.string.create_or_update_route_semantics_desc)
+            }
         ) { isReady ->
+
             when {
                 isReady -> CreateTaskRoute(
                     state = content.content,
@@ -108,14 +121,16 @@ fun NavGraphBuilder.updateTaskRoute(navHost: NavHostController) = navigation(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowBack,
-                                    contentDescription = "Back Button"
+                                    contentDescription = null
                                 )
                             }
                     },
                 )
 
                 else -> Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .animateEnterExit(exit = shrinkOut()),
                     contentAlignment = Alignment.Center,
                     content = { CircularProgressIndicator() }
                 )
