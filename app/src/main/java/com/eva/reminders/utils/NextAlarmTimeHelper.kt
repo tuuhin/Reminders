@@ -5,7 +5,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.Calendar
 import kotlin.time.Duration.Companion.days
 import kotlin.time.DurationUnit
 
@@ -30,29 +29,27 @@ fun millisToLocalDateTime(triggerTime: Long): LocalDateTime =
         .atZone(ZoneId.systemDefault())
         .toLocalDateTime()
 
+fun LocalDateTime.toMilliSeconds(): Long {
+    return this.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+}
+
 /**
  * Provides the next alarm Time in millis
  * @param compareWith [LocalDateTime] to which it's compared to
  * @return Millis in which the next alarm should be triggered
  */
 fun LocalDateTime.nextAlarmTimeInMillis(compareWith: LocalDateTime = localDateTimeWithoutMillis()): Long {
-    val daysDifference = if (this < compareWith) {
+    val daysDifference = if (compareWith > this) {
         (compareWith.dayOfYear - dayOfYear).let { diff ->
-            val addExtraDay = if (compareWith.toLocalTime() < LocalTime.now()) 1 else 0
+            println("THe day difference is $this $compareWith $diff ")
+            val addExtraDay = if (compareWith.toLocalTime() > toLocalTime()) 1 else 0
             diff + addExtraDay
         }
     } else 0
     val extraMillis = daysDifference.days.toInt(DurationUnit.MILLISECONDS)
-    // println(daysDifference)
+    val originalToMillis = toMilliSeconds()
 
-    val originalToMillis = Calendar.getInstance().apply {
-        set(Calendar.DAY_OF_YEAR, dayOfYear)
-        set(Calendar.HOUR, hour)
-        set(Calendar.MINUTE, minute)
-        set(Calendar.SECOND, second)
-    }
-
-    return originalToMillis.timeInMillis + extraMillis
+    return originalToMillis + extraMillis
 }
 
 /**

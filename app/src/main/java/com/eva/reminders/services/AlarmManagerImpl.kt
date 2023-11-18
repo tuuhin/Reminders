@@ -14,7 +14,6 @@ import com.eva.reminders.utils.NotificationConstants
 import com.eva.reminders.utils.millisToLocalDateTime
 import com.eva.reminders.utils.nextAlarmTimeInMillis
 import java.time.LocalDateTime
-import java.util.Calendar
 
 class AlarmManagerImpl(
     private val context: Context
@@ -35,7 +34,10 @@ class AlarmManagerImpl(
                 putExtra(IntentsExtra.TASK_TITLE, taskModel.title)
                 putExtra(IntentsExtra.TASK_CONTENT, taskModel.content)
                 putExtra(IntentsExtra.TASK_ID, taskModel.id)
-                /** data is not used but to help in [Intent.filterEquals] ,uri is sent*/
+                /** data is not used but to help in [Intent.filterEquals] ,uri is sent
+                 * This intent data can be used in the notification for the open intent
+                 * deep link uri
+                 * */
                 data = NavigationDeepLinks.taskUriFromTaskId(taskModel.id)
                 action = NotificationConstants.NOTIFICATION_READ_ACTION
             }
@@ -105,13 +107,10 @@ class AlarmManagerImpl(
         val canScheduleAlarm = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                 && alarmManager?.canScheduleExactAlarms() == true
 
-        val triggerTime = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_YEAR, alarmTime.dayOfYear)
-            set(Calendar.HOUR, alarmTime.hour)
-            set(Calendar.MINUTE, alarmTime.minute)
-            set(Calendar.SECOND, alarmTime.second)
-        }.timeInMillis
-
+        /** although its calling [nextAlarmTimeInMillis] but as the [alarmTime] is
+         *in future it will return that time only without adding or subtracting seconds
+         */
+        val triggerTime = alarmTime.nextAlarmTimeInMillis()
         val alarmTimeLog = millisToLocalDateTime(triggerTime)
 
         if (canScheduleAlarm) {
