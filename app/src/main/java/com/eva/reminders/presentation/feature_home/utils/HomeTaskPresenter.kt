@@ -5,7 +5,7 @@ import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.presentation.utils.HomeTabs
 import com.eva.reminders.presentation.utils.ShowContent
-import kotlinx.coroutines.flow.first
+import com.eva.reminders.utils.Resource
 
 class HomeTaskPresenter(
     private val repository: TaskLabelsRepository
@@ -47,7 +47,9 @@ class HomeTaskPresenter(
 //                colorFilter || labelFilter
             }
 
-            val filterLabels = repository.searchLabels(searchType.query).first()
+            val filterLabels =
+                (repository.searchLabels(searchType.query) as? Resource.Success)?.data
+                    ?: emptyList()
 
 
             val labelFilterResults = tasks

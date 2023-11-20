@@ -10,8 +10,6 @@ import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelEvents
 import com.eva.reminders.presentation.feature_labels.utils.EditLabelsActions
 import com.eva.reminders.presentation.feature_labels.utils.LabelSortOrder
-import com.eva.reminders.presentation.feature_labels.utils.SortLabelEvents
-import com.eva.reminders.presentation.feature_labels.utils.SortLabelsDialogState
 import com.eva.reminders.presentation.feature_labels.utils.toEditStates
 import com.eva.reminders.presentation.feature_labels.utils.toUpdateModel
 import com.eva.reminders.presentation.utils.UIEvents
@@ -47,14 +45,14 @@ class LabelsViewModel @Inject constructor(
     private val _uiEvents = MutableSharedFlow<UIEvents>()
     val uiEvents = _uiEvents.asSharedFlow()
 
-    private val _sortState = MutableStateFlow(SortLabelsDialogState())
-    val showSortDialog = _sortState.asStateFlow()
+    private val _sortOrder = MutableStateFlow(LabelSortOrder.REGULAR)
+    val labelsSortOrder = _sortOrder.asStateFlow()
 
     private val _editLabelEvents = MutableStateFlow<EditLabelEvents>(EditLabelEvents.ShowAllLabels)
 
-    private val _editableLabelStatesFlow = combine(_labels, _sortState) { models, order ->
+    private val _editableLabelStatesFlow = combine(_labels, _sortOrder) { models, order ->
         val labelEditStates = models.toEditStates()
-        when (order.order) {
+        when (order) {
             LabelSortOrder.REGULAR -> labelEditStates
             LabelSortOrder.ALPHABETICALLY_ASC -> labelEditStates.sortedBy { it.previousLabel }
             LabelSortOrder.ALPHABETICALLY_DESC -> labelEditStates.sortedByDescending { it.previousLabel }
@@ -71,7 +69,7 @@ class LabelsViewModel @Inject constructor(
 
             is EditLabelEvents.ToggleEnabled -> labels.map { label ->
                 if (label.labelId == event.labelId)
-                    label.copy(isEdit = !label.isEdit)
+                    label.copy(isEdit = !label.isEdit, updatedLabel = "")
                 else label
             }
 
@@ -88,26 +86,7 @@ class LabelsViewModel @Inject constructor(
         getSavedLabels()
     }
 
-
-    private fun getSavedLabels() = viewModelScope.launch(Dispatchers.IO) {
-        labelRepo.getLabels()
-            .onEach { res ->
-                when (res) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(res.message))
-                    is Resource.Success -> _labels.update { res.data }
-                    else -> {}
-                }
-            }
-            .launchIn(this)
-    }
-
-
-    fun onSortEvents(event: SortLabelEvents) {
-        when (event) {
-            is SortLabelEvents.SelectSortOrder -> _sortState.update { it.copy(order = event.order) }
-            SortLabelEvents.ToggleDialog -> _sortState.update { it.copy(isDialogVisible = !it.isDialogVisible) }
-        }
-    }
+    fun onSortOderChange(order: LabelSortOrder) = _sortOrder.update { order }
 
     fun onCreateLabelEvent(event: CreateLabelEvents) {
         when (event) {
@@ -124,7 +103,7 @@ class LabelsViewModel @Inject constructor(
     }
 
     fun onLabelAction(actions: EditLabelsActions) {
-        _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
+        //  _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
         when (actions) {
             is EditLabelsActions.OnDelete -> actions.item.model
                 ?.let { model -> onDelete(model) }
@@ -135,6 +114,18 @@ class LabelsViewModel @Inject constructor(
     }
 
     fun onUpdateLabelEvent(event: EditLabelEvents) = _editLabelEvents.update { event }
+
+    private fun getSavedLabels() = viewModelScope.launch {
+        labelRepo.getLabels()
+            .onEach { res ->
+                when (res) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(res.message))
+                    is Resource.Success -> _labels.update { res.data }
+                    else -> {}
+                }
+            }
+            .launchIn(this)
+    }
 
     private fun onDelete(label: TaskLabelModel) = viewModelScope.launch(Dispatchers.IO) {
         when (val res = labelRepo.deleteLabel(label)) {
@@ -155,7 +146,7 @@ class LabelsViewModel @Inject constructor(
             others = _labels.value.map { it.label }
         )
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (validator.isValid) {
                 //just trimming off the extra blank spaces
                 val trimmedLabel = label.copy(label = label.label.trim())
@@ -172,16 +163,17 @@ class LabelsViewModel @Inject constructor(
     }
 
     private fun createLabel() {
+        val labelText = _newLabelState.value.label.trim()
+
         val validator = labelValidator.validate(
-            label = _newLabelState.value.label,
+            label = labelText,
             others = _labels.value.map { it.label }
         )
 
         if (validator.isValid) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val trimmedLabel = _newLabelState.value.label.trim()
+            viewModelScope.launch {
 
-                when (val res = labelRepo.createLabel(trimmedLabel)) {
+                when (val res = labelRepo.createLabel(labelText)) {
                     is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
 
                     is Resource.Success -> _newLabelState.update { CreateLabelState() }

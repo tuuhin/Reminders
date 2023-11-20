@@ -1,7 +1,6 @@
 package com.eva.reminders.data.repository
 
 import android.database.sqlite.SQLiteConstraintException
-import android.util.Log
 import com.eva.reminders.data.local.dao.LabelsDao
 import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.mappers.toEntity
@@ -12,22 +11,23 @@ import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.utils.Resource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+
 class TaskLabelsRepoTestImpl @Inject constructor(
     private val labelDao: LabelsDao,
-    private val dispatcher: CoroutineDispatcher = StandardTestDispatcher(),
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : TaskLabelsRepository {
 
     override suspend fun createLabel(label: String): Resource<TaskLabelModel> {
         return withContext(dispatcher) {
-            println("KNOCKING  HERE")
             try {
                 val entity = LabelEntity(label = label)
                 val id = labelDao.insertUpdateLabel(entity)
@@ -37,10 +37,6 @@ class TaskLabelsRepoTestImpl @Inject constructor(
             } catch (e: SQLiteConstraintException) {
                 Resource.Error(message = e.message ?: "Constraint Exception")
             } catch (e: Exception) {
-                if (e is CancellationException) {
-                    Log.i("CANCELLATION", e.localizedMessage ?: "")
-                    throw e
-                }
                 Resource.Error(message = e.message ?: "Exception Occurred")
             }
         }
@@ -75,18 +71,16 @@ class TaskLabelsRepoTestImpl @Inject constructor(
     }
 
     override suspend fun getLabels(): Flow<Resource<List<TaskLabelModel>>> {
-        return withContext(dispatcher) {
-            flow {
-                try {
-                    val results = labelDao.getAllLabels()
-                        .map { Resource.Success(data = it.toModels()) }
-                    emitAll(results)
-                } catch (e: SQLiteConstraintException) {
-                    emit(Resource.Error(message = e.message ?: "Constraint Exception"))
-                } catch (e: Exception) {
-                    if (e is CancellationException) throw e
-                    emit(Resource.Error(message = e.message ?: "Exception Occurred"))
-                }
+        return flow {
+            try {
+                val results = labelDao.getAllLabels().flowOn(dispatcher)
+                    .map { Resource.Success(data = it.toModels()) }
+                emitAll(results)
+            } catch (e: SQLiteConstraintException) {
+                emit(Resource.Error(message = e.message ?: "Constraint Exception"))
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                emit(Resource.Error(message = e.message ?: "Exception Occurred"))
             }
         }
     }

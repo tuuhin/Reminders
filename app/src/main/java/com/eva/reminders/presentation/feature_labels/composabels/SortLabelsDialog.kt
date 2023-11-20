@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,9 +31,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.eva.reminders.R
+import com.eva.reminders.presentation.feature_labels.utils.FeatureLabelsTestTags
 import com.eva.reminders.presentation.feature_labels.utils.LabelSortOrder
 import com.eva.reminders.presentation.feature_labels.utils.LabelsSortOrderPreviewParams
-import com.eva.reminders.presentation.feature_labels.utils.SortLabelEvents
 import com.eva.reminders.ui.theme.RemindersTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,14 +43,15 @@ fun SortLabelsDialog(
     onOrderChange: (LabelSortOrder) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    properties: DialogProperties = DialogProperties(
+        dismissOnBackPress = true,
+        dismissOnClickOutside = true
+    ),
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = modifier,
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true
-        )
+        properties = properties
     ) {
         Card(
             shape = MaterialTheme.shapes.large,
@@ -83,7 +85,8 @@ fun SortLabelsDialog(
                                 indication = rippleIndication,
                                 onClick = { onOrderChange(types) },
                                 role = Role.Button
-                            ),
+                            )
+                            .testTag(FeatureLabelsTestTags.sortTestTagFromOrder(types)),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         RadioButton(
@@ -102,22 +105,6 @@ fun SortLabelsDialog(
         }
     }
 }
-
-@Composable
-fun SortLabelsDialog(
-    selected: LabelSortOrder,
-    onSortEvents: (SortLabelEvents) -> Unit,
-) {
-    SortLabelsDialog(
-        selected = selected,
-        onOrderChange = { newSortOrder ->
-            onSortEvents(SortLabelEvents.SelectSortOrder(newSortOrder))
-            onSortEvents(SortLabelEvents.ToggleDialog)
-        },
-        onDismiss = { onSortEvents(SortLabelEvents.ToggleDialog) },
-    )
-}
-
 
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL

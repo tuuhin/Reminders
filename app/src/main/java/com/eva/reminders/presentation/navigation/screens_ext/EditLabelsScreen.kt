@@ -39,7 +39,7 @@ fun NavGraphBuilder.editLabelsScreen(navHost: NavHostController) = composable(
     val viewModel = hiltViewModel<LabelsViewModel>()
     val createState by viewModel.newLabelState.collectAsStateWithLifecycle()
     val editState by viewModel.editLabelStates.collectAsStateWithLifecycle()
-    val sortDialogState by viewModel.showSortDialog.collectAsStateWithLifecycle()
+    val labelSortOrder by viewModel.labelsSortOrder.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel.uiEvents, lifecycleOwner.lifecycle) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -53,13 +53,13 @@ fun NavGraphBuilder.editLabelsScreen(navHost: NavHostController) = composable(
     }
 
     EditLabelRoute(
-        sortDialogState = sortDialogState,
+        labelsSortOrder = labelSortOrder,
         createLabelState = createState,
         editLabelState = editState,
         onCreateLabelEvent = viewModel::onCreateLabelEvent,
         onEditLabelEvent = viewModel::onUpdateLabelEvent,
         onEditActions = viewModel::onLabelAction,
-        onSortEvents = viewModel::onSortEvents,
+        onSortOrderChange = viewModel::onSortOderChange,
         navigation = {
             if (navHost.previousBackStackEntry != null)
                 IconButton(onClick = navHost::navigateUp) {

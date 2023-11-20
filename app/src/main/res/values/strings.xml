@@ -80,13 +80,11 @@
     <string name="dialog_title_create_copy">"Create A copy "</string>
     <string name="dialog_text_create_copy">Create a copy for this task,copied task will be saved as per the previously saved task</string>
     <string name="more_options_icon_desc">More Options</string>
-    <!--    Create or Update Route-->
-    <string name="create_or_update_route_semantics_desc">Create Task Route</string>
-    <!--    ShowTasks Route-->
-    <string name="show_tasks_route_semantics_desc">Home Route</string>
+
     <!--    ShortCuts Texts-->
     <string name="create_task_shortcut_id">Create Task Id</string>
     <string name="create_label_shortcut_id">Create Label Id</string>
     <string name="create_task_shortcut_text">Create New Reminder</string>
     <string name="create_label_shortcut_text">Create/Update Labels</string>
+    <string name="sort_icon_desc">Sort Icon</string>
 </resources>
