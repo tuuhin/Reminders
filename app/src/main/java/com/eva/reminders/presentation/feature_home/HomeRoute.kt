@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.R
@@ -48,6 +49,7 @@ import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarEvents
 import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarState
 import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
 import com.eva.reminders.presentation.feature_home.utils.SearchType
+import com.eva.reminders.presentation.navigation.NavigationTestTags
 import com.eva.reminders.presentation.utils.HomeTabs
 import com.eva.reminders.presentation.utils.LocalArrangementStyle
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
@@ -71,7 +73,7 @@ fun HomeRoute(
     onTaskSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     style: ArrangementStyle = LocalArrangementStyle.current,
-    snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current
+    snackBarHostState: SnackbarHostState = LocalSnackBarHostProvider.current,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -126,10 +128,11 @@ fun HomeRoute(
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
-            contentWindowInsets = WindowInsets.systemBars
+            contentWindowInsets = WindowInsets.systemBars,
+            modifier = modifier.testTag(NavigationTestTags.SHOW_TASKS_ROUTE)
         ) { padding ->
             Column(
-                modifier = modifier
+                modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
             ) {

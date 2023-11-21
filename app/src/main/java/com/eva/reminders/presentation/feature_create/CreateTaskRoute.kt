@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_create.composables.CreateCopyDialog
@@ -58,6 +60,8 @@ fun CreateTaskRoute(
     var showReminderDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showCopyDialog by rememberSaveable { mutableStateOf(false) }
+
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     if (colorSheetState.isVisible)
         TaskColorPicker(
@@ -108,6 +112,7 @@ fun CreateTaskRoute(
                 isPinned = state.isPinned,
                 isReminder = state.isReminderPresent,
                 isArchived = state.isArchived,
+                scrollBehaviour = scrollBehavior,
                 onPinClick = { onAddTaskEvents(AddTaskEvents.TogglePinned) },
                 onReminderClick = { showReminderDialog = !showReminderDialog },
                 onArchiveClick = { onAddTaskEvents(AddTaskEvents.ToggleArchive) },
@@ -131,7 +136,7 @@ fun CreateTaskRoute(
         },
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         contentWindowInsets = WindowInsets.systemBars,
-        modifier = modifier
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { scPadding ->
         TaskFields(
             state = state,

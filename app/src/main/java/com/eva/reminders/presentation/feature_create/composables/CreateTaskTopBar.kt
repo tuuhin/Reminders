@@ -17,7 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.eva.reminders.R
@@ -35,14 +34,13 @@ fun CreateTaskTopBar(
     onArchiveClick: () -> Unit,
     onAddLabels: () -> Unit,
     modifier: Modifier = Modifier,
+    scrollBehaviour: TopAppBarScrollBehavior? = null,
     navigation: @Composable () -> Unit = {},
 ) {
 
     val permission = checkNotificationPermissions()
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     TopAppBar(
         title = {},
@@ -111,10 +109,12 @@ fun CreateTaskTopBar(
                 )
             }
         },
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        scrollBehavior = scrollBehaviour,
+        modifier = modifier,
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
 )

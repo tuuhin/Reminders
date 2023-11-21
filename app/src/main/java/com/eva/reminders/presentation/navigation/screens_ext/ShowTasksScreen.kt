@@ -4,11 +4,7 @@ import android.content.Intent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,7 +13,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
-import com.eva.reminders.R
 import com.eva.reminders.presentation.feature_home.HomeRoute
 import com.eva.reminders.presentation.feature_home.HomeViewModel
 import com.eva.reminders.presentation.feature_labels.LabelsViewModel
@@ -39,7 +34,6 @@ fun NavGraphBuilder.showTasksRoute(navHost: NavHostController) = composable(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackBarHostState = LocalSnackBarHostProvider.current
-    val context = LocalContext.current
 
     val labelsViewModel = hiltViewModel<LabelsViewModel>()
     val labels by labelsViewModel.allLabels.collectAsStateWithLifecycle()
@@ -78,9 +72,6 @@ fun NavGraphBuilder.showTasksRoute(navHost: NavHostController) = composable(
             onAdd = { navHost.navigate(NavRoutes.AddTask.route) },
             onEditRoute = { navHost.navigate(NavRoutes.EditLabels.route) },
             onTaskSelect = { taskId -> navHost.navigate("/$taskId") },
-            modifier = Modifier.semantics {
-                contentDescription = context.getString(R.string.show_tasks_route_semantics_desc)
-            }
         )
     }
 }

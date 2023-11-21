@@ -7,7 +7,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +26,7 @@ import com.eva.reminders.presentation.feature_create.SelectLabelsRoute
 import com.eva.reminders.presentation.navigation.NavConstants
 import com.eva.reminders.presentation.navigation.NavRoutes
 import com.eva.reminders.presentation.navigation.NavigationDeepLinks
+import com.eva.reminders.presentation.navigation.NavigationTestTags
 import com.eva.reminders.presentation.navigation.sharedViewModel
 import com.eva.reminders.presentation.utils.LocalSnackBarHostProvider
 import com.eva.reminders.presentation.utils.UIEvents
@@ -74,7 +77,7 @@ fun NavGraphBuilder.createTaskRoute(navHost: NavHostController) = navigation(
                             contentDescription = null,
                         )
                     }
-            },
+            }, modifier = Modifier.testTag(NavigationTestTags.CREATE_TASK_ROUTE)
         )
     }
     dialog(
