@@ -1,6 +1,6 @@
 package com.eva.reminders.presentation.feature_home.composables
 
-import androidx.compose.foundation.background
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -9,14 +9,20 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import com.eva.reminders.R
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.presentation.feature_home.utils.PreviewTaskModels
+import com.eva.reminders.ui.theme.RemindersTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +31,11 @@ fun DrawerLabelItems(
     onEdit: () -> Unit,
     labels: List<TaskLabelModel>,
 ) {
+
+    val labelsCount by remember(labels) {
+        derivedStateOf { "${labels.size}" }
+    }
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -33,15 +44,16 @@ fun DrawerLabelItems(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
-            text = "Labels ",
-            style = MaterialTheme.typography.titleMedium
+            text = stringResource(id = R.string.subheading_labels),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Badge(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ) {
             Text(
-                text = "${labels.size}",
+                text = labelsCount,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
@@ -54,13 +66,13 @@ fun DrawerLabelItems(
     ) {
         item {
             NavigationDrawerItem(
-                label = { Text(text = "Create New Label") },
+                label = { Text(text = stringResource(id = R.string.create_new_label)) },
                 selected = false,
                 onClick = onEdit,
                 icon = {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add New Label"
+                        contentDescription = null
                     )
                 }
             )
@@ -78,7 +90,7 @@ fun DrawerLabelItems(
                 icon = {
                     Icon(
                         imageVector = Icons.Outlined.Label,
-                        contentDescription = "Item Label"
+                        contentDescription = stringResource(id = R.string.icon_label_desc)
                     )
                 },
             )
@@ -95,16 +107,23 @@ class DrawerLabelItemsPreViewParams :
         )
     )
 
-@Preview
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
 @Composable
 fun DrawerLabelItemsPreview(
     @PreviewParameter(DrawerLabelItemsPreViewParams::class)
     items: List<TaskLabelModel>
-) {
-    Column(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
+) = RemindersTheme {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
     ) {
-        DrawerLabelItems(onEdit = {}, labels = items)
+        DrawerLabelItems(
+            labels = items,
+            onEdit = {},
+        )
     }
 }

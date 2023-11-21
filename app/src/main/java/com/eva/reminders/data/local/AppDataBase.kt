@@ -24,19 +24,30 @@ import com.eva.reminders.data.local.entity.TaskLabelRel
         TaskLabelRel::class,
         LabelFtsEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
     ]
 )
-@TypeConverters(ColorEnumAdapter::class, DateTimeAdapter::class)
+@TypeConverters(
+    ColorEnumAdapter::class,
+    DateTimeAdapter::class
+)
 abstract class AppDataBase : RoomDatabase() {
 
-    abstract val taskLabelDao: LabelsDao
-    abstract val taskDao: TaskDao
-    abstract val labelsFts: LabelsFtsDao
-    abstract val taskLabelRelDao: TaskLabelRelDao
+    // task label dao
+    abstract fun taskLabelDao(): LabelsDao
+
+    // task dao
+    abstract fun taskDao(): TaskDao
+
+    // label full text search fts
+    abstract fun labelsFts(): LabelsFtsDao
+
+    // task label relation dao
+    abstract fun taskLabelRelDao(): TaskLabelRelDao
 
     companion object {
         private const val DATABASE_NAME = "REMINDERS_DATABASE"
@@ -44,6 +55,14 @@ abstract class AppDataBase : RoomDatabase() {
         fun buildDataBase(context: Context): AppDataBase {
             return Room
                 .databaseBuilder(context, AppDataBase::class.java, DATABASE_NAME)
+                .addTypeConverter(DateTimeAdapter.instance)
+                .addTypeConverter(ColorEnumAdapter.instance)
+                .build()
+        }
+
+        fun buildMockDatabase(context: Context): AppDataBase {
+            return Room.inMemoryDatabaseBuilder(context, AppDataBase::class.java)
+                .allowMainThreadQueries()
                 .addTypeConverter(DateTimeAdapter.instance)
                 .addTypeConverter(ColorEnumAdapter.instance)
                 .build()

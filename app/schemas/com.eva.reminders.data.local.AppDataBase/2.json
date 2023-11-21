@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "799cdb3ba3ad8045a3c72f18e1d31b16",
+    "identityHash": "57fed89fa0b54f3a433c646104d4128e",
     "entities": [
       {
         "tableName": "TaskEntity",
@@ -107,7 +107,7 @@
       },
       {
         "tableName": "TASK_LABEL_REL",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`TASK_ID` INTEGER NOT NULL, `LABEL_ID` INTEGER NOT NULL, PRIMARY KEY(`TASK_ID`, `LABEL_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`TASK_ID` INTEGER NOT NULL, `LABEL_ID` INTEGER NOT NULL, PRIMARY KEY(`TASK_ID`, `LABEL_ID`), FOREIGN KEY(`TASK_ID`) REFERENCES `TaskEntity`(`TASK_ID`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`LABEL_ID`) REFERENCES `LabelEntity`(`LABEL_ID`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "taskId",
@@ -149,7 +149,30 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_TASK_LABEL_REL_LABEL_ID` ON `${TABLE_NAME}` (`LABEL_ID`)"
           }
         ],
-        "foreignKeys": []
+        "foreignKeys": [
+          {
+            "table": "TaskEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "TASK_ID"
+            ],
+            "referencedColumns": [
+              "TASK_ID"
+            ]
+          },
+          {
+            "table": "LabelEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "LABEL_ID"
+            ],
+            "referencedColumns": [
+              "LABEL_ID"
+            ]
+          }
+        ]
       },
       {
         "ftsVersion": "FTS4",
@@ -196,7 +219,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '799cdb3ba3ad8045a3c72f18e1d31b16')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '57fed89fa0b54f3a433c646104d4128e')"
     ]
   }
 }

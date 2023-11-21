@@ -49,7 +49,7 @@ sealed class ReminderTimeOptions(
     )
 
     companion object {
-        fun allOptions(date: LocalDate = LocalDate.now()): List<ReminderTimeOptions> =
+        fun allOptionsExceptCustom(date: LocalDate = LocalDate.now()): List<ReminderTimeOptions> =
             listOf(Morning(date), AfterNoon(date), Evening(date), Night(date))
     }
 }

@@ -1,6 +1,6 @@
 package com.eva.reminders.presentation.utils
 
-sealed class UIEvents {
-    data class ShowSnackBar(val message: String) : UIEvents()
-    object NavigateBack : UIEvents()
+sealed interface UIEvents {
+    data class ShowSnackBar(val message: String) : UIEvents
+    data object NavigateBack : UIEvents
 }

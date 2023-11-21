@@ -37,7 +37,7 @@ fun SearchOptionLabels(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Label,
-                        contentDescription = "Label: ${label.label}"
+                        contentDescription = label.label
                     )
                 },
                 colors = AssistChipDefaults

@@ -9,6 +9,6 @@ interface TaskRepository {
     suspend fun createTask(model: CreateTaskModel): Resource<TaskModel?>
     suspend fun deleteTask(task: TaskModel): Resource<Boolean>
     suspend fun getAllTasks(): Flow<Resource<List<TaskModel>>>
-    suspend fun getTaskById(task: Int): Resource<TaskModel>
+    suspend fun getTaskById(task: Long): Resource<TaskModel?>
     suspend fun updateTask(task: TaskModel): Resource<TaskModel?>
 }

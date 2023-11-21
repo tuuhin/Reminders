@@ -1,7 +1,7 @@
 package com.eva.reminders.di
 
 import android.content.Context
-import com.eva.reminders.data.local.AppDataBase
+import com.eva.reminders.data.local.dao.TaskDao
 import com.eva.reminders.data.repository.BootAlarmInitImpl
 import com.eva.reminders.domain.repository.BootAlarmInitRepo
 import com.eva.reminders.services.AlarmManagerImpl
@@ -19,8 +19,7 @@ object AlarmModule {
 
     @Provides
     @Singleton
-    fun bootRepo(database: AppDataBase): BootAlarmInitRepo =
-        BootAlarmInitImpl(database.taskDao)
+    fun bootRepo(taskDao: TaskDao): BootAlarmInitRepo = BootAlarmInitImpl(taskDao)
 
     @Provides
     @Singleton

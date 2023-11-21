@@ -1,6 +1,90 @@
 <resources>
     <string name="app_name">Reminders</string>
-    <string name="search_help">Search can be only used to search labels and colors</string>
+    <string name="search_information_text">Search can be only used to search labels and colors</string>
     <string name="no_search_results">Nothing is added to make a search…</string>
-    <string name="no_reminders">No reminders are added yet …</string>
+    <string name="no_reminders_to_show">No Reminders are added yet,Create Some</string>
+    <string name="notification_seen_action">Seen</string>
+    <string name="notification_open_action">Open</string>
+    <string name="pinned_text_subheading">Pinned</string>
+    <string name="un_pinned_text_subheading">Others</string>
+    <string name="create_new_task_button">Create New Task Button</string>
+    <string name="create_new_task_text">Add New</string>
+    <!--    Drawer-->
+    <string name="drawer_option_all_reminder">All Reminders</string>
+    <string name="drawer_option_not_scheduled">Not Scheduled</string>
+    <string name="drawer_option_scheduled">Scheduled</string>
+    <string name="drawer_option_achieved">Archived</string>
+    <string name="create_new_label">Create New Label</string>
+    <string name="subheading_labels">Labels</string>
+    <string name="subheading_colors">Colors</string>
+    <!--    Search Bar-->
+    <string name="search_placeholder">Search…</string>
+    <string name="reminder_arrangement_style">Arrangement Mode</string>
+    <!--    Icon descriptions-->
+    <string name="icon_label_desc">Label Icon</string>
+    <string name="close_icon_desc">Close Icon</string>
+    <string name="menu_icon_desc">Menu Icon</string>
+    <string name="edit_icon_desc">Edit Icon</string>
+    <string name="search_icon_desc">No Search Icon</string>
+    <string name="list_icon_desc">List Icon</string>
+    <string name="grid_icon_desc">Grid Icon</string>
+    <string name="add_icon_desc">Add Icon</string>
+    <string name="icon_delete_desc">Delete Icon</string>
+    <string name="icon_check_desc">Create Label Icon</string>
+    <!--    Edit Labels Route-->
+    <string name="edit_labels_route_title">Edit Labels</string>
+    <string name="labels_not_found">No Labels Are Added</string>
+    <string name="create_label_placeholder">Create Label</string>
+    <!--    Sort Dialog in Edit Labels-->
+    <string name="sort_labels_heading">Sort Labels</string>
+    <string name="sort_order_alpha_asc">Accessing (A-Z)</string>
+    <string name="sort_order_alpha_desc">Descending (Z-A)</string>
+    <string name="sort_order_normal">Regular</string>
+    <string name="create_new_label_text_field">Create_new_label_text_field</string>
+    <string name="dialog_cancel_button_text">Cancel</string>
+    <string name="dialog_done_button_text">Done</string>
+    <string name="pick_reminder_date_title">Pick Reminder Date</string>
+    <string name="pick_custom_date_text">Select Date</string>
+    <string name="date_time_picker_dialog_title">Schedule Reminder</string>
+    <string name="date_time_picker_dialog_subtitle">Schedule Date, Time and frequency for your reminder</string>
+    <string name="dialog_delete_button_text">Delete</string>
+    <string name="dialog_save_button_text">Save</string>
+    <string name="drop_down_icon_desc">Show dropDown Options</string>
+    <string name="reminder_repeat_daily">Daily</string>
+    <string name="reminder_do_not_repeat">Do Not Repeat</string>
+    <string name="reminder_schedule_time_exact">Exact</string>
+    <string name="enter_time_text">Enter Time</string>
+    <string name="select_time_text">Select Time</string>
+    <string name="pick_custom_time_text">Select Time</string>
+    <string name="color_picker_title">Pick Color</string>
+    <string name="timer_icon_desc">Timer Icon</string>
+    <string name="create_new_label_field_test_tag">Create New Label Field Test Tag</string>
+    <string name="delete_text">Delete</string>
+    <string name="add_labels_text">Add Labels</string>
+
+    <string name="pin_icon_desc">Pin Note Action</string>
+    <string name="archive_action_desc">Archive Action</string>
+    <string name="notification_action_desc">Add Reminder</string>
+    <string name="title_text">Title</string>
+    <string name="note_text">"Note "</string>
+    <string name="add_color_text">Add Color</string>
+    <string name="icon_color_desc">Color Lens Icon</string>
+    <string name="make_copy_action">Copy</string>
+    <string name="copy_icon_desc">Copy Icon</string>
+    <string name="delete_action">Delete</string>
+    <string name="delete_icon_desc">Delete Icon</string>
+    <string name="add_or_update_icon">Create or Update Icon</string>
+    <string name="dialog_title_are_you_sure">Are you Sure?</string>
+    <string name="delete_dialog_text">Are you sure you want to delete this task, once deleted you cannot recover the task.</string>
+    <string name="dialog_copy_button_text">Copy</string>
+    <string name="dialog_title_create_copy">"Create A copy "</string>
+    <string name="dialog_text_create_copy">Create a copy for this task,copied task will be saved as per the previously saved task</string>
+    <string name="more_options_icon_desc">More Options</string>
+
+    <!--    ShortCuts Texts-->
+    <string name="create_task_shortcut_id">Create Task Id</string>
+    <string name="create_label_shortcut_id">Create Label Id</string>
+    <string name="create_task_shortcut_text">Create New Reminder</string>
+    <string name="create_label_shortcut_text">Create/Update Labels</string>
+    <string name="sort_icon_desc">Sort Icon</string>
 </resources>

@@ -24,5 +24,8 @@ class MyApplication : Application() {
         }
         val notificationManager = getSystemService<NotificationManager>()
         notificationManager?.createNotificationChannel(channel)
+        
+        // Initialize the shortcuts
+        AppShortCuts(this@MyApplication).setShortCuts()
     }
 }

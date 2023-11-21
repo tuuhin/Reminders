@@ -2,6 +2,8 @@ package com.eva.reminders.presentation.feature_home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.eva.reminders.domain.facades.PreferencesFacade
+import com.eva.reminders.domain.models.ArrangementStyle
 import com.eva.reminders.domain.models.TaskModel
 import com.eva.reminders.domain.repository.TaskRepository
 import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarEvents
@@ -9,14 +11,12 @@ import com.eva.reminders.presentation.feature_home.utils.HomeSearchBarState
 import com.eva.reminders.presentation.feature_home.utils.HomeTaskPresenter
 import com.eva.reminders.presentation.feature_home.utils.SearchResultsType
 import com.eva.reminders.presentation.feature_home.utils.SearchType
-import com.eva.reminders.presentation.feature_home.utils.TaskArrangementEvent
-import com.eva.reminders.presentation.feature_home.utils.TaskArrangementStyle
 import com.eva.reminders.presentation.utils.HomeTabs
-import com.eva.reminders.presentation.utils.SaveUserArrangementPreference
 import com.eva.reminders.presentation.utils.ShowContent
 import com.eva.reminders.presentation.utils.UIEvents
 import com.eva.reminders.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,7 +34,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
-    private val preference: SaveUserArrangementPreference,
+    private val preference: PreferencesFacade,
     private val presenter: HomeTaskPresenter
 ) : ViewModel() {
 
@@ -77,11 +77,11 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-    val arrangement = preference.readArrangementStyle
+    val arrangement = preference.arrangementStyle
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            initialValue = TaskArrangementStyle.BLOCK_STYLE
+            initialValue = ArrangementStyle.GRID_STYLE
         )
 
     init {
@@ -109,15 +109,9 @@ class HomeViewModel @Inject constructor(
 
     fun onSearchType(type: SearchType): Unit = _searchType.update { type }
 
-    fun onArrangementChange(event: TaskArrangementEvent) {
-        viewModelScope.launch {
-
-            val style = when (event) {
-                TaskArrangementEvent.BlockStyleEvent -> TaskArrangementStyle.BLOCK_STYLE
-
-                TaskArrangementEvent.GridStyleEvent -> TaskArrangementStyle.GRID_STYLE
-            }
-            preference.updateArrangementStyle(style)
+    fun onArrangementChange(style: ArrangementStyle) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preference.updateStyle(style)
         }
     }
 
@@ -130,13 +124,19 @@ class HomeViewModel @Inject constructor(
                     when (res) {
                         is Resource.Error -> {
                             _uiEvent.emit(UIEvents.ShowSnackBar(res.message))
-                            _tasks.update { it.copy(isLoading = false, content = emptyList()) }
+                            _tasks.update { content ->
+                                content.copy(
+                                    isLoading = false,
+                                    content = emptyList()
+                                )
+                            }
                         }
 
-                        is Resource.Loading -> _tasks.update { it.copy(isLoading = true) }
                         is Resource.Success -> _tasks.update { content ->
                             content.copy(isLoading = false, content = res.data)
                         }
+
+                        Resource.Loading -> _tasks.update { content -> content.copy(isLoading = true) }
                     }
                 }
                 .launchIn(this)

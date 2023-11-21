@@ -1,5 +1,6 @@
 package com.eva.reminders.presentation.utils
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Archive
@@ -10,33 +11,34 @@ import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.eva.reminders.R
 
 sealed class HomeTabs(
     val icon: ImageVector,
     val filledIcon: ImageVector,
-    val text: String,
+    @StringRes val textRes: Int,
 ) {
-    object AllReminders : HomeTabs(
+    data object AllReminders : HomeTabs(
         icon = Icons.Outlined.Apps,
         filledIcon = Icons.Filled.Apps,
-        text = "All Reminders",
+        textRes = R.string.drawer_option_all_reminder,
     )
 
-    object NonScheduled : HomeTabs(
+    data object NonScheduled : HomeTabs(
         icon = Icons.Outlined.Lightbulb,
         filledIcon = Icons.Filled.Lightbulb,
-        text = "Non Scheduled",
+        textRes = R.string.drawer_option_not_scheduled,
     )
 
-    object Scheduled : HomeTabs(
+    data object Scheduled : HomeTabs(
         icon = Icons.Outlined.Notifications,
         filledIcon = Icons.Filled.Notifications,
-        text = "Scheduled",
+        textRes = R.string.drawer_option_scheduled,
     )
 
-    object Archived : HomeTabs(
+    data object Archived : HomeTabs(
         icon = Icons.Outlined.Archive,
         filledIcon = Icons.Filled.Archive,
-        text = "Archived",
+        textRes = R.string.drawer_option_achieved,
     )
 }

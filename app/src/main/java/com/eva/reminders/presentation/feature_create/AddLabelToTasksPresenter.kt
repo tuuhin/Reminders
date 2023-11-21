@@ -3,72 +3,71 @@ package com.eva.reminders.presentation.feature_create
 import com.eva.reminders.domain.models.TaskLabelModel
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.presentation.feature_create.utils.SelectLabelState
+import com.eva.reminders.presentation.feature_create.utils.toSelectLabelStates
 import com.eva.reminders.utils.Resource
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 
 class AddLabelToTasksPresenter(
-    private val labelsRepository: TaskLabelsRepository
+    private val labelsRepository: TaskLabelsRepository,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    private val _queriedLabels = MutableStateFlow(emptyList<TaskLabelModel>())
+    private val _queriedLabels = MutableStateFlow(emptyList<SelectLabelState>())
 
-    private val _selectedLabelFlow = MutableStateFlow(emptyList<SelectLabelState>())
+    // we only want the id to check if it's been added so a list of TaskLabelModel will do the trick
+    private val _selectedLabels = MutableStateFlow(emptyList<TaskLabelModel>())
 
-    val selectedLabelFlow = combine(_queriedLabels, _selectedLabelFlow) { query, selected ->
-        query.map { model ->
-            val isSelected = selected.any { state -> state.idx == model.id }
-            SelectLabelState(idx = model.id, label = model.label, isSelected = isSelected)
+
+    val searchedLabels = combine(_queriedLabels, _selectedLabels) { queried, selected ->
+        queried.map { state ->
+            val isSelected = selected.any { it.id == state.model.id }
+            // if its selected its already in selected label list so lets
+            // only update the isSelected value otherwise create a new one
+            state.copy(isSelected = isSelected)
         }
     }
 
-    val stateToModels = _selectedLabelFlow
-        .map { states -> states.map { state -> state.toModel() } }
+    val selectedLabelsAsModels = searchedLabels.map { states ->
+        states.filter { it.isSelected }.map { it.model }
+    }
 
-    fun setSelectedLabels(labels: List<TaskLabelModel>) {
-        _selectedLabelFlow.update { emptyList() }
-        _selectedLabelFlow.update {
-            labels.map { SelectLabelState(it.id, it.label, isSelected = true) }
+    fun setSelectedLabels(labels: List<TaskLabelModel>) = _selectedLabels.update { labels }
+
+    suspend fun onSearch(search: String): Resource<List<TaskLabelModel>> {
+        val results = withContext(dispatcher) {
+            labelsRepository.searchLabels(search)
         }
+        // if the result is a successful one take that otherwise not
+        val resultsAsSuccess = results as? Resource.Success
+        resultsAsSuccess?.data?.let { models ->
+            _queriedLabels.update { models.toSelectLabelStates() }
+        }
+        return results
     }
 
 
-    suspend fun onSearch(search: String = ""): Flow<List<TaskLabelModel>> {
-        return labelsRepository
-            .searchLabels(search)
-            .catch { err -> err.printStackTrace() }
-            .cancellable()
-            .onEach { models ->
-                _queriedLabels.update { models }
-            }
-    }
-
-    // Don't seems necessary but during a create route all labels are cleared
-    fun clearAllLabels() = _selectedLabelFlow.update { emptyList() }
+    // Don't seem necessary but during a creation route all labels are cleared initially
+    fun clearAllLabels() = _queriedLabels.update { emptyList() }
 
     fun onLabelSelect(state: SelectLabelState) {
-        if (state.isSelected) _selectedLabelFlow.update { states ->
-            states.filter { it.idx != state.idx }
+        if (state.isSelected) {
+            _selectedLabels.update { states -> states.filter { it.id != state.model.id } }
+            return
         }
-        else _selectedLabelFlow.update { states ->
-            buildList {
-                addAll(states)
-                add(state)
-            }
-        }
+        _selectedLabels.update { states -> states + state.model }
     }
 
-    suspend fun createLabels(label:String): Resource<TaskLabelModel> {
+    suspend fun createLabels(label: String): Resource<TaskLabelModel> = withContext(dispatcher) {
         if (label.isNotEmpty()) {
             val trimmedLabel = label.trim()
-            return labelsRepository.createLabel(trimmedLabel)
+            labelsRepository.createLabel(trimmedLabel)
         }
-        return Resource.Error(message = "Label cannot be empty")
+        Resource.Error(message = "Label cannot be empty")
     }
 }
