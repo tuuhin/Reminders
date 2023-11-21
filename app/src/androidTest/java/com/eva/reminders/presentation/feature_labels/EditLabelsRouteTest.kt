@@ -28,15 +28,11 @@ import com.eva.reminders.presentation.navigation.NavigationTestTags
 import com.eva.reminders.ui.theme.RemindersTheme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class EditLabelsRouteTest {
 
@@ -87,8 +83,7 @@ class EditLabelsRouteTest {
     @Test
     fun checking_if_adding_a_single_label_works() = createLabelWithProvidedText("Some label")
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun createLabelWithProvidedText(testText: String = "Sample Test") = runTest {
+    private fun createLabelWithProvidedText(testText: String = "Sample Test") {
 
         // check if the placeholder is displayed then perform click and then assert if it exits
         composeRule.onNode(hasTestTag(FeatureLabelsTestTags.CREATE_LABEL_PLACEHOLDER))
@@ -106,8 +101,6 @@ class EditLabelsRouteTest {
         composeRule.onNode(hasTestTag(FeatureLabelsTestTags.CREATE_NEW_LABEL_ACTION_CREATE))
             .assertHasClickAction()
             .performClick()
-        // waits for the current coroutine to finish executing
-        runCurrent()
 
         // check if the label field is still in focus which it's should not
         composeRule.onNode(hasTestTag(FeatureLabelsTestTags.CREATE_LABEL_PLACEHOLDER))
@@ -229,6 +222,7 @@ class EditLabelsRouteTest {
         composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .assertDoesNotExist()
     }
+
     @Test
     fun workflow_of_adding_a_single_label_then_updating_the_value_and_check_if_its_updated() {
 
