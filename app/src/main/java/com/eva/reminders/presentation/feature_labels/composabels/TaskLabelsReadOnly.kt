@@ -13,9 +13,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.eva.reminders.R
+import com.eva.reminders.presentation.feature_labels.utils.FeatureLabelsTestTags
 import com.eva.reminders.ui.theme.RemindersTheme
 
 @Composable
@@ -42,7 +44,8 @@ fun TaskLabelsReadOnly(
                 onClick = onEdit,
 
                 colors = IconButtonDefaults
-                    .iconButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                    .iconButtonColors(contentColor = MaterialTheme.colorScheme.secondary),
+                modifier = Modifier.testTag(FeatureLabelsTestTags.EDIT_LABEL_ACTION_TEST_TAG)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,

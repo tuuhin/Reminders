@@ -103,13 +103,12 @@ class LabelsViewModel @Inject constructor(
     }
 
     fun onLabelAction(actions: EditLabelsActions) {
-        //  _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
+
         when (actions) {
-            is EditLabelsActions.OnDelete -> actions.item.model
-                ?.let { model -> onDelete(model) }
+            is EditLabelsActions.OnDelete -> onDelete(actions.item.model)
 
             is EditLabelsActions.OnUpdate -> actions.item.toUpdateModel()
-                ?.let { model -> onUpdate(model) }
+                .let { model -> onUpdate(model) }
         }
     }
 
@@ -128,12 +127,18 @@ class LabelsViewModel @Inject constructor(
     }
 
     private fun onDelete(label: TaskLabelModel) = viewModelScope.launch(Dispatchers.IO) {
-        when (val res = labelRepo.deleteLabel(label)) {
-            is Resource.Error -> _uiEvents
-                .emit(UIEvents.ShowSnackBar(message = res.message))
+        val results = labelRepo.deleteLabel(label)
 
-            is Resource.Success -> _uiEvents
-                .emit(UIEvents.ShowSnackBar(message = "${label.label} is removed"))
+        _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
+        when (results) {
+            is Resource.Error -> _uiEvents
+                .emit(UIEvents.ShowSnackBar(message = results.message))
+
+            is Resource.Success ->
+
+                _uiEvents
+                    .emit(UIEvents.ShowSnackBar(message = "${label.label} is removed"))
+
 
             else -> {}
         }
@@ -150,10 +155,11 @@ class LabelsViewModel @Inject constructor(
             if (validator.isValid) {
                 //just trimming off the extra blank spaces
                 val trimmedLabel = label.copy(label = label.label.trim())
-
-                when (val res = labelRepo.updateLabel(trimmedLabel)) {
-                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = res.message))
-
+                val results = labelRepo.updateLabel(trimmedLabel)
+                //update to show all labels
+                _editLabelEvents.update { EditLabelEvents.ShowAllLabels }
+                when (results) {
+                    is Resource.Error -> _uiEvents.emit(UIEvents.ShowSnackBar(message = results.message))
                     else -> {}
                 }
             } else _uiEvents.emit(

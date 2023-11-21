@@ -20,6 +20,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.printToLog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.test.espresso.Espresso
 import com.eva.reminders.domain.repository.TaskLabelsRepository
 import com.eva.reminders.presentation.feature_labels.utils.FeatureLabelsTestTags
 import com.eva.reminders.presentation.feature_labels.utils.LabelSortOrder
@@ -35,6 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class EditLabelsRouteTest {
 
@@ -137,7 +139,7 @@ class EditLabelsRouteTest {
         // Creates 4 new labels
         labelsToTest.forEach(::createLabelWithProvidedText)
         // check the child at 0 is One
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .onChildAt(0)
             .onChild()
             .assert(hasText(text = labelsToTest.first()))
@@ -148,9 +150,11 @@ class EditLabelsRouteTest {
         // pick the desc order
         composeRule.onNode(hasTestTag(FeatureLabelsTestTags.sortTestTagFromOrder(LabelSortOrder.ALPHABETICALLY_DESC)))
             .performClick()
+        // close the dialog
+        Espresso.pressBack()
         // check the lazy column again as the labels are sorted not
         // test should be the childAt 0
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .onChildAt(0)
             .onChild()
             .assert(hasText(text = labelsToTestInDescOrder.first()))
@@ -163,7 +167,7 @@ class EditLabelsRouteTest {
 
         // check the lazy column again as the labels are sorted not
         // One should be the childAt 0
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .onChildAt(0)
             .onChild()
             .assert(hasText(text = labelsToTestInAscOrder.first()))
@@ -172,23 +176,98 @@ class EditLabelsRouteTest {
     @Test
     fun check_if_loaded_labels_are_scrollable_and_if_no_labels_then_no_label_should_be_shown() {
         //Initially there is no labels show no labels should exist
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.NO_LABELS_ADDED_TAG))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.NO_LABELS_FOUND_TEST_TAG))
             .assertExists()
         // and show labels should not exist
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .assertDoesNotExist()
         // Add some labels to check both lazy column
         repeat(10) { idx ->
             createLabelWithProvidedText("Label $idx")
         }
         // Now no labels should not exist anymore
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.NO_LABELS_ADDED_TAG))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.NO_LABELS_FOUND_TEST_TAG))
             .assertDoesNotExist()
         //and lazy col should exist checking scroll too
-        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL))
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
             .assertExists()
             .performScrollToIndex(9)
 
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .onChildAt(9)
+    }
+
+    @Test
+    fun workflow_of_adding_a_single_label_and_then_deleting_it() {
+        // Check there are no labels initially
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertDoesNotExist()
+        // create a new label
+        createLabelWithProvidedText("New Label")
+        // now a label is added
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertExists()
+
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .onChildAt(0)
+            .onChild()
+            .assert(hasText("New Label"))
+        // press edit button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.EDIT_LABEL_ACTION_TEST_TAG))
+            .assertExists()
+            .performClick()
+        // the placeholder goes to edit mode hiding the edit button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.EDIT_LABEL_ACTION_TEST_TAG))
+            .assertDoesNotExist()
+        //press delete button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.DELETE_LABEL_ACTION_TEST_TAG))
+            .assertExists()
+            .performClick()
+        // labels should be deleted and its again lazy column is removed from the
+        // tree.Here as we add a single label it works this way, otherwise only this
+        // label will be removed
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertDoesNotExist()
+    }
+    @Test
+    fun workflow_of_adding_a_single_label_then_updating_the_value_and_check_if_its_updated() {
+
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertDoesNotExist()
+        // create a new label
+        createLabelWithProvidedText("New Label")
+        // now a label is added
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertExists()
+
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .onChildAt(0)
+            .onChild()
+            .assert(hasText("New Label"))
+        // press edit button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.EDIT_LABEL_ACTION_TEST_TAG))
+            .assertExists()
+            .performClick()
+        // the placeholder goes to edit mode hiding the edit button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.EDIT_LABEL_ACTION_TEST_TAG))
+            .assertDoesNotExist()
+
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.UPDATE_LABEL_TEXT_FIELD))
+            .assertExists()
+            .performTextInput("Updated Label")
+
+        //press done button
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.UPDATE_LABEL_ACTION_TEST_TAG))
+            .assertExists()
+            .performClick()
+        // runs the coroutine to update the task label
+
+
+        composeRule.onNode(hasTestTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG))
+            .assertExists()
+            .onChildAt(0)
+            .onChild()
+            .assert(hasText("Updated Label"))
     }
 
 }

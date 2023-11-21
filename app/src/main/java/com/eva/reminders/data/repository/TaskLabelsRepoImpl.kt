@@ -45,7 +45,8 @@ class TaskLabelsRepoImpl(
     override suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel> {
         return withContext(dispatcher) {
             try {
-                val labelId = labelDao.insertUpdateLabel(label.toEntity())
+                labelDao.insertUpdateLabel(label.toEntity())
+                val labelId = label.id.toLong()
                 labelDao.getLabelFromId(labelId)?.toModel()
                     ?.let { model -> Resource.Success(data = model) }
                     ?: Resource.Error(message = "No such labels exists")

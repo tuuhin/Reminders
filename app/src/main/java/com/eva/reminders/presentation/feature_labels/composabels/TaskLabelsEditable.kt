@@ -21,6 +21,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.eva.reminders.R
+import com.eva.reminders.presentation.feature_labels.utils.FeatureLabelsTestTags
 import com.eva.reminders.presentation.utils.noColor
 import com.eva.reminders.ui.theme.RemindersTheme
 
@@ -49,7 +51,9 @@ fun TaskLabelsEditable(
     ) {
         IconButton(
             onClick = onDelete,
-            modifier = Modifier.weight(.1f),
+            modifier = Modifier
+                .weight(.1f)
+                .testTag(FeatureLabelsTestTags.DELETE_LABEL_ACTION_TEST_TAG),
             colors = IconButtonDefaults
                 .iconButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
         ) {
@@ -77,11 +81,15 @@ fun TaskLabelsEditable(
                 )
             },
             colors = TextFieldDefaults.noColor(),
-            modifier = Modifier.weight(.7f)
+            modifier = Modifier
+                .weight(.7f)
+                .testTag(FeatureLabelsTestTags.UPDATE_LABEL_TEXT_FIELD)
         )
         IconButton(
             onClick = onCancel,
-            modifier = Modifier.weight(.1f),
+            modifier = Modifier
+                .weight(.1f)
+                .testTag(FeatureLabelsTestTags.CANCEL_UPDATE_ACTION_TEST_TAG),
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
             )
@@ -93,7 +101,9 @@ fun TaskLabelsEditable(
         }
         IconButton(
             onClick = onDone,
-            modifier = Modifier.weight(.1f),
+            modifier = Modifier
+                .weight(.1f)
+                .testTag(FeatureLabelsTestTags.UPDATE_LABEL_ACTION_TEST_TAG),
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )

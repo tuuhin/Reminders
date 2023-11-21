@@ -4,18 +4,17 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.eva.reminders.presentation.feature_labels.utils.CreateLabelState
 import com.eva.reminders.presentation.feature_labels.utils.CreateNewLabelPreviewParams
+import com.eva.reminders.presentation.feature_labels.utils.FeatureLabelsTestTags
 import com.eva.reminders.presentation.feature_labels.utils.slideContentVertically
 import com.eva.reminders.ui.theme.RemindersTheme
 
@@ -26,15 +25,8 @@ fun CreateNewLabel(
     onDone: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
 
     var showCreateField by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(showCreateField) {
-        if (showCreateField) {
-            focusRequester.requestFocus()
-        }
-    }
 
     AnimatedContent(
         targetState = showCreateField,
@@ -46,20 +38,18 @@ fun CreateNewLabel(
                 label = state.label,
                 onValueChange = onValueChange,
                 onDone = {
-                    onDone()
-                    focusRequester.freeFocus()
                     showCreateField = false
+                    onDone()
                 },
-                onCancel = { showCreateField = !showCreateField },
-                focusRequest = focusRequester,
+                onCancel = { showCreateField = false },
                 modifier = modifier,
                 textStyle = MaterialTheme.typography.titleMedium
             )
 
             else -> CreateNewLabelPlaceHolder(
-                onAdd = { showCreateField = !showCreateField },
-                modifier = modifier,
-                labelStyle = MaterialTheme.typography.titleMedium
+                onAdd = { showCreateField = true },
+                labelStyle = MaterialTheme.typography.titleMedium,
+                modifier = modifier.testTag(FeatureLabelsTestTags.CREATE_LABEL_PLACEHOLDER),
             )
         }
 

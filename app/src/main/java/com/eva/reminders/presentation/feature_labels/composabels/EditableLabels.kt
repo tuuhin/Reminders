@@ -26,7 +26,8 @@ fun EditableLabels(
     modifier: Modifier = Modifier
 ) {
     AnimatedContent(
-        targetState = state.isEdit, label = "Animation for label",
+        targetState = state.isEdit,
+        label = "Animation for label",
         transitionSpec = { slideContentHorizontally() }
     ) { isEdit ->
 
@@ -51,7 +52,6 @@ fun EditableLabels(
 
 @Composable
 fun EditableLabels(
-    labelId: Int,
     state: LabelEditableState,
     onAction: (EditLabelsActions) -> Unit,
     onEvents: (EditLabelEvents) -> Unit,
@@ -60,14 +60,14 @@ fun EditableLabels(
     EditableLabels(
         state = state,
         onEdit = {
-            onEvents(EditLabelEvents.ToggleEnabled(labelId))
+            onEvents(EditLabelEvents.ToggleEnabled(state.labelId))
         },
         onDelete = { onAction(EditLabelsActions.OnDelete(state)) },
         onValueChange = { updated ->
-            onEvents(EditLabelEvents.OnLabelValueUpdate(updated, labelId))
+            onEvents(EditLabelEvents.OnLabelValueUpdate(updated, state.labelId))
         },
         onDone = { onAction(EditLabelsActions.OnUpdate(state)) },
-        onCancel = { onEvents(EditLabelEvents.ToggleEnabled(labelId)) },
+        onCancel = { onEvents(EditLabelEvents.ToggleEnabled(state.labelId)) },
         modifier = modifier
     )
 }

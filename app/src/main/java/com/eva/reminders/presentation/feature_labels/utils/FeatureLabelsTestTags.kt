@@ -13,6 +13,14 @@ object FeatureLabelsTestTags {
     fun sortTestTagFromOrder(sortOrder: LabelSortOrder): String =
         "CHANGE_SORT_ORDER_TO_${sortOrder.name}"
 
-    const val NO_LABELS_ADDED_TAG = "NO_LABELS_FOUND"
-    const val LOADED_LABELS_LAZY_COL = "LOADED LABELS LAZY COL"
+    // Show Labels
+    const val NO_LABELS_FOUND_TEST_TAG = "NO_LABELS_FOUND"
+    const val LOADED_LABELS_TEST_TAG = "LOADED LABELS LAZY COL"
+
+    // Delete and update labels
+    const val EDIT_LABEL_ACTION_TEST_TAG = "EDIT_LABEL_TEST_TAG"
+    const val DELETE_LABEL_ACTION_TEST_TAG = "DELETE_LABEL_TEST_TAG"
+    const val CANCEL_UPDATE_ACTION_TEST_TAG = "CANCEL_LABEL_UPDATE"
+    const val UPDATE_LABEL_ACTION_TEST_TAG = "ACCEPT_CHANGES"
+    const val UPDATE_LABEL_TEXT_FIELD = "UPDATE_LABEL_TEXT_FIELD"
 }

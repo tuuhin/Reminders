@@ -5,8 +5,16 @@ import com.eva.reminders.domain.models.TaskLabelModel
 
 class EditableLabelsPreviewParams : CollectionPreviewParameterProvider<LabelEditableState>(
     listOf(
-        LabelEditableState(isEdit = false, updatedLabel = "Updated label"),
-        LabelEditableState(isEdit = true, updatedLabel = "Updated Label"),
+        LabelEditableState(
+            isEdit = false,
+            updatedLabel = "Updated label",
+            model = TaskLabelModel(0, "Something")
+        ),
+        LabelEditableState(
+            isEdit = true,
+            updatedLabel = "Updated Label",
+            model = TaskLabelModel(0, "Something")
+        ),
         LabelEditableState(
             isEdit = false,
             updatedLabel = "",

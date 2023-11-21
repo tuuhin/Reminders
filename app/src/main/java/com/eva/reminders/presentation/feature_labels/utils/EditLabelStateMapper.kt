@@ -18,4 +18,4 @@ fun List<TaskLabelModel>.toEditStates(): List<LabelEditableState> = map { it.toE
 /** Converts the [LabelEditableState] to a [TaskLabelModel] just changing the [LabelEditableState.updatedLabel]
  * to [TaskLabelModel.label] before updating
  */
-fun LabelEditableState.toUpdateModel(): TaskLabelModel? = model?.copy(label = updatedLabel)
+fun LabelEditableState.toUpdateModel(): TaskLabelModel = model.copy(label = updatedLabel)

@@ -45,10 +45,11 @@ class TaskLabelsRepoTestImpl @Inject constructor(
     override suspend fun updateLabel(label: TaskLabelModel): Resource<TaskLabelModel> {
         return withContext(dispatcher) {
             try {
-                val labelId = labelDao.insertUpdateLabel(label.toEntity())
-                labelDao.getLabelFromId(labelId)?.toModel()
-                    ?.let { model -> Resource.Success(data = model) }
-                    ?: Resource.Error(message = "No such labels exists")
+                labelDao.insertUpdateLabel(label.toEntity())
+                val labelId = label.id.toLong()
+                val taskLabelModel = labelDao.getLabelFromId(labelId)
+                    ?: return@withContext Resource.Error(message = "No such labels exists")
+                Resource.Success(data = taskLabelModel.toModel())
             } catch (e: SQLiteConstraintException) {
                 Resource.Error(message = e.message ?: "Constraint Exception")
             } catch (e: Exception) {

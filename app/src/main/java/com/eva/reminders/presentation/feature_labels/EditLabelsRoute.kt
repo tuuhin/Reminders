@@ -28,10 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -77,14 +75,7 @@ fun EditLabelRoute(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    var showSortDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    // Though it's not required but still may avoid some errors
-    val taskLabels by remember(editLabelState) {
-        derivedStateOf { editLabelState.filter { it.labelId != null } }
-    }
+    var showSortDialog by rememberSaveable { mutableStateOf(false) }
 
     if (showSortDialog) {
         SortLabelsDialog(
@@ -147,35 +138,30 @@ fun EditLabelRoute(
                     isEmpty -> NoLabelsFound(
                         modifier = Modifier
                             .fillMaxSize()
-                            .testTag(FeatureLabelsTestTags.NO_LABELS_ADDED_TAG)
+                            .testTag(FeatureLabelsTestTags.NO_LABELS_FOUND_TEST_TAG)
                     )
 
                     else -> LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .imePadding()
-                            .testTag(FeatureLabelsTestTags.LOADED_LABELS_LAZY_COL),
+                            .testTag(FeatureLabelsTestTags.LOADED_LABELS_TEST_TAG),
                         contentPadding = PaddingValues(
                             horizontal = dimensionResource(id = R.dimen.scaffold_padding_min)
                         )
                     ) {
-                        itemsIndexed(
-                            taskLabels,
-                            key = { _, item -> item.labelId ?: -1 }) { _, item ->
-                            item.labelId?.let { labelId ->
-                                Column(
-                                    modifier = Modifier
-                                        .animateContentSize()
-                                        .animateItemPlacement()
-                                ) {
-                                    EditableLabels(
-                                        labelId = labelId,
-                                        state = item,
-                                        onAction = onEditActions,
-                                        onEvents = onEditLabelEvent
-                                    )
-                                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                                }
+                        itemsIndexed(editLabelState, key = { _, item -> item.labelId }) { _, item ->
+                            Column(
+                                modifier = Modifier
+                                    .animateContentSize()
+                                    .animateItemPlacement()
+                            ) {
+                                EditableLabels(
+                                    state = item,
+                                    onAction = onEditActions,
+                                    onEvents = onEditLabelEvent
+                                )
+                                Divider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
                     }

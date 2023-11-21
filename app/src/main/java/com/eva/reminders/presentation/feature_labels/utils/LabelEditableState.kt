@@ -11,15 +11,15 @@ import com.eva.reminders.domain.models.TaskLabelModel
  * @property previousLabel The saved label for [model]
  */
 data class LabelEditableState(
-    val model: TaskLabelModel? = null,
+    val model: TaskLabelModel,
     val isEdit: Boolean = false,
     val updatedLabel: String = "",
 ) {
-    val labelId: Int?
-        get() = model?.id
+    val labelId: Int
+        get() = model.id
 
     val previousLabel: String
-        get() = model?.label ?: ""
+        get() = model.label
 }
 
 
@@ -37,7 +37,7 @@ sealed interface EditLabelEvents {
      * Events to trigger to label with [labelId] and toggle its state
      * @param labelId The LabelId of the label to be edited
      */
-    data class ToggleEnabled(val labelId: Int) : EditLabelEvents
+    data class ToggleEnabled(val labelId: Int, val isEdit: Boolean = false) : EditLabelEvents
 
     /**
      * Event trigger when the new value label is updated
