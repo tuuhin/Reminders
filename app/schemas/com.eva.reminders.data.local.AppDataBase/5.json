@@ -1,0 +1,225 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "d2bea2055a3cfc0d4a2278d8ee9c1edf",
+    "entities": [
+      {
+        "tableName": "TASK_ENTITY",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`TASK_ID` INTEGER PRIMARY KEY AUTOINCREMENT, `TITLE` TEXT NOT NULL, `CONTENT` TEXT NOT NULL, `IS_PINNED` INTEGER NOT NULL, `COLOR` TEXT NOT NULL, `TIME` TEXT, `IS_REPEATING` INTEGER NOT NULL, `IS_ARCHIVED` INTEGER NOT NULL, `UPDATED AT` TEXT NOT NULL, `IS_EXACT` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "TASK_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "TITLE",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "CONTENT",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinned",
+            "columnName": "IS_PINNED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "COLOR",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "TIME",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isRepeating",
+            "columnName": "IS_REPEATING",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "IS_ARCHIVED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updateTime",
+            "columnName": "UPDATED AT",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exact",
+            "columnName": "IS_EXACT",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "TASK_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "LABEL_ENTITY",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`LABEL_ID` INTEGER, `LABEL` TEXT NOT NULL, PRIMARY KEY(`LABEL_ID`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "LABEL_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "LABEL",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "LABEL_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "TASK_LABEL_REL",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`TASK_ID` INTEGER NOT NULL, `LABEL_ID` INTEGER NOT NULL, PRIMARY KEY(`TASK_ID`, `LABEL_ID`), FOREIGN KEY(`TASK_ID`) REFERENCES `TASK_ENTITY`(`TASK_ID`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`LABEL_ID`) REFERENCES `LABEL_ENTITY`(`LABEL_ID`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "taskId",
+            "columnName": "TASK_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "labelId",
+            "columnName": "LABEL_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "TASK_ID",
+            "LABEL_ID"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_TASK_LABEL_REL_TASK_ID",
+            "unique": false,
+            "columnNames": [
+              "TASK_ID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TASK_LABEL_REL_TASK_ID` ON `${TABLE_NAME}` (`TASK_ID`)"
+          },
+          {
+            "name": "index_TASK_LABEL_REL_LABEL_ID",
+            "unique": false,
+            "columnNames": [
+              "LABEL_ID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TASK_LABEL_REL_LABEL_ID` ON `${TABLE_NAME}` (`LABEL_ID`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "TASK_ENTITY",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "TASK_ID"
+            ],
+            "referencedColumns": [
+              "TASK_ID"
+            ]
+          },
+          {
+            "table": "LABEL_ENTITY",
+            "onDelete": "CASCADE",
+            "onUpdate": "CASCADE",
+            "columns": [
+              "LABEL_ID"
+            ],
+            "referencedColumns": [
+              "LABEL_ID"
+            ]
+          }
+        ]
+      },
+      {
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "LABEL_ENTITY",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_LABEL_FTS_BEFORE_UPDATE BEFORE UPDATE ON `LABEL_ENTITY` BEGIN DELETE FROM `LABEL_FTS` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_LABEL_FTS_BEFORE_DELETE BEFORE DELETE ON `LABEL_ENTITY` BEGIN DELETE FROM `LABEL_FTS` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_LABEL_FTS_AFTER_UPDATE AFTER UPDATE ON `LABEL_ENTITY` BEGIN INSERT INTO `LABEL_FTS`(`docid`, `LABEL`, `LABEL_ID`) VALUES (NEW.`rowid`, NEW.`LABEL`, NEW.`LABEL_ID`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_LABEL_FTS_AFTER_INSERT AFTER INSERT ON `LABEL_ENTITY` BEGIN INSERT INTO `LABEL_FTS`(`docid`, `LABEL`, `LABEL_ID`) VALUES (NEW.`rowid`, NEW.`LABEL`, NEW.`LABEL_ID`); END"
+        ],
+        "tableName": "LABEL_FTS",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`LABEL` TEXT NOT NULL, `LABEL_ID` INTEGER NOT NULL, content=`LABEL_ENTITY`)",
+        "fields": [
+          {
+            "fieldPath": "label",
+            "columnName": "LABEL",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "LABEL_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": []
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd2bea2055a3cfc0d4a2278d8ee9c1edf')"
+    ]
+  }
+}

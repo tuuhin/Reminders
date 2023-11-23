@@ -16,6 +16,7 @@ import com.eva.reminders.data.local.entity.LabelEntity
 import com.eva.reminders.data.local.entity.LabelFtsEntity
 import com.eva.reminders.data.local.entity.TaskEntity
 import com.eva.reminders.data.local.entity.TaskLabelRel
+import com.eva.reminders.data.local.migrations.AppMigrations
 
 @Database(
     entities = [
@@ -24,11 +25,12 @@ import com.eva.reminders.data.local.entity.TaskLabelRel
         TaskLabelRel::class,
         LabelFtsEntity::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3)
+        AutoMigration(from = 3, to = 4, AppMigrations.RenameTaskEntityTable::class),
+        AutoMigration(from = 4, to = 5, AppMigrations.RenameLabelEntityTable::class)
     ]
 )
 @TypeConverters(
@@ -53,8 +55,10 @@ abstract class AppDataBase : RoomDatabase() {
         private const val DATABASE_NAME = "REMINDERS_DATABASE"
 
         fun buildDataBase(context: Context): AppDataBase {
+
             return Room
                 .databaseBuilder(context, AppDataBase::class.java, DATABASE_NAME)
+                .addMigrations(AppMigrations.MIGRATE_ADD_FOREIGN_KEY_LABEL_TASK_REL)
                 .addTypeConverter(DateTimeAdapter.instance)
                 .addTypeConverter(ColorEnumAdapter.instance)
                 .build()
@@ -63,6 +67,7 @@ abstract class AppDataBase : RoomDatabase() {
         fun buildMockDatabase(context: Context): AppDataBase {
             return Room.inMemoryDatabaseBuilder(context, AppDataBase::class.java)
                 .allowMainThreadQueries()
+                .addMigrations(AppMigrations.MIGRATE_ADD_FOREIGN_KEY_LABEL_TASK_REL)
                 .addTypeConverter(DateTimeAdapter.instance)
                 .addTypeConverter(ColorEnumAdapter.instance)
                 .build()
