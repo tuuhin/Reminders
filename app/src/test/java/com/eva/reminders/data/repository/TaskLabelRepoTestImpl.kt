@@ -29,8 +29,8 @@ class TaskLabelRepoTestImpl : TaskLabelsRepository {
                 else model
             }
         }
-        val updatedLabel = _inMemoryDb.value[label.id]
-        return Resource.Success(updatedLabel)
+        return _inMemoryDb.value.find { it.id == label.id }?.let { Resource.Success(data = it) }
+            ?: Resource.Error(message = "Label Model is not found")
     }
 
     override suspend fun deleteLabel(label: TaskLabelModel): Resource<Boolean> {
@@ -46,6 +46,12 @@ class TaskLabelRepoTestImpl : TaskLabelsRepository {
     }
 
     override suspend fun searchLabels(query: String): Resource<List<TaskLabelModel>> {
-        return Resource.Error(message = "Method not implemented")
+
+        val results = when (query) {
+            "" -> _inMemoryDb.value
+            else -> _inMemoryDb.value.filter { it.label.contains(query.trim()) }
+        }
+
+        return Resource.Success(data = results)
     }
 }
